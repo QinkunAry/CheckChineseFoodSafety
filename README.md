@@ -82,6 +82,8 @@ FUTURE_AI_PLAN.md          独立的 AI 后续计划
 
 `.github/workflows/update-fda.yml` 每周运行一次，也支持在 GitHub Actions 页面手动触发。工作流先执行测试，再抓取候选数据；Schema、重复 ID、最小记录数和数量突降检查全部通过后，才会提交数据与质量报告。失败报告作为 Actions artifact 保留，不发布失败候选。
 
+FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会话下载。若 FDA 拒绝某些云端 Runner 网络，可以通过仓库变量 `FOOD_SAFETY_FDA_DOWNLOAD_URL` 指定经批准、内容相同的镜像；下载内容仍必须通过 ZIP、Schema 和数据质量检查。
+
 ## 路线图
 
 - [x] 确定 evidence-first 数据模型

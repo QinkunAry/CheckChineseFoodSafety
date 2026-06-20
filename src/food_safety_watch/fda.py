@@ -3,6 +3,8 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -18,10 +20,19 @@ from .models import SafetyRecord, stable_id
 
 SOURCE_ID = "us_fda_import_refusals"
 SOURCE_URL = "https://www.accessdata.fda.gov/scripts/importrefusals/"
+INTRO_URL = f"{SOURCE_URL}index.cfm?action=facades.intro"
 DOWNLOAD_URL = (
     "https://www.accessdata.fda.gov/scripts/importrefusals/downloads/"
     "Import_Refusal_2024-present.zip"
 )
+BROWSER_USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/136.0 Safari/537.36 FoodSafetyWatch/0.1"
+)
+
+
+class FdaDownloadError(RuntimeError):
+    pass
 
 # Human-food industries listed by FDA's official Product Code Builder.
 # Animal food, food-service equipment, warehouses, drugs, cosmetics and devices
@@ -91,6 +102,28 @@ def normalize_date(value: str) -> str:
     return value
 
 
+def discover_download_url(page: str) -> str:
+    matches = re.findall(
+        r'''option\s+value=["']([^"']*Import_Refusal_[^"']*present\.zip)["']''',
+        page,
+        flags=re.IGNORECASE,
+    )
+    if not matches:
+        raise FdaDownloadError("FDA download page does not list a current import refusal ZIP")
+    filename = matches[-1]
+    if "/" in filename or "\\" in filename or ".." in filename:
+        raise FdaDownloadError(f"FDA download page returned an unsafe filename: {filename!r}")
+    return f"{SOURCE_URL}downloads/{filename}"
+
+
+def _assert_zip(payload: bytes, source_url: str) -> bytes:
+    if not zipfile.is_zipfile(io.BytesIO(payload)):
+        raise FdaDownloadError(
+            f"FDA download did not return a valid ZIP: {source_url} ({len(payload)} bytes)"
+        )
+    return payload
+
+
 def parse_archive(payload: bytes, country: str = "CN") -> list[SafetyRecord]:
     retrieved_at = datetime.now(timezone.utc).isoformat()
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
@@ -152,19 +185,54 @@ def parse_archive(payload: bytes, country: str = "CN") -> list[SafetyRecord]:
     return records
 
 
-def download(url: str = DOWNLOAD_URL) -> bytes:
+def download(url: str | None = None) -> bytes:
+    override_url = os.environ.get("FOOD_SAFETY_FDA_DOWNLOAD_URL")
+    requested_url = url or override_url
     curl = shutil.which("curl")
     if curl is not None:
         with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cookies = root / "cookies.txt"
+            intro = root / "intro.html"
             destination = Path(directory) / "fda-import-refusals.zip"
-            subprocess.run(
-                [curl, "-L", "--fail", "--max-time", "60", "-o", str(destination), url],
-                check=True,
-            )
-            return destination.read_bytes()
-    request = urllib.request.Request(url, headers={"User-Agent": "FoodSafetyWatch/0.1"})
+            common = [
+                curl, "-L", "--fail", "--silent", "--show-error", "--http1.1",
+                "--retry", "3", "--retry-all-errors", "--connect-timeout", "20",
+                "--max-time", "120", "--user-agent", BROWSER_USER_AGENT,
+            ]
+            target_url = requested_url
+            if target_url is None:
+                try:
+                    subprocess.run(
+                        [*common, "--cookie-jar", str(cookies), "--output", str(intro), INTRO_URL],
+                        check=True,
+                    )
+                    target_url = discover_download_url(intro.read_text(encoding="utf-8"))
+                except (OSError, UnicodeError, subprocess.CalledProcessError, FdaDownloadError):
+                    target_url = DOWNLOAD_URL
+            try:
+                subprocess.run(
+                    [
+                        *common, "--cookie", str(cookies), "--referer", INTRO_URL,
+                        "--output", str(destination), target_url,
+                    ],
+                    check=True,
+                )
+            except subprocess.CalledProcessError as error:
+                raise FdaDownloadError(
+                    "FDA download failed. The official host may reject the runner network; "
+                    "set FOOD_SAFETY_FDA_DOWNLOAD_URL to an approved mirror if needed. "
+                    f"URL: {target_url}"
+                ) from error
+            return _assert_zip(destination.read_bytes(), target_url)
+
+    target_url = requested_url or DOWNLOAD_URL
+    request = urllib.request.Request(
+        target_url,
+        headers={"User-Agent": BROWSER_USER_AGENT, "Referer": INTRO_URL},
+    )
     with urllib.request.urlopen(request, timeout=60) as response:
-        return response.read()
+        return _assert_zip(response.read(), target_url)
 
 
 def write_jsonl(records: Iterable[SafetyRecord], output: Path) -> int:

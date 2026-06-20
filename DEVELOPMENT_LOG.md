@@ -17,6 +17,43 @@
 
 ---
 
+## 2026-06-21 · Round 6 · GitHub Runner 下载故障修复
+
+### 本轮目标
+
+诊断首次 `Update FDA data` 手动运行失败，并提高 FDA 下载器对云端 Runner 的兼容性与可诊断性。
+
+### 故障
+
+- GitHub Actions run `27877436765` 在 FDA ZIP 下载阶段失败；
+- GitHub 托管 Runner 访问硬编码 ZIP 时经重定向得到 HTTP 404；
+- 同一官方 URL 在本地于 2026-06-21 返回 HTTP 200 和约 5.03 MB ZIP；
+- 因此故障发生在 FDA/CDN 与 GitHub Runner 网络之间，而非文件名变化、解析器或质量门禁。
+
+### 已完成
+
+- 下载前访问 FDA 官方页面并动态发现当前 `*-present.zip` 文件名；
+- 同一 curl 会话保存 Cookie，并为 ZIP 请求附带 Referer；
+- 使用浏览器兼容 User-Agent、HTTP/1.1、连接超时和三次重试；
+- 下载后验证内容确实为 ZIP，拒绝 HTML 错误页；
+- 增加 `FdaDownloadError`，提供比 `CalledProcessError` 更明确的故障信息；
+- 支持仓库变量 `FOOD_SAFETY_FDA_DOWNLOAD_URL`，为经批准的同内容镜像预留后端切换能力；
+- 增加动态发现和不安全文件名回归测试。
+
+### 验证
+
+- 12 项单元测试通过；
+- 本地官方页面仍列出 `Import_Refusal_2024-present.zip`；
+- 本地官方 ZIP 响应为 HTTP 200；
+- 使用现有官方 ZIP 的完整更新仍发布 2,590 条记录并通过质量门禁；
+- GitHub Runner 修复效果等待下一次手动运行确认。
+
+### 下一步
+
+提交本轮修复并重新运行 `Update FDA data`。如果 FDA 仍按 Runner IP 拒绝请求，则停止继续伪装请求，改用自托管 Runner 或可信镜像。
+
+---
+
 ## 2026-06-21 · Round 5 · GitHub 仓库与首次 CI 验证
 
 ### 本轮目标

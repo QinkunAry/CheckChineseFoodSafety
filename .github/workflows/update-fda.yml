@@ -34,6 +34,8 @@ jobs:
         run: python -m unittest discover -s tests -v
 
       - name: Fetch, validate, and publish FDA candidate
+        env:
+          FOOD_SAFETY_FDA_DOWNLOAD_URL: ${{ vars.FOOD_SAFETY_FDA_DOWNLOAD_URL }}
         run: >-
           python -m food_safety_watch update-fda
           --output data/processed/fda_cn.jsonl
@@ -62,4 +64,3 @@ jobs:
             git commit -m "data: update FDA import refusals"
             git push
           fi
-

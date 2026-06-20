@@ -6,7 +6,7 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
-from food_safety_watch.fda import parse_archive
+from food_safety_watch.fda import FdaDownloadError, discover_download_url, parse_archive
 from food_safety_watch.quality import build_quality_report, load_schema
 from food_safety_watch.update import QualityCheckFailed, update_fda
 
@@ -25,6 +25,19 @@ def fixture_archive() -> bytes:
 
 
 class FdaArchiveTests(unittest.TestCase):
+    def test_discovers_current_zip_from_official_page(self) -> None:
+        page = '<option value="Import_Refusal_2024-present.zip">2024 - Present</option>'
+        self.assertEqual(
+            discover_download_url(page),
+            "https://www.accessdata.fda.gov/scripts/importrefusals/"
+            "downloads/Import_Refusal_2024-present.zip",
+        )
+
+    def test_rejects_unsafe_discovered_filename(self) -> None:
+        page = '<option value="../Import_Refusal_2024-present.zip">bad</option>'
+        with self.assertRaises(FdaDownloadError):
+            discover_download_url(page)
+
     def test_parser_keeps_only_cn_human_food(self) -> None:
         records = parse_archive(fixture_archive(), country="CN")
         self.assertEqual(len(records), 1)
