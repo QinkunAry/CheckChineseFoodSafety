@@ -124,6 +124,11 @@ def _assert_zip(payload: bytes, source_url: str) -> bytes:
     return payload
 
 
+def configured_download_url(explicit_url: str | None = None) -> str | None:
+    override_url = os.environ.get("FOOD_SAFETY_FDA_DOWNLOAD_URL", "").strip()
+    return explicit_url or override_url or None
+
+
 def parse_archive(payload: bytes, country: str = "CN") -> list[SafetyRecord]:
     retrieved_at = datetime.now(timezone.utc).isoformat()
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
@@ -186,8 +191,7 @@ def parse_archive(payload: bytes, country: str = "CN") -> list[SafetyRecord]:
 
 
 def download(url: str | None = None) -> bytes:
-    override_url = os.environ.get("FOOD_SAFETY_FDA_DOWNLOAD_URL")
-    requested_url = url or override_url
+    requested_url = configured_download_url(url)
     curl = shutil.which("curl")
     if curl is not None:
         with tempfile.TemporaryDirectory() as directory:

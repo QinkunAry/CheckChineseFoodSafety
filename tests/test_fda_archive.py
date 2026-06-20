@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import io
+import os
 import unittest
 import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
-from food_safety_watch.fda import FdaDownloadError, discover_download_url, parse_archive
+from food_safety_watch.fda import (
+    FdaDownloadError,
+    configured_download_url,
+    discover_download_url,
+    parse_archive,
+)
 from food_safety_watch.quality import build_quality_report, load_schema
 from food_safety_watch.update import QualityCheckFailed, update_fda
 
@@ -25,6 +31,14 @@ def fixture_archive() -> bytes:
 
 
 class FdaArchiveTests(unittest.TestCase):
+    def test_empty_github_variable_is_not_treated_as_url(self) -> None:
+        with patch.dict(os.environ, {"FOOD_SAFETY_FDA_DOWNLOAD_URL": ""}):
+            self.assertIsNone(configured_download_url())
+
+    def test_whitespace_github_variable_is_not_treated_as_url(self) -> None:
+        with patch.dict(os.environ, {"FOOD_SAFETY_FDA_DOWNLOAD_URL": "   "}):
+            self.assertIsNone(configured_download_url())
+
     def test_discovers_current_zip_from_official_page(self) -> None:
         page = '<option value="Import_Refusal_2024-present.zip">2024 - Present</option>'
         self.assertEqual(
