@@ -17,6 +17,40 @@
 
 ---
 
+## 2026-06-21 · Round 5 · GitHub 仓库与首次 CI 验证
+
+### 本轮目标
+
+确认本地 Git 初始化、GitHub remote、初始提交和 Actions 运行状态。
+
+### 已完成
+
+- 确认本地分支 `main` 与 `origin/main` 同步；
+- 确认远程仓库为 `https://github.com/QinkunAry/CheckChineseFoodSafety.git`；
+- 确认初始提交 `346caf2` 已包含 CI、FDA 更新工作流、发布数据与质量报告；
+- 通过 GitHub API 确认仓库公开且默认分支为 `main`；
+- 确认首次 `CI` 工作流运行成功；
+- 在 README 增加 CI、FDA 更新状态徽章和仓库链接；
+- 在 `pyproject.toml` 增加 Repository 与 Issues 元数据。
+
+### 验证
+
+- 本地工作树在文档更新前为干净状态；
+- `HEAD`、`main` 与 `origin/main` 均指向 `346caf2`；
+- GitHub CI run `27877322570` 状态为 `completed / success`。
+
+### 尚未完成
+
+- `Update FDA data` 尚未执行首次手动运行；
+- 本机没有 GitHub CLI，无法从当前环境发起带认证的 `workflow_dispatch`；
+- 本轮新增的 README、项目元数据和开发日志需要由用户提交并推送。
+
+### 下一步
+
+在 GitHub Actions 页面手动运行一次 `Update FDA data`，确认下载、质量 artifact 和自动提交权限均正常。
+
+---
+
 ## 2026-06-20 · Round 4 · Schema 验证与自动更新
 
 ### 本轮目标

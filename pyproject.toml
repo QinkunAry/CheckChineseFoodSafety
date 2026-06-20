@@ -14,6 +14,10 @@ dependencies = [
     "jsonschema>=4.26,<5",
 ]
 
+[project.urls]
+Repository = "https://github.com/QinkunAry/CheckChineseFoodSafety"
+Issues = "https://github.com/QinkunAry/CheckChineseFoodSafety/issues"
+
 [project.scripts]
 food-safety-watch = "food_safety_watch.cli:main"
 

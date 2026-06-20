@@ -1,6 +1,11 @@
 # Food Safety Watch / 食安观察
 
+[![CI](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml)
+[![Update FDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml)
+
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
+
+GitHub 仓库：[QinkunAry/CheckChineseFoodSafety](https://github.com/QinkunAry/CheckChineseFoodSafety)
 
 > 本项目提供监管信息聚合，不进行医学诊断、实验室检测或“某食品一定安全/有毒”的判断。
 
