@@ -1,0 +1,95 @@
+# Food Safety Watch / 食安观察
+
+一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
+
+> 本项目提供监管信息聚合，不进行医学诊断、实验室检测或“某食品一定安全/有毒”的判断。
+
+完整产品方向见 [`PRODUCT_GOALS.md`](PRODUCT_GOALS.md)，每轮开发过程见 [`DEVELOPMENT_LOG.md`](DEVELOPMENT_LOG.md)。
+
+## 第一个目标是什么？
+
+第一个目标不是 AI Agent，也不是通用 skills 平台，而是一条可重复、可审计的数据管道：
+
+1. 从一个官方来源取得公开数据；
+2. 保存来源、抓取时间和原始记录标识；
+3. 转换为统一字段；
+4. 用确定性规则添加食品类别和风险标签；
+5. 导出 JSONL，供网页、API、分析和未来 App 使用。
+
+MVP 先打通美国 FDA Import Refusal Report 中原产地为中国、且属于 FDA Product Code Builder 人类食品行业的记录。FDA 页面说明该数据来自 OASIS、按月更新，并提供 2002 年至今的 ZIP/CSV 文件。第一阶段只处理 `2024-present` 数据包，以缩短反馈周期。动物饲料、食品设备、仓储、药品、化妆品和医疗器械暂不纳入。
+
+AI Agent 以后可以负责异常监控、翻译建议、分类候选和人工复核队列，但不应成为数据事实层。类似 OpenClaw 的 skills 适合在接口稳定后把“查询食安记录”“解释监管原因”等能力提供给其他 Agent。
+
+## 快速开始
+
+项目使用 Python 3.11+，JSON Schema 验证依赖 `jsonschema`。
+
+```powershell
+python -m pip install -e .
+python -m food_safety_watch sources
+python -m food_safety_watch update-fda
+```
+
+也可以解析已经下载的官方 ZIP（便于离线复现与调试）：
+
+```powershell
+python -m food_safety_watch fetch-fda --archive data/raw/fda-2024-present.zip --country CN
+```
+
+运行测试：
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m unittest discover -s tests -v
+```
+
+验证已有数据并生成质量报告：
+
+```powershell
+python -m food_safety_watch validate
+```
+
+## 数据边界
+
+- `import_refusal` 不等于召回，也不表示同类产品全部存在风险。
+- `origin_country` 在 FDA 数据中来自申报制造商所在国家/地区，不能自动推断品牌国籍或全部原料产地。
+- 风险标签是便于检索的项目分类，监管机构原始原因文本始终优先。
+- 中文翻译在进入事实字段前应经过人工或可追踪的审核流程。
+
+## 项目结构
+
+```text
+data/sources.json          数据源登记表
+schemas/record.schema.json 统一记录契约
+src/food_safety_watch/     采集与标准化代码
+tests/                     单元测试
+docs/ARCHITECTURE.md       架构和路线图
+PRODUCT_GOALS.md           最终产品目标与里程碑
+DEVELOPMENT_LOG.md         每轮开发记录
+FUTURE_AI_PLAN.md          独立的 AI 后续计划
+```
+
+## 开发记录约定
+
+每轮实质开发完成后，都应在 `DEVELOPMENT_LOG.md` 顶部追加本轮目标、实际改动、验证结果、问题和下一步。代码完成但日志未更新，视为该轮尚未完整交付。
+
+## 自动更新
+
+`.github/workflows/update-fda.yml` 每周运行一次，也支持在 GitHub Actions 页面手动触发。工作流先执行测试，再抓取候选数据；Schema、重复 ID、最小记录数和数量突降检查全部通过后，才会提交数据与质量报告。失败报告作为 Actions artifact 保留，不发布失败候选。
+
+## 路线图
+
+- [x] 确定 evidence-first 数据模型
+- [x] 建立 FDA CSV 下载与标准化适配器
+- [x] 验证 FDA 实际数据并加入回归样本
+- [x] 增加 Schema 验证、去重检查、数量突降保护和质量报告
+- [x] 增加 GitHub Actions 测试与每周自动更新
+- [ ] 增加来源级增量下载和更新失败通知
+- [ ] 发布静态数据页与筛选界面
+- [ ] 按可获取性接入欧盟、新西兰、澳大利亚、日本、韩国、加拿大、香港和台湾来源
+- [ ] 在事实层稳定后提供 API / Agent skill
+- [ ] 评估 iOS App
+
+## 许可证
+
+代码采用 MIT License。监管数据本身的再利用条件以各来源机构条款为准；发布数据快照前需逐项核对。

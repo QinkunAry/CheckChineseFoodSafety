@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/food-safety-watch/record.schema.json",
+  "title": "Food Safety Watch Record",
+  "type": "object",
+  "required": [
+    "id", "source_id", "source_record_id", "authority",
+    "authority_region", "action_type", "event_date",
+    "origin_country", "product_category", "product_name", "reasons", "hazard_tags",
+    "source_url", "retrieved_at"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 16 },
+    "source_id": { "type": "string" },
+    "source_record_id": { "type": "string" },
+    "authority": { "type": "string" },
+    "authority_region": { "type": "string" },
+    "action_type": {
+      "enum": ["import_refusal", "recall", "safety_alert", "inspection_failure"]
+    },
+    "event_date": { "type": "string", "format": "date" },
+    "origin_country": { "type": "string" },
+    "producer_name": { "type": "string" },
+    "producer_location": { "type": "string" },
+    "product_code": { "type": "string" },
+    "product_category": { "type": "string" },
+    "product_name": { "type": "string" },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "hazard_tags": { "type": "array", "items": { "type": "string" } },
+    "source_url": { "type": "string", "format": "uri" },
+    "retrieved_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

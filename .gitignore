@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+dist/
+build/
+data/raw/
+data/processed/*.jsonl
+!data/processed/.gitkeep
+!data/processed/fda_cn.jsonl
+reports/.*.tmp
+/tmp*/

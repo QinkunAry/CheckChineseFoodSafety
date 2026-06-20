@@ -1,0 +1,65 @@
+name: Update FDA data
+
+on:
+  schedule:
+    - cron: "23 17 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-fda-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Fetch, validate, and publish FDA candidate
+        run: >-
+          python -m food_safety_watch update-fda
+          --output data/processed/fda_cn.jsonl
+          --report reports/fda_quality.json
+          --schema schemas/record.schema.json
+          --min-records 1000
+          --max-drop-percent 25
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fda-quality-report
+          path: reports/fda_quality.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Commit verified changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/processed/fda_cn.jsonl reports/fda_quality.json
+          if git diff --cached --quiet; then
+            echo "No verified data changes to publish."
+          else
+            git commit -m "data: update FDA import refusals"
+            git push
+          fi
+

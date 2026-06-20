@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "food-safety-watch"
+version = "0.1.0"
+description = "Evidence-first aggregation of official food safety notices"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Food Safety Watch contributors" }]
+dependencies = [
+    "jsonschema>=4.26,<5",
+]
+
+[project.scripts]
+food-safety-watch = "food_safety_watch.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

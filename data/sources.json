@@ -1,0 +1,42 @@
+[
+  {
+    "id": "us_fda_import_refusals",
+    "authority": "U.S. Food and Drug Administration",
+    "authority_region": "US",
+    "action_type": "import_refusal",
+    "homepage": "https://www.accessdata.fda.gov/scripts/importrefusals/",
+    "download_url": "https://www.accessdata.fda.gov/scripts/importrefusals/downloads/Import_Refusal_2024-present.zip",
+    "access_method": "zip_csv",
+    "update_frequency": "monthly",
+    "status": "implemented",
+    "notes": "Official page states that reports are generated from OASIS and updated monthly."
+  },
+  {
+    "id": "eu_rasff",
+    "authority": "European Commission RASFF",
+    "authority_region": "EU",
+    "action_type": "mixed_alerts",
+    "homepage": "https://webgate.ec.europa.eu/rasff-window/screen/search",
+    "access_method": "research_required",
+    "status": "candidate"
+  },
+  {
+    "id": "nz_mpi_recalls",
+    "authority": "New Zealand Ministry for Primary Industries",
+    "authority_region": "NZ",
+    "action_type": "recall",
+    "homepage": "https://www.mpi.govt.nz/food-safety-home/food-recalls-and-complaints/recalled-food-products/",
+    "access_method": "research_required",
+    "status": "candidate"
+  },
+  {
+    "id": "au_fsanz_recalls",
+    "authority": "Food Standards Australia New Zealand",
+    "authority_region": "AU",
+    "action_type": "recall",
+    "homepage": "https://www.foodstandards.gov.au/industry/food-recalls/recalls",
+    "access_method": "research_required",
+    "status": "candidate"
+  }
+]
+
