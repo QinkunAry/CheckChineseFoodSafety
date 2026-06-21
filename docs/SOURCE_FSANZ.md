@@ -54,7 +54,8 @@ used by new code.
 ## Read-only smoke workflow
 
 `.github/workflows/smoke-fsanz.yml` runs weekly and on manual dispatch. It reads
-the official sitemap plus three fixed recall details, requires at least one
-explicit China-origin record, validates normalized records against the shared
-schema, and uploads `fsanz_smoke.json` even when the smoke command fails. It has
+the official sitemap plus fixed recall details, verifies their evidence-field
+structure, validates any China-origin records against the shared schema, and
+uploads `fsanz_smoke.json` even when the smoke command fails. A zero-China
+result is reported but does not mean the source structure is broken. It has
 only `contents: read` permission and never publishes source data.

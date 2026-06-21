@@ -57,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     smoke.add_argument("--schema", type=Path, default=Path("schemas/record.schema.json"))
     smoke.add_argument("--report", type=Path, default=Path("reports/fsanz_smoke.json"))
     smoke.add_argument("--min-sitemap-recalls", type=int, default=100)
+    smoke.add_argument("--min-china-records", type=int, default=0)
     return parser
 
 
@@ -116,6 +117,7 @@ def main(argv: list[str] | None = None) -> int:
             urls=args.urls,
             schema=load_schema(args.schema),
             min_sitemap_recalls=args.min_sitemap_recalls,
+            min_china_records=args.min_china_records,
         )
         write_json_file(report, args.report)
         print(

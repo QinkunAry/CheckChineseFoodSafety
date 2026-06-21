@@ -114,6 +114,46 @@ class FsanzTests(unittest.TestCase):
         self.assertEqual(report["status"], "failed")
         self.assertIn("TimeoutError", report["blocking_errors"][0])
 
+    def test_structural_smoke_can_pass_without_china_record(self) -> None:
+        australia_url = CHINA_URL.replace("yunnan-rice-vermicelli", "australian-product")
+        sitemap = f"""<?xml version="1.0"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url><loc>{australia_url}</loc></url>
+        </urlset>""".encode()
+        payloads = {
+            SITEMAP_URL: sitemap,
+            australia_url: (FIXTURES / "australia_recall.html").read_bytes(),
+        }
+        report = build_smoke_report(
+            urls=[australia_url],
+            schema=load_schema(SCHEMA),
+            fetcher=payloads.__getitem__,
+            min_sitemap_recalls=1,
+            min_china_records=0,
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["china_record_count"], 0)
+
+    def test_production_gate_can_require_china_record(self) -> None:
+        australia_url = CHINA_URL.replace("yunnan-rice-vermicelli", "australian-product")
+        sitemap = f"""<?xml version="1.0"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url><loc>{australia_url}</loc></url>
+        </urlset>""".encode()
+        payloads = {
+            SITEMAP_URL: sitemap,
+            australia_url: (FIXTURES / "australia_recall.html").read_bytes(),
+        }
+        report = build_smoke_report(
+            urls=[australia_url],
+            schema=load_schema(SCHEMA),
+            fetcher=payloads.__getitem__,
+            min_sitemap_recalls=1,
+            min_china_records=1,
+        )
+        self.assertEqual(report["status"], "failed")
+        self.assertIn("below minimum 1", report["blocking_errors"][0])
+
 
 if __name__ == "__main__":
     unittest.main()

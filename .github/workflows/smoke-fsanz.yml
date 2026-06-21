@@ -38,12 +38,22 @@ jobs:
           --report reports/fsanz_smoke.json
           --schema schemas/record.schema.json
           --min-sitemap-recalls 100
+          --min-china-records 0
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/auxico-perth-pty-ltd-baixiang-bowl-noodle-pork-bone-flavour-112g-and
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/yuyu-pty-ltd-bestore-pork-jerky-sesame-flavour-100g
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/run-feng-trading-melbourne-pty-ltd-biscuits-milk-flavour-150g
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/silver-pacific-pty-ltd-laohenghe-dressing-sauce-220g
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/updated-17092025-kaisi-australia-gong-sugar-crisp-sesame-flavour-100g
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/woolworths-seafood-salad-250g
+
+      - name: Publish diagnostic summary
+        if: always() && hashFiles('reports/fsanz_smoke.json') != ''
+        shell: bash
+        run: |
+          echo '## FSANZ smoke diagnostic' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat reports/fsanz_smoke.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload diagnostic report
         if: always()

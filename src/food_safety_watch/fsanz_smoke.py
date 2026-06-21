@@ -43,7 +43,10 @@ def build_smoke_report(
     schema: dict[str, object],
     fetcher: Fetcher = fetch_official,
     min_sitemap_recalls: int = 100,
+    min_china_records: int = 0,
 ) -> dict[str, object]:
+    if min_china_records < 0:
+        raise ValueError("min_china_records must not be negative")
     generated_at = datetime.now(timezone.utc).isoformat()
     page_results: list[dict[str, object]] = []
     blocking_errors: list[str] = []
@@ -103,7 +106,7 @@ def build_smoke_report(
         records,
         schema,
         source_id=SOURCE_ID,
-        min_records=1,
+        min_records=min_china_records,
     )
     blocking_errors.extend(str(error) for error in quality["blocking_errors"])
     return {
@@ -114,6 +117,7 @@ def build_smoke_report(
         "sitemap_recall_count": len(discovered),
         "tested_page_count": len(page_results),
         "china_record_count": len(records),
+        "minimum_china_records": min_china_records,
         "page_results": page_results,
         "schema_error_count": quality["schema_error_count"],
         "schema_error_samples": quality["schema_error_samples"],

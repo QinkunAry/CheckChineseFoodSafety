@@ -86,7 +86,7 @@ FUTURE_AI_PLAN.md          独立的 AI 后续计划
 
 FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会话下载。若 FDA 拒绝某些云端 Runner 网络，可以通过仓库变量 `FOOD_SAFETY_FDA_DOWNLOAD_URL` 指定经批准、内容相同的镜像；下载内容仍必须通过 ZIP、Schema 和数据质量检查。
 
-`.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和三条召回详情，验证页面结构、中国原产字段与统一 Schema，并上传诊断报告。它不会提交或发布 FSANZ 数据；通过真实页面验收和再利用条款检查前，该来源保持 `prototype`。
+`.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和固定召回详情，验证页面证据字段，并对实际发现的中国原产记录执行统一 Schema 检查。固定样本中没有中国记录会被报告，但不再误判为站点结构故障。它不会提交或发布 FSANZ 数据；通过覆盖率评估和再利用条款检查前，该来源保持 `prototype`。
 
 ## 路线图
 
