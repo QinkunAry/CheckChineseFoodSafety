@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import __version__
 from .fda import download, parse_archive, write_jsonl
+from .fsanz_smoke import build_smoke_report
 from .quality import build_quality_report, load_schema, read_jsonl, write_json_file
 from .update import QualityCheckFailed, update_fda
 
@@ -48,6 +49,14 @@ def build_parser() -> argparse.ArgumentParser:
     update.add_argument("--report", type=Path, default=Path("reports/fda_quality.json"))
     update.add_argument("--min-records", type=int, default=1_000)
     update.add_argument("--max-drop-percent", type=float, default=25.0)
+
+    smoke = subparsers.add_parser(
+        "smoke-fsanz", help="Read a small set of official FSANZ pages and report parser drift"
+    )
+    smoke.add_argument("--url", action="append", required=True, dest="urls")
+    smoke.add_argument("--schema", type=Path, default=Path("schemas/record.schema.json"))
+    smoke.add_argument("--report", type=Path, default=Path("reports/fsanz_smoke.json"))
+    smoke.add_argument("--min-sitemap-recalls", type=int, default=100)
     return parser
 
 
@@ -100,5 +109,19 @@ def main(argv: list[str] | None = None) -> int:
             f"quality report={args.report}"
         )
         return 0
+
+    if args.command == "smoke-fsanz":
+        report = build_smoke_report(
+            urls=args.urls,
+            schema=load_schema(args.schema),
+            min_sitemap_recalls=args.min_sitemap_recalls,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"FSANZ smoke {report['status']}: "
+            f"{report.get('sitemap_recall_count', 0)} sitemap recalls; "
+            f"{report.get('china_record_count', 0)} China records; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     return 2

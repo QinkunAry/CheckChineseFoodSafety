@@ -32,11 +32,12 @@
   {
     "id": "au_fsanz_recalls",
     "authority": "Food Standards Australia New Zealand",
-    "authority_region": "AU",
+    "authority_region": "AU/NZ",
     "action_type": "recall",
-    "homepage": "https://www.foodstandards.gov.au/industry/food-recalls/recalls",
-    "access_method": "research_required",
-    "status": "candidate"
+    "homepage": "https://www.foodstandards.gov.au/food-recalls",
+    "sitemap_url": "https://www.foodstandards.gov.au/sitemap.xml",
+    "access_method": "sitemap_html",
+    "status": "prototype",
+    "notes": "Parser prototype exists; automated publication waits for live detail-page validation and reuse-term review."
   }
 ]
-

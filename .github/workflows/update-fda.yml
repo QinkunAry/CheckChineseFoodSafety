@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: update-fda-data
@@ -64,3 +65,73 @@ jobs:
             git commit -m "data: update FDA import refusals"
             git push
           fi
+
+      - name: Open or update failure issue
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = "[automation] FDA data update failed";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "The scheduled FDA data update failed.",
+              "",
+              `- Workflow run: ${runUrl}`,
+              `- Branch: ${context.ref}`,
+              `- Commit: ${context.sha}`,
+              `- Trigger: ${context.eventName}`,
+              "",
+              "The previous verified data release remains available. Review the run logs before publishing new data."
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title && !issue.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body
+              });
+            }
+
+      - name: Close resolved failure issue
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = "[automation] FDA data update failed";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title && !issue.pull_request);
+            if (existing) {
+              const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `FDA data update recovered successfully: ${runUrl}`
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: "closed",
+                state_reason: "completed"
+              });
+            }

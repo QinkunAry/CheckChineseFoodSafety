@@ -82,7 +82,11 @@ FUTURE_AI_PLAN.md          独立的 AI 后续计划
 
 `.github/workflows/update-fda.yml` 每周运行一次，也支持在 GitHub Actions 页面手动触发。工作流先执行测试，再抓取候选数据；Schema、重复 ID、最小记录数和数量突降检查全部通过后，才会提交数据与质量报告。失败报告作为 Actions artifact 保留，不发布失败候选。
 
+若更新失败，工作流会创建或更新唯一的 `[automation] FDA data update failed` Issue；后续运行恢复成功时会自动评论并关闭该 Issue。关注仓库 Issues 即可接收失败状态，历史验证数据不会因失败被覆盖。
+
 FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会话下载。若 FDA 拒绝某些云端 Runner 网络，可以通过仓库变量 `FOOD_SAFETY_FDA_DOWNLOAD_URL` 指定经批准、内容相同的镜像；下载内容仍必须通过 ZIP、Schema 和数据质量检查。
+
+`.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和三条召回详情，验证页面结构、中国原产字段与统一 Schema，并上传诊断报告。它不会提交或发布 FSANZ 数据；通过真实页面验收和再利用条款检查前，该来源保持 `prototype`。
 
 ## 路线图
 
@@ -91,7 +95,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 - [x] 验证 FDA 实际数据并加入回归样本
 - [x] 增加 Schema 验证、去重检查、数量突降保护和质量报告
 - [x] 增加 GitHub Actions 测试与每周自动更新
-- [ ] 增加来源级增量下载和更新失败通知
+- [x] 增加 FDA 更新失败通知
+- [ ] 增加来源级增量下载
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入欧盟、新西兰、澳大利亚、日本、韩国、加拿大、香港和台湾来源
 - [ ] 在事实层稳定后提供 API / Agent skill
