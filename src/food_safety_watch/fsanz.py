@@ -40,15 +40,23 @@ class RecallPage:
 
 class _RecallPageParser(HTMLParser):
     _text_tags = {"h1", "h2", "h3", "h4", "h5", "h6", "li", "p", "time"}
+    _ignored_tags = {"script", "style", "noscript", "svg"}
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.blocks: list[str] = []
+        self.text_nodes: list[str] = []
         self.title = ""
         self.time_values: list[str] = []
         self._captures: list[tuple[str, list[str]]] = []
+        self._ignored_depth = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in self._ignored_tags:
+            self._ignored_depth += 1
+            return
+        if self._ignored_depth:
+            return
         attributes = dict(attrs)
         classes = set((attributes.get("class") or "").split())
         is_drupal_field = tag == "div" and bool(
@@ -61,6 +69,11 @@ class _RecallPageParser(HTMLParser):
                 self.time_values.append(attributes["datetime"] or "")
 
     def handle_endtag(self, tag: str) -> None:
+        if tag in self._ignored_tags and self._ignored_depth:
+            self._ignored_depth -= 1
+            return
+        if self._ignored_depth:
+            return
         for index in range(len(self._captures) - 1, -1, -1):
             captured_tag, parts = self._captures[index]
             if captured_tag != tag:
@@ -74,6 +87,11 @@ class _RecallPageParser(HTMLParser):
             break
 
     def handle_data(self, data: str) -> None:
+        if self._ignored_depth:
+            return
+        value = _clean_text(data)
+        if value:
+            self.text_nodes.append(value)
         for _, parts in self._captures:
             parts.append(data)
 
@@ -108,6 +126,17 @@ def _field_values(blocks: list[str]) -> dict[str, str]:
         if inline and inline.group(1).strip().casefold() in FIELD_LABELS:
             current = inline.group(1).strip().casefold()
             values[current] = _clean_text(inline.group(2))
+            continue
+        prefixed_label = next(
+            (
+                label for label in FIELD_LABELS
+                if normalized.startswith(f"{label} ")
+            ),
+            None,
+        )
+        if prefixed_label:
+            current = prefixed_label
+            values[current] = _clean_text(block[len(prefixed_label):])
             continue
         if current:
             values[current] = _clean_text(f"{values[current]} {block}")
@@ -165,7 +194,7 @@ def inspect_recall_page(page: bytes | str, source_url: str) -> RecallPage:
     text = page.decode("utf-8", errors="replace") if isinstance(page, bytes) else page
     parser = _RecallPageParser()
     parser.feed(text)
-    fields = _field_values(parser.blocks)
+    fields = _field_values(parser.text_nodes)
     if "country of origin" not in fields or not fields["country of origin"]:
         raise ValueError("FSANZ recall page does not contain a country of origin")
     if not parser.title:
@@ -226,3 +255,18 @@ def parse_recall_page(
         source_url=source_url,
         retrieved_at=now,
     )
+
+
+def diagnostic_text_nodes(page: bytes | str, *, limit: int = 30) -> list[str]:
+    """Return a small visible-text sample for diagnosing official page drift."""
+    text = page.decode("utf-8", errors="replace") if isinstance(page, bytes) else page
+    parser = _RecallPageParser()
+    parser.feed(text)
+    keywords = ("country", "origin", "problem", "hazard", "product information")
+    relevant = [
+        node for node in parser.text_nodes
+        if any(keyword in node.casefold() for keyword in keywords)
+    ]
+    if relevant:
+        return relevant[:limit]
+    return parser.text_nodes[:limit]

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from food_safety_watch.fsanz import (
     SITEMAP_URL,
+    diagnostic_text_nodes,
     extract_recall_urls,
     inspect_recall_page,
     parse_recall_page,
@@ -81,6 +82,35 @@ class FsanzTests(unittest.TestCase):
         """
         with self.assertRaisesRegex(ValueError, "country of origin"):
             parse_recall_page(page, CHINA_URL)
+
+    def test_parser_reads_fields_from_generic_visible_text_nodes(self) -> None:
+        page = """
+        <html><body><main><h1>Baixiang Bowl Noodle</h1>
+        <dl>
+          <dt><span>Date published</span></dt><dd>17 September 2025</dd>
+          <dt><span>Product information</span></dt><dd>Bowl noodle 112g</dd>
+          <dt><span>Problem</span></dt><dd>Undeclared allergen</dd>
+          <dt><span>Food safety hazard</span></dt><dd>May cause a reaction</dd>
+          <dt><span>Country of origin</span></dt><dd>China</dd>
+          <dt><span>What to do</span></dt><dd>Return the product.</dd>
+        </dl></main></body></html>
+        """
+        record = parse_recall_page(page, CHINA_URL)
+        self.assertIsNotNone(record)
+        assert record is not None
+        self.assertEqual(record.origin_country, "CN")
+        self.assertEqual(record.event_date, "2025-09-17")
+
+    def test_diagnostics_ignore_script_and_keep_evidence_labels(self) -> None:
+        page = """
+        <script>const fake = 'Country of origin';</script>
+        <span>Problem</span><span>Undeclared allergen</span>
+        <span>Country of origin</span><span>China</span>
+        """
+        self.assertEqual(
+            diagnostic_text_nodes(page),
+            ["Problem", "Country of origin"],
+        )
 
     def test_smoke_report_validates_sitemap_pages_and_schema(self) -> None:
         australia_url = CHINA_URL.replace("yunnan-rice-vermicelli", "australian-product")

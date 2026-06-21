@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from .fsanz import (
     SITEMAP_URL,
     SOURCE_ID,
+    diagnostic_text_nodes,
     extract_recall_urls,
     inspect_recall_page,
     parse_recall_page,
@@ -80,6 +81,7 @@ def build_smoke_report(
             blocking_errors.append(f"candidate is absent from sitemap: {url}")
             page_results.append(result)
             continue
+        payload: bytes | None = None
         try:
             payload = fetcher(url)
             detail = inspect_recall_page(payload, url)
@@ -99,6 +101,8 @@ def build_smoke_report(
         except Exception as error:  # keep testing the remaining diagnostic pages
             result["status"] = "error"
             result["error"] = f"{type(error).__name__}: {error}"
+            if payload is not None:
+                result["text_diagnostics"] = diagnostic_text_nodes(payload)
             blocking_errors.append(f"page parse failed: {url}: {result['error']}")
         page_results.append(result)
 
