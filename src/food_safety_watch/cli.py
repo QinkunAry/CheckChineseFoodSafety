@@ -84,6 +84,7 @@ def main(argv: list[str] | None = None) -> int:
             min_records=args.min_records,
         )
         write_json_file(report, args.report)
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         print(
             f"Validation {report['status']}: {report['record_count']} records; "
             f"report={args.report}"

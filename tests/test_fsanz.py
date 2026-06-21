@@ -3,7 +3,12 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from food_safety_watch.fsanz import SITEMAP_URL, extract_recall_urls, parse_recall_page
+from food_safety_watch.fsanz import (
+    SITEMAP_URL,
+    extract_recall_urls,
+    inspect_recall_page,
+    parse_recall_page,
+)
 from food_safety_watch.fsanz_smoke import build_smoke_report
 from food_safety_watch.quality import load_schema
 
@@ -53,6 +58,14 @@ class FsanzTests(unittest.TestCase):
             CHINA_URL,
         )
         self.assertIsNone(record)
+
+    def test_inspector_preserves_non_china_origin_evidence(self) -> None:
+        detail = inspect_recall_page(
+            (FIXTURES / "australia_recall.html").read_text(encoding="utf-8"),
+            CHINA_URL,
+        )
+        self.assertEqual(detail.origin_country_text, "Australia")
+        self.assertEqual(detail.event_date, "2026-05-14")
 
     def test_parser_rejects_non_official_url(self) -> None:
         with self.assertRaises(ValueError):

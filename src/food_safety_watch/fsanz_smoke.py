@@ -5,7 +5,13 @@ from datetime import datetime, timezone
 from typing import Callable
 from urllib.parse import urlparse
 
-from .fsanz import SITEMAP_URL, SOURCE_ID, extract_recall_urls, parse_recall_page
+from .fsanz import (
+    SITEMAP_URL,
+    SOURCE_ID,
+    extract_recall_urls,
+    inspect_recall_page,
+    parse_recall_page,
+)
 from .quality import build_quality_report
 
 
@@ -72,7 +78,12 @@ def build_smoke_report(
             page_results.append(result)
             continue
         try:
-            record = parse_recall_page(fetcher(url), url, retrieved_at=generated_at)
+            payload = fetcher(url)
+            detail = inspect_recall_page(payload, url)
+            result["origin_country_text"] = detail.origin_country_text
+            result["event_date"] = detail.event_date
+            result["product_name"] = detail.title
+            record = parse_recall_page(payload, url, retrieved_at=generated_at)
             if record is None:
                 result["status"] = "parsed_non_china"
             else:
@@ -81,8 +92,6 @@ def build_smoke_report(
                 result.update({
                     "status": "parsed_china",
                     "record_id": normalized["id"],
-                    "event_date": normalized["event_date"],
-                    "product_name": normalized["product_name"],
                 })
         except Exception as error:  # keep testing the remaining diagnostic pages
             result["status"] = "error"

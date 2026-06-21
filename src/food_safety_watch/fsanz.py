@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import re
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from urllib.parse import unquote, urlparse
@@ -26,6 +27,15 @@ FIELD_LABELS = {
     "what to do",
     "contact details",
 }
+
+
+@dataclass(frozen=True, slots=True)
+class RecallPage:
+    title: str
+    event_date: str
+    origin_country_text: str
+    product_information: str
+    reasons: list[str]
 
 
 class _RecallPageParser(HTMLParser):
@@ -144,13 +154,8 @@ def _product_category(value: str) -> str:
     return "other_food"
 
 
-def parse_recall_page(
-    page: bytes | str,
-    source_url: str,
-    *,
-    retrieved_at: str | None = None,
-) -> SafetyRecord | None:
-    """Parse one recall and return it only when FSANZ explicitly names China as origin."""
+def inspect_recall_page(page: bytes | str, source_url: str) -> RecallPage:
+    """Extract and validate evidence fields from one official FSANZ recall page."""
     parsed_url = urlparse(source_url)
     if parsed_url.scheme != "https" or parsed_url.netloc != "www.foodstandards.gov.au":
         raise ValueError("FSANZ source URL must use the official HTTPS host")
@@ -163,9 +168,6 @@ def parse_recall_page(
     fields = _field_values(parser.blocks)
     if "country of origin" not in fields or not fields["country of origin"]:
         raise ValueError("FSANZ recall page does not contain a country of origin")
-    origin = fields["country of origin"]
-    if not _is_china_origin(origin):
-        return None
     if not parser.title:
         raise ValueError("FSANZ recall page does not contain an H1 title")
 
@@ -180,9 +182,28 @@ def parse_recall_page(
     event_date = _normalize_date(
         [fields.get("date published", ""), *parser.time_values, *parser.blocks]
     )
+    return RecallPage(
+        title=parser.title,
+        event_date=event_date,
+        origin_country_text=fields["country of origin"],
+        product_information=fields.get("product information", ""),
+        reasons=reasons,
+    )
+
+
+def parse_recall_page(
+    page: bytes | str,
+    source_url: str,
+    *,
+    retrieved_at: str | None = None,
+) -> SafetyRecord | None:
+    """Parse one recall and return it only when FSANZ explicitly names China as origin."""
+    detail = inspect_recall_page(page, source_url)
+    if not _is_china_origin(detail.origin_country_text):
+        return None
+    parsed_url = urlparse(source_url)
     source_record_id = unquote(parsed_url.path.rstrip("/").rsplit("/", 1)[-1])
     now = retrieved_at or datetime.now(timezone.utc).isoformat()
-    product_text = fields.get("product information", "")
 
     return SafetyRecord(
         id=stable_id(SOURCE_ID, source_record_id),
@@ -191,15 +212,17 @@ def parse_recall_page(
         authority=AUTHORITY,
         authority_region="AU/NZ",
         action_type="recall",
-        event_date=event_date,
+        event_date=detail.event_date,
         origin_country="CN",
         producer_name="",
         producer_location="",
         product_code="",
-        product_category=_product_category(f"{parser.title} {product_text}"),
-        product_name=parser.title,
-        reasons=reasons,
-        hazard_tags=classify_reasons(reasons),
+        product_category=_product_category(
+            f"{detail.title} {detail.product_information}"
+        ),
+        product_name=detail.title,
+        reasons=detail.reasons,
+        hazard_tags=classify_reasons(detail.reasons),
         source_url=source_url,
         retrieved_at=now,
     )
