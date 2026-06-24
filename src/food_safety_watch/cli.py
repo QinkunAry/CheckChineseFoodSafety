@@ -6,9 +6,16 @@ from pathlib import Path
 
 from . import __version__
 from .fda import download, parse_archive, write_jsonl
+from .fsanz_candidates import candidate_fsanz
 from .fsanz_smoke import build_smoke_report
 from .fsanz_inventory import inventory_fsanz, write_url_state
-from .quality import build_quality_report, load_schema, read_jsonl, write_json_file
+from .quality import (
+    build_quality_report,
+    load_schema,
+    read_jsonl,
+    write_json_file,
+    write_jsonl_file,
+)
 from .update import QualityCheckFailed, update_fda
 
 
@@ -73,6 +80,22 @@ def build_parser() -> argparse.ArgumentParser:
     inventory.add_argument(
         "--accept-current", action="store_true",
         help="Replace the URL baseline with the current official sitemap",
+    )
+
+    candidate = subparsers.add_parser(
+        "candidate-fsanz",
+        help="Parse only newly discovered FSANZ recall URLs into candidate records",
+    )
+    candidate.add_argument("--sitemap", type=Path)
+    candidate.add_argument(
+        "--state", type=Path, default=Path("data/state/fsanz_recall_urls.json")
+    )
+    candidate.add_argument("--schema", type=Path, default=Path("schemas/record.schema.json"))
+    candidate.add_argument(
+        "--output", type=Path, default=Path("data/candidates/fsanz_cn.jsonl")
+    )
+    candidate.add_argument(
+        "--report", type=Path, default=Path("reports/fsanz_candidates.json")
     )
     return parser
 
@@ -157,5 +180,21 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0
+
+    if args.command == "candidate-fsanz":
+        report, records = candidate_fsanz(
+            state_path=args.state,
+            sitemap_path=args.sitemap,
+            schema=load_schema(args.schema),
+        )
+        write_jsonl_file(records, args.output)
+        write_json_file(report, args.report)
+        print(
+            f"FSANZ candidates {report['status']}: "
+            f"{report['candidate_url_count']} new URLs; "
+            f"{report['china_record_count']} China records; "
+            f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     return 2

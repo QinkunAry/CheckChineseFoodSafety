@@ -52,6 +52,14 @@ jobs:
           --state data/state/fsanz_recall_urls.json
           --report reports/fsanz_inventory.json
 
+      - name: Build FSANZ candidate records for new URLs
+        run: >-
+          python -m food_safety_watch candidate-fsanz
+          --state data/state/fsanz_recall_urls.json
+          --schema schemas/record.schema.json
+          --output data/candidates/fsanz_cn.jsonl
+          --report reports/fsanz_candidates.json
+
       - name: Publish diagnostic summary
         if: always() && hashFiles('reports/fsanz_smoke.json') != ''
         shell: bash
@@ -68,6 +76,14 @@ jobs:
           else
             echo 'FSANZ inventory report was not generated, likely because an earlier step failed.' >> "$GITHUB_STEP_SUMMARY"
           fi
+          echo '## FSANZ candidate records' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/fsanz_candidates.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/fsanz_candidates.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'FSANZ candidate report was not generated, likely because an earlier step failed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload diagnostic report
         if: always()
@@ -77,5 +93,7 @@ jobs:
           path: |
             reports/fsanz_smoke.json
             reports/fsanz_inventory.json
+            reports/fsanz_candidates.json
+            data/candidates/fsanz_cn.jsonl
           if-no-files-found: warn
           retention-days: 30

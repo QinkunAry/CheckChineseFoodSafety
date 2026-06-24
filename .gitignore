@@ -7,10 +7,13 @@ tests/tmp*/
 dist/
 build/
 data/raw/
+data/candidates/*.jsonl
+!data/candidates/.gitkeep
 data/processed/*.jsonl
 !data/processed/.gitkeep
 !data/processed/fda_cn.jsonl
 reports/.*.tmp
 reports/fsanz_smoke.json
+reports/fsanz_candidates.json
 reports/fsanz_inventory.json
 /tmp*/

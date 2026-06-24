@@ -66,6 +66,7 @@ python -m food_safety_watch validate
 ```text
 data/sources.json          数据源登记表
 data/state/                来源增量状态（非监管事实）
+data/candidates/           候选记录产物（不等于正式发布数据）
 schemas/record.schema.json 统一记录契约
 src/food_safety_watch/     采集与标准化代码
 tests/                     单元测试
@@ -90,6 +91,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 `.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和固定召回详情，验证页面证据字段，并对实际发现的中国原产记录执行统一 Schema 检查。固定样本中没有中国记录会被报告，但不再误判为站点结构故障。它不会提交或发布 FSANZ 数据；通过覆盖率评估和再利用条款检查前，该来源保持 `prototype`。
 
 同一工作流还会把官方 sitemap 与 `data/state/fsanz_recall_urls.json` 中的 345 条基线比较，只报告新增和移除的详情 URL。该基线用于避免未来重复扫描全部历史页面，不代表 345 条记录都属于中国食品或都已进入发布数据集。
+
+当官方 sitemap 出现新增详情 URL 时，`candidate-fsanz` 只抓取这些新增页面，生成 `data/candidates/fsanz_cn.jsonl` 和 `reports/fsanz_candidates.json` 作为 artifact。候选记录用于人工复核 parser、版权/再利用边界和数据质量；在来源状态仍为 `prototype` 时，它不会合并进正式发布数据。
 
 ## 路线图
 

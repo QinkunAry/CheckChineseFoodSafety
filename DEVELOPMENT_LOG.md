@@ -17,6 +17,31 @@
 
 ---
 
+## 2026-06-24 · Round 17 · FSANZ 新 URL 候选记录管线
+
+### 本轮目标
+
+在不发布 FSANZ 正式数据、不改写 URL 基线的前提下，让系统能处理官方 sitemap 中相对基线新增的召回详情页。
+
+### 已完成
+
+- 新增 `candidate-fsanz` 命令；
+- 新增 `fsanz_candidates` 模块，按 `data/state/fsanz_recall_urls.json` 只选择新增 URL；
+- 对新增详情页执行官方 host 限制、字段解析、中国原产过滤和统一 Schema 校验；
+- 输出候选 JSONL 到 `data/candidates/fsanz_cn.jsonl`，诊断报告到 `reports/fsanz_candidates.json`；
+- 将候选管线接入只读 FSANZ workflow，以 artifact 形式保留结果，不提交、不发布、不更新基线；
+- 补充单元测试覆盖无新增 URL、中国与非中国页面分流、解析失败诊断。
+
+### 决策
+
+FSANZ 候选记录仍不是正式发布数据。只有完成复核、版权/再利用条款确认、覆盖率评估后，才可以考虑将该来源升级为可发布数据源。
+
+### 下一轮建议
+
+运行手动 FSANZ workflow，确认新增 candidate artifact 能在无新增 URL 时稳定生成空候选文件；随后开始设计正式数据发布前的人工 review checklist。
+
+---
+
 ## 2026-06-24 · Round 16 · FSANZ scheduled smoke failure triage
 
 ### 诊断

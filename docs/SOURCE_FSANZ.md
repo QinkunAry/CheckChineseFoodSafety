@@ -69,6 +69,19 @@ It does not infer origin and does not publish recall records. The initial
 baseline intentionally avoids re-requesting every historical detail each week;
 historical backfill remains a separate, rate-limited task.
 
+## Candidate records for new URLs
+
+`candidate-fsanz` reads the same sitemap and baseline, fetches only newly
+discovered detail URLs, and emits candidate normalized records plus a diagnostic
+report. Non-China pages are recorded in the report as `parsed_non_china`; pages
+with explicit China origin become JSONL candidate records. Parse failures are
+blocking because they indicate either page drift or an evidence field that needs
+manual review.
+
+Candidate output is not a production release. The workflow uploads
+`data/candidates/fsanz_cn.jsonl` and `reports/fsanz_candidates.json` as artifacts
+for review, without changing the baseline or committing FSANZ records.
+
 ## Reuse review
 
 The official copyright policy is registered at
