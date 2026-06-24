@@ -65,8 +65,13 @@ review, without changing the baseline or committing CFS records.
 
 ## Production gate
 
-1. Run live smoke on at least two China-origin pages and one non-China page.
-2. Confirm applicable reuse and attribution terms.
-3. Add baseline-count and count-drop protection.
-4. Only then consider adding a publishing workflow and changing status from
-   `prototype` to `implemented`.
+CFS must satisfy the shared
+[`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
+before any records are published under `data/processed/`.
+
+Known blockers:
+
+- applicable reuse and attribution terms must be fully recorded;
+- at least one candidate batch must be manually reviewed;
+- production count/drop quality gates must be added;
+- a separate publishing workflow must be implemented and pass.

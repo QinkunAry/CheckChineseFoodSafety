@@ -11,6 +11,9 @@ GitHub 仓库：[QinkunAry/CheckChineseFoodSafety](https://github.com/QinkunAry/
 
 完整产品方向见 [`PRODUCT_GOALS.md`](PRODUCT_GOALS.md)，每轮开发过程见 [`DEVELOPMENT_LOG.md`](DEVELOPMENT_LOG.md)。
 
+新增来源从 `prototype` 升级为 `implemented` 前，必须通过
+[`docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md`](docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)。
+
 ## 第一个目标是什么？
 
 第一个目标不是 AI Agent，也不是通用 skills 平台，而是一条可重复、可审计的数据管道：
@@ -60,6 +63,7 @@ python -m food_safety_watch validate
 - `origin_country` 在 FDA 数据中来自申报制造商所在国家/地区，不能自动推断品牌国籍或全部原料产地。
 - 风险标签是便于检索的项目分类，监管机构原始原因文本始终优先。
 - 中文翻译在进入事实字段前应经过人工或可追踪的审核流程。
+- `prototype` 来源只能生成 smoke、inventory 和 candidate artifact；只有通过发布前 checklist 后，才允许写入 `data/processed/`。
 
 ## 项目结构
 
@@ -71,6 +75,7 @@ schemas/record.schema.json 统一记录契约
 src/food_safety_watch/     采集与标准化代码
 tests/                     单元测试
 docs/ARCHITECTURE.md       架构和路线图
+docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md 来源发布前门禁
 PRODUCT_GOALS.md           最终产品目标与里程碑
 DEVELOPMENT_LOG.md         每轮开发记录
 FUTURE_AI_PLAN.md          独立的 AI 后续计划

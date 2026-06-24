@@ -17,6 +17,31 @@
 
 ---
 
+## 2026-06-24 · Round 21 · Prototype 到 implemented 发布前门禁
+
+### 本轮目标
+
+把 FSANZ/CFS 从 `prototype` 升级到 `implemented` 前必须完成的检查标准写清楚，避免“能抓取”被误认为“可发布”。
+
+### 已完成
+
+- 新增 `docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md`；
+- 将发布前门禁分为来源范围、版权/署名、发现与增量覆盖、字段证据、候选复核、数据质量、自动化失败处理、发布与回滚八类；
+- 明确 `prototype` 来源只能生成 smoke、inventory 和 candidate artifact，不能写入 `data/processed/`；
+- 在 FSANZ 与 CFS source assessment 中引用统一 checklist；
+- 明确 FSANZ/CFS 当前共同 blocker：复用条款、候选批次人工复核、生产质量门禁、独立发布 workflow；
+- 更新 README，说明新增来源升级前必须通过 checklist。
+
+### 决策
+
+以后来源状态变化必须和发布 gate 一起提交。不能只因为 parser、smoke 或 candidate workflow 成功，就把来源标记为 `implemented`。
+
+### 下一轮建议
+
+选择一个 prototype 来源先做 reuse/attribution review；建议从 CFS 开始，因为页面结构和样本范围更小。
+
+---
+
 ## 2026-06-24 · Round 20 · 香港 CFS 新 URL 候选记录管线
 
 ### 本轮目标

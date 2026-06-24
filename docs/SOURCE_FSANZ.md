@@ -43,13 +43,16 @@ used by new code.
 
 ## Production gate
 
-1. Parse at least three current official details, including one explicit China
-   origin and one non-China origin.
-2. Verify publication date, title, problem, hazard, and origin extraction.
-3. Run all normalized records through `record.schema.json`.
-4. Add baseline-count and count-drop protection for this source.
-5. Confirm reuse/attribution requirements.
-6. Only then add a publishing workflow and mark the source `implemented`.
+FSANZ must satisfy the shared
+[`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
+before any records are published under `data/processed/`.
+
+Known blockers:
+
+- applicable reuse and attribution terms must be fully recorded;
+- at least one candidate batch must be manually reviewed;
+- production count/drop quality gates must be added;
+- a separate publishing workflow must be implemented and pass.
 
 ## Read-only smoke workflow
 
