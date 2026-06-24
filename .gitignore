@@ -14,6 +14,7 @@ data/processed/*.jsonl
 !data/processed/fda_cn.jsonl
 reports/.*.tmp
 reports/cfs_smoke.json
+reports/cfs_inventory.json
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json
 reports/fsanz_inventory.json

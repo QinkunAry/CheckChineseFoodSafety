@@ -96,6 +96,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 `.github/workflows/smoke-cfs.yml` 每周只读检查香港 CFS Food Alerts / Allergy Alerts 年度列表和固定详情页，验证 `Issue Date`、`Food Product`、`Place of origin` 和 `Reason For Issuing Alert` 字段，并对中国原产记录执行统一 Schema 检查。CFS 当前也保持 `prototype`，不会提交或发布正式数据。
 
+同一工作流还会把 CFS 当前年度列表与 2025 年列表中的官方详情 URL 和 `data/state/cfs_alert_urls.json` 基线比较，只报告新增和移除 URL。该基线当前覆盖 36 条 alert URL，不代表 36 条都属于中国食品或已进入正式数据集。
+
 ## 路线图
 
 - [x] 确定 evidence-first 数据模型
@@ -104,7 +106,7 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 - [x] 增加 Schema 验证、去重检查、数量突降保护和质量报告
 - [x] 增加 GitHub Actions 测试与每周自动更新
 - [x] 增加 FDA 更新失败通知
-- [ ] 增加来源级增量下载
+- [x] 增加来源级 URL 增量监控
 - [ ] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入欧盟、新西兰、澳大利亚、日本、韩国、加拿大、香港和台湾来源

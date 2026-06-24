@@ -16,6 +16,10 @@ AUTHORITY = "Hong Kong Centre for Food Safety"
 AUTHORITY_REGION = "HK"
 ALERT_INDEX_URL = "https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa.html"
 ALERT_PREFIX = "https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/"
+DEFAULT_INDEX_URLS = [
+    ALERT_INDEX_URL,
+    f"{ALERT_PREFIX}whatsnew_fa_2025.html",
+]
 
 
 @dataclass(frozen=True, slots=True)

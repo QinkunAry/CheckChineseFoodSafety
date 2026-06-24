@@ -39,12 +39,24 @@ China-origin records against `record.schema.json`.
 
 The workflow has only `contents: read` permission and never publishes CFS data.
 
+## Incremental URL baseline
+
+`data/state/cfs_alert_urls.json` records the 36 alert detail URLs present in the
+configured official index pages at baseline creation on 2026-06-24:
+
+- the current CFS Food Alerts / Allergy Alerts index;
+- the 2025 year archive.
+
+`inventory-cfs` compares the current official indexes with this state and
+reports additions and removals. It does not infer origin and does not publish
+alert records. Older year archives can be added later as a deliberate historical
+backfill task.
+
 ## Production gate
 
 1. Run live smoke on at least two China-origin pages and one non-China page.
-2. Add an incremental URL baseline for year index pages.
-3. Build a candidate-only pipeline before any data release.
-4. Confirm applicable reuse and attribution terms.
-5. Add baseline-count and count-drop protection.
-6. Only then consider adding a publishing workflow and changing status from
+2. Build a candidate-only pipeline before any data release.
+3. Confirm applicable reuse and attribution terms.
+4. Add baseline-count and count-drop protection.
+5. Only then consider adding a publishing workflow and changing status from
    `prototype` to `implemented`.

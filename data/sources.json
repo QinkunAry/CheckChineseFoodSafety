@@ -48,6 +48,6 @@
     "homepage": "https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa.html",
     "access_method": "year_index_html",
     "status": "prototype",
-    "notes": "Initial parser smoke targets official Food Alerts / Allergy Alerts pages. Automated publication is not enabled."
+    "notes": "Live parser smoke passed; incremental URL baseline covers 2026 current index and 2025 archive. Automated publication is not enabled."
   }
 ]

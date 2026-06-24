@@ -17,6 +17,33 @@
 
 ---
 
+## 2026-06-24 · Round 19 · 香港 CFS 增量 URL 基线
+
+### 本轮目标
+
+在 CFS smoke workflow 手动运行成功后，建立 CFS 官方年度列表的增量 URL 监控。
+
+### 已完成
+
+- 新增 `inventory-cfs` 命令；
+- 新增 `cfs_inventory` 模块，支持读取多个官方年度 index 并合并去重详情 URL；
+- 新增 `data/state/cfs_alert_urls.json`，保存 2026-06-24 当前 CFS 2026 当前列表与 2025 年列表的 36 条 alert URL 基线；
+- 将 CFS inventory 接入 `smoke-cfs.yml`，作为只读诊断步骤和 artifact；
+- 补充 CFS inventory 单元测试，覆盖新增/移除、跨年度合并、状态读写和非法状态；
+- 更新 CFS 来源文档与 README，明确该基线不代表正式发布数据。
+
+### 验证结果
+
+- 首次 `--accept-current` 生成基线：36 current、36 new、0 removed；
+- 第二次重复运行结果稳定：36 current、0 new、0 removed；
+- 全套单元测试通过。
+
+### 下一轮建议
+
+实现 `candidate-cfs`：只抓取相对基线新增的 CFS alert 详情页，解析中国来源记录并生成候选 JSONL/report artifact，仍不发布正式数据。
+
+---
+
 ## 2026-06-24 · Round 18 · 香港 CFS 来源 smoke prototype
 
 ### 本轮目标

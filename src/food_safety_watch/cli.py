@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from . import __version__
+from .cfs_inventory import inventory_cfs, write_url_state as write_cfs_url_state
 from .cfs_smoke import build_smoke_report as build_cfs_smoke_report
 from .fda import download, parse_archive, write_jsonl
 from .fsanz_candidates import candidate_fsanz
@@ -108,6 +109,21 @@ def build_parser() -> argparse.ArgumentParser:
     cfs_smoke.add_argument("--report", type=Path, default=Path("reports/cfs_smoke.json"))
     cfs_smoke.add_argument("--min-index-alerts", type=int, default=1)
     cfs_smoke.add_argument("--min-china-records", type=int, default=1)
+
+    cfs_inventory = subparsers.add_parser(
+        "inventory-cfs", help="Compare official Hong Kong CFS alert indexes with a URL baseline"
+    )
+    cfs_inventory.add_argument("--index-url", action="append", dest="index_urls")
+    cfs_inventory.add_argument(
+        "--state", type=Path, default=Path("data/state/cfs_alert_urls.json")
+    )
+    cfs_inventory.add_argument(
+        "--report", type=Path, default=Path("reports/cfs_inventory.json")
+    )
+    cfs_inventory.add_argument(
+        "--accept-current", action="store_true",
+        help="Replace the CFS URL baseline with the current official indexes",
+    )
     return parser
 
 
@@ -223,5 +239,20 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('china_record_count', 0)} China records; report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "inventory-cfs":
+        report, current_urls = inventory_cfs(
+            state_path=args.state,
+            index_urls=args.index_urls,
+        )
+        write_json_file(report, args.report)
+        if args.accept_current:
+            write_cfs_url_state(current_urls, args.state, index_urls=report["index_urls"])
+        print(
+            f"CFS inventory {report['status']}: {report['current_count']} current; "
+            f"{report['new_url_count']} new; {report['removed_url_count']} removed; "
+            f"report={args.report}"
+        )
+        return 0
 
     return 2

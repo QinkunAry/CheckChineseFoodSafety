@@ -45,6 +45,14 @@ jobs:
           --url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/2025_596.html
           --url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/2026_612.html
 
+      - name: Compare CFS alert URL inventory
+        run: >-
+          python -m food_safety_watch inventory-cfs
+          --state data/state/cfs_alert_urls.json
+          --report reports/cfs_inventory.json
+          --index-url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa.html
+          --index-url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa_2025.html
+
       - name: Publish diagnostic summary
         if: always() && hashFiles('reports/cfs_smoke.json') != ''
         shell: bash
@@ -53,12 +61,22 @@ jobs:
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat reports/cfs_smoke.json >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo '## CFS URL inventory' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/cfs_inventory.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/cfs_inventory.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'CFS inventory report was not generated, likely because an earlier step failed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload diagnostic report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: cfs-smoke-report
-          path: reports/cfs_smoke.json
+          path: |
+            reports/cfs_smoke.json
+            reports/cfs_inventory.json
           if-no-files-found: warn
           retention-days: 30
