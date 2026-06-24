@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from . import __version__
+from .cfs_smoke import build_smoke_report as build_cfs_smoke_report
 from .fda import download, parse_archive, write_jsonl
 from .fsanz_candidates import candidate_fsanz
 from .fsanz_smoke import build_smoke_report
@@ -97,6 +98,16 @@ def build_parser() -> argparse.ArgumentParser:
     candidate.add_argument(
         "--report", type=Path, default=Path("reports/fsanz_candidates.json")
     )
+
+    cfs_smoke = subparsers.add_parser(
+        "smoke-cfs", help="Read official Hong Kong CFS alert pages and report parser drift"
+    )
+    cfs_smoke.add_argument("--url", action="append", required=True, dest="urls")
+    cfs_smoke.add_argument("--index-url", action="append", dest="index_urls")
+    cfs_smoke.add_argument("--schema", type=Path, default=Path("schemas/record.schema.json"))
+    cfs_smoke.add_argument("--report", type=Path, default=Path("reports/cfs_smoke.json"))
+    cfs_smoke.add_argument("--min-index-alerts", type=int, default=1)
+    cfs_smoke.add_argument("--min-china-records", type=int, default=1)
     return parser
 
 
@@ -194,6 +205,22 @@ def main(argv: list[str] | None = None) -> int:
             f"{report['candidate_url_count']} new URLs; "
             f"{report['china_record_count']} China records; "
             f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "smoke-cfs":
+        report = build_cfs_smoke_report(
+            urls=args.urls,
+            index_urls=args.index_urls,
+            schema=load_schema(args.schema),
+            min_index_alerts=args.min_index_alerts,
+            min_china_records=args.min_china_records,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"CFS smoke {report['status']}: "
+            f"{report.get('index_alert_count', 0)} indexed alerts; "
+            f"{report.get('china_record_count', 0)} China records; report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
 

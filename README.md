@@ -94,6 +94,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 当官方 sitemap 出现新增详情 URL 时，`candidate-fsanz` 只抓取这些新增页面，生成 `data/candidates/fsanz_cn.jsonl` 和 `reports/fsanz_candidates.json` 作为 artifact。候选记录用于人工复核 parser、版权/再利用边界和数据质量；在来源状态仍为 `prototype` 时，它不会合并进正式发布数据。
 
+`.github/workflows/smoke-cfs.yml` 每周只读检查香港 CFS Food Alerts / Allergy Alerts 年度列表和固定详情页，验证 `Issue Date`、`Food Product`、`Place of origin` 和 `Reason For Issuing Alert` 字段，并对中国原产记录执行统一 Schema 检查。CFS 当前也保持 `prototype`，不会提交或发布正式数据。
+
 ## 路线图
 
 - [x] 确定 evidence-first 数据模型
@@ -103,6 +105,7 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 - [x] 增加 GitHub Actions 测试与每周自动更新
 - [x] 增加 FDA 更新失败通知
 - [ ] 增加来源级增量下载
+- [ ] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入欧盟、新西兰、澳大利亚、日本、韩国、加拿大、香港和台湾来源
 - [ ] 在事实层稳定后提供 API / Agent skill

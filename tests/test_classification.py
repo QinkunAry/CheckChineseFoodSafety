@@ -18,6 +18,10 @@ class ClassificationTests(unittest.TestCase):
     def test_unknown_reason_is_explicit(self) -> None:
         self.assertEqual(classify_reasons(["Unmapped reason"]), ["other_or_unclassified"])
 
+    def test_cfs_microbiological_terms_are_classified(self) -> None:
+        tags = classify_reasons(["Bacillus cereus and coliform bacteria detected."])
+        self.assertIn("microbiological", tags)
+
     def test_stable_id_is_deterministic(self) -> None:
         self.assertEqual(stable_id("source", "record"), stable_id("source", "record"))
 

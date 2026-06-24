@@ -6,6 +6,7 @@ RULES: dict[str, tuple[str, ...]] = {
     "microbiological": (
         r"\bsalmonella\b", r"\blisteria\b", r"\bbacteria\b", r"\bpathogen",
         r"\bfilthy\b", r"\bdecomposed\b", r"\bmold\b", r"\bmicrobial\b",
+        r"\bbacillus\b", r"\be\.?\s*coli\b", r"\bcoliform\b", r"\bmould\b",
     ),
     "chemical": (
         r"\bpesticide", r"\bchemical", r"\bmelamine\b", r"\blead\b",

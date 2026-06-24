@@ -39,5 +39,15 @@
     "access_method": "sitemap_html",
     "status": "prototype",
     "notes": "Live parser smoke passed; incremental URL baseline exists. Automated publication waits for coverage and reuse-term review."
+  },
+  {
+    "id": "hk_cfs_alerts",
+    "authority": "Hong Kong Centre for Food Safety",
+    "authority_region": "HK",
+    "action_type": "safety_alert",
+    "homepage": "https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa.html",
+    "access_method": "year_index_html",
+    "status": "prototype",
+    "notes": "Initial parser smoke targets official Food Alerts / Allergy Alerts pages. Automated publication is not enabled."
   }
 ]

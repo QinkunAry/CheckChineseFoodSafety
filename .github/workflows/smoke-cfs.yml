@@ -1,0 +1,64 @@
+name: Smoke test Hong Kong CFS source
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 5 * * 3"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-cfs-source
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Smoke test official CFS pages
+        run: >-
+          python -m food_safety_watch smoke-cfs
+          --report reports/cfs_smoke.json
+          --schema schemas/record.schema.json
+          --min-index-alerts 20
+          --min-china-records 2
+          --index-url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa.html
+          --index-url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/whatsnew_fa_2025.html
+          --url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/2025_608.html
+          --url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/2025_596.html
+          --url https://www.cfs.gov.hk/english/whatsnew/whatsnew_fa/2026_612.html
+
+      - name: Publish diagnostic summary
+        if: always() && hashFiles('reports/cfs_smoke.json') != ''
+        shell: bash
+        run: |
+          echo '## CFS smoke diagnostic' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat reports/cfs_smoke.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cfs-smoke-report
+          path: reports/cfs_smoke.json
+          if-no-files-found: warn
+          retention-days: 30

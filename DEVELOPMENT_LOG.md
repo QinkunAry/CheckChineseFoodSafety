@@ -17,6 +17,33 @@
 
 ---
 
+## 2026-06-24 · Round 18 · 香港 CFS 来源 smoke prototype
+
+### 本轮目标
+
+接入第三个官方来源的最小可验证链路：香港 Centre for Food Safety 的 Food Alerts / Allergy Alerts 页面。
+
+### 已完成
+
+- 新增 `hk_cfs_alerts` 来源登记，状态为 `prototype`；
+- 新增 `cfs` 解析模块，支持从官方年度列表发现详情 URL；
+- 新增 CFS 详情页字段解析：标题、发布日期、食品产品、产品说明、`Place of origin` 和 `Reason For Issuing Alert`；
+- 新增中国原产过滤，支持 `China` 及明确的中国大陆省级地区表述；
+- 新增 `smoke-cfs` 命令；
+- 新增只读 GitHub Actions workflow：`smoke-cfs.yml`；
+- 新增 CFS 单元测试和 fixture，覆盖中国来源、非中国来源、缺失产地和 Schema smoke；
+- 新增 `docs/SOURCE_CFS.md`，记录来源边界、过滤规则和 production gate。
+
+### 决策
+
+CFS 第一阶段只做 smoke，不发布正式数据，不做增量候选。等 live workflow 稳定后，再进入 `inventory-cfs` 与 `candidate-cfs`。
+
+### 下一轮建议
+
+手动运行 `Smoke test Hong Kong CFS source`。若通过，下一轮建立 CFS 年度列表 URL 基线，并按新增详情页生成候选记录 artifact。
+
+---
+
 ## 2026-06-24 · Round 17 · FSANZ 新 URL 候选记录管线
 
 ### 本轮目标
