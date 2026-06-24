@@ -17,6 +17,26 @@
 
 ---
 
+## 2026-06-24 · Round 16 · FSANZ scheduled smoke failure triage
+
+### 诊断
+
+- GitHub Actions 列表显示 `Smoke test FSANZ source #5` 定时运行失败，而 `#4` 手动运行通过；
+- 本地沙箱网络复现为 sitemap 请求被拒绝，报告 `0 sitemap recalls`，该错误来自本地网络限制；
+- 使用外部网络验证当前代码，`smoke-fsanz` 通过：345 条 sitemap recall URL，0 条中国记录；
+- `inventory-fsanz` 通过：345 current，0 new，0 removed。
+
+### 本轮修复
+
+- 加固 GitHub Actions summary：如果 smoke 步骤失败导致 inventory 报告未生成，summary 不再无条件 `cat reports/fsanz_inventory.json`；
+- 将 `reports/fsanz_smoke.json` 加入 `.gitignore`，避免本地 smoke 运行产物被误提交。
+
+### 下一步
+
+重新手动运行 `Smoke test FSANZ source`。如果当前 `main` 仍失败，需要打开失败 run 的 `FSANZ smoke diagnostic` 或 `Smoke test official FSANZ pages` 日志继续定位；如果通过，则进入 FSANZ 新 URL 候选记录生成阶段。
+
+---
+
 ## 2026-06-22 · Round 15 · FSANZ 增量 URL 基线
 
 ### 本轮目标
