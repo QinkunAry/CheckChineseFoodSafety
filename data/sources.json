@@ -38,6 +38,6 @@
     "sitemap_url": "https://www.foodstandards.gov.au/sitemap.xml",
     "access_method": "sitemap_html",
     "status": "prototype",
-    "notes": "Parser prototype exists; automated publication waits for live detail-page validation and reuse-term review."
+    "notes": "Live parser smoke passed; incremental URL baseline exists. Automated publication waits for coverage and reuse-term review."
   }
 ]

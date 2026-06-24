@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+.tmp-test/
+tests/tmp*/
 dist/
 build/
 data/raw/
@@ -9,4 +11,5 @@ data/processed/*.jsonl
 !data/processed/.gitkeep
 !data/processed/fda_cn.jsonl
 reports/.*.tmp
+reports/fsanz_inventory.json
 /tmp*/

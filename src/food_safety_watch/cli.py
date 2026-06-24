@@ -7,6 +7,7 @@ from pathlib import Path
 from . import __version__
 from .fda import download, parse_archive, write_jsonl
 from .fsanz_smoke import build_smoke_report
+from .fsanz_inventory import inventory_fsanz, write_url_state
 from .quality import build_quality_report, load_schema, read_jsonl, write_json_file
 from .update import QualityCheckFailed, update_fda
 
@@ -58,6 +59,21 @@ def build_parser() -> argparse.ArgumentParser:
     smoke.add_argument("--report", type=Path, default=Path("reports/fsanz_smoke.json"))
     smoke.add_argument("--min-sitemap-recalls", type=int, default=100)
     smoke.add_argument("--min-china-records", type=int, default=0)
+
+    inventory = subparsers.add_parser(
+        "inventory-fsanz", help="Compare the official FSANZ sitemap with a URL baseline"
+    )
+    inventory.add_argument("--sitemap", type=Path)
+    inventory.add_argument(
+        "--state", type=Path, default=Path("data/state/fsanz_recall_urls.json")
+    )
+    inventory.add_argument(
+        "--report", type=Path, default=Path("reports/fsanz_inventory.json")
+    )
+    inventory.add_argument(
+        "--accept-current", action="store_true",
+        help="Replace the URL baseline with the current official sitemap",
+    )
     return parser
 
 
@@ -126,5 +142,20 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('china_record_count', 0)} China records; report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "inventory-fsanz":
+        report, current_urls = inventory_fsanz(
+            state_path=args.state,
+            sitemap_path=args.sitemap,
+        )
+        write_json_file(report, args.report)
+        if args.accept_current:
+            write_url_state(current_urls, args.state)
+        print(
+            f"FSANZ inventory {report['status']}: {report['current_count']} current; "
+            f"{report['new_url_count']} new; {report['removed_url_count']} removed; "
+            f"report={args.report}"
+        )
+        return 0
 
     return 2

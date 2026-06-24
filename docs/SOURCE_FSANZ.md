@@ -6,9 +6,9 @@ Food Standards Australia New Zealand (FSANZ) is the preferred second-source
 prototype. It exercises a different regulatory action (`recall`) from FDA import
 refusals and exposes recall detail URLs through its official sitemap.
 
-The source is **not yet enabled for automated publication**. Production status
-requires a live end-to-end sample to pass parsing and schema checks on GitHub
-Actions, plus confirmation of the site's reuse terms.
+The source is **not yet enabled for automated publication**. A live end-to-end
+sample passed on GitHub Actions on 2026-06-22. Production status still requires
+coverage assessment and confirmation of the site's reuse terms.
 
 ## Official endpoints
 
@@ -38,8 +38,8 @@ used by new code.
 - New Zealand MPI's recall pages returned an Incapsula challenge in the same
   source spike, so MPI is deferred rather than bypassed.
 - Repeated live FSANZ detail/API requests from the local development environment
-  timed out. The parser is therefore covered by a representative fixed fixture,
-  but its selectors still require validation against a fresh official page.
+  timed out, but the GitHub Actions smoke workflow successfully validated the
+  parser against current official details on 2026-06-22.
 
 ## Production gate
 
@@ -59,3 +59,21 @@ structure, validates any China-origin records against the shared schema, and
 uploads `fsanz_smoke.json` even when the smoke command fails. A zero-China
 result is reported but does not mean the source structure is broken. It has
 only `contents: read` permission and never publishes source data.
+
+## Incremental URL baseline
+
+`data/state/fsanz_recall_urls.json` records the 345 recall-detail URLs present in
+the official sitemap at baseline creation on 2026-06-22. `inventory-fsanz`
+compares the current sitemap with this state and reports additions and removals.
+It does not infer origin and does not publish recall records. The initial
+baseline intentionally avoids re-requesting every historical detail each week;
+historical backfill remains a separate, rate-limited task.
+
+## Reuse review
+
+The official copyright policy is registered at
+<https://www.foodstandards.gov.au/legal-policies/copyright>. Until its applicable
+licence and attribution wording are fully recorded, the project takes the
+conservative path: no page images or full HTML mirrors, only normalized facts,
+short official reason text, and direct source links. This review remains a
+production blocker rather than an assumed permission.

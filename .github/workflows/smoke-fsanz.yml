@@ -46,6 +46,12 @@ jobs:
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/updated-17092025-kaisi-australia-gong-sugar-crisp-sesame-flavour-100g
           --url https://www.foodstandards.gov.au/food-recalls/recall-alert/woolworths-seafood-salad-250g
 
+      - name: Compare recall URL inventory
+        run: >-
+          python -m food_safety_watch inventory-fsanz
+          --state data/state/fsanz_recall_urls.json
+          --report reports/fsanz_inventory.json
+
       - name: Publish diagnostic summary
         if: always() && hashFiles('reports/fsanz_smoke.json') != ''
         shell: bash
@@ -54,12 +60,18 @@ jobs:
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat reports/fsanz_smoke.json >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo '## FSANZ URL inventory' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat reports/fsanz_inventory.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload diagnostic report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: fsanz-smoke-report
-          path: reports/fsanz_smoke.json
+          path: |
+            reports/fsanz_smoke.json
+            reports/fsanz_inventory.json
           if-no-files-found: warn
           retention-days: 30
