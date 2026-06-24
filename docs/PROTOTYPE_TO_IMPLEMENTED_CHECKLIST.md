@@ -121,4 +121,4 @@ operationally stable, and reviewable by a human maintainer.
 | --- | --- | --- |
 | FDA Import Refusals | `implemented` | Existing production source. |
 | FSANZ Recalls | `prototype` | Reuse terms, reviewed candidate batch, production quality gate, publishing workflow. |
-| Hong Kong CFS Alerts | `prototype` | Reuse terms, reviewed candidate batch, production quality gate, publishing workflow. |
+| Hong Kong CFS Alerts | `prototype` | Prior written authorization or equivalent reuse basis, reviewed candidate batch, production quality gate, publishing workflow. |

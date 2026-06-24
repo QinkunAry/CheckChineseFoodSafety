@@ -82,7 +82,6 @@ def build_smoke_report(
             detail = inspect_alert_page(payload, url)
             result["origin_country_text"] = detail.origin_text
             result["event_date"] = detail.event_date
-            result["product_name"] = detail.title
             record = parse_alert_page(payload, url, retrieved_at=generated_at)
             if record is None:
                 result["status"] = "parsed_non_china"

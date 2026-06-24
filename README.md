@@ -103,7 +103,9 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 同一工作流还会把 CFS 当前年度列表与 2025 年列表中的官方详情 URL 和 `data/state/cfs_alert_urls.json` 基线比较，只报告新增和移除 URL。该基线当前覆盖 36 条 alert URL，不代表 36 条都属于中国食品或已进入正式数据集。
 
-当 CFS 官方列表出现新增详情 URL 时，`candidate-cfs` 只抓取这些新增页面，生成 `data/candidates/cfs_cn.jsonl` 和 `reports/cfs_candidates.json` 作为 artifact。候选记录用于人工复核，不会自动合并进正式发布数据。
+当 CFS 官方列表出现新增详情 URL 时，`candidate-cfs` 只抓取这些新增页面，在 runner 内生成 `data/candidates/cfs_cn.jsonl` 和 `reports/cfs_candidates.json`。在 CFS 授权边界明确前，workflow 只上传诊断报告 artifact，不上传候选 JSONL；候选记录不会自动合并进正式发布数据。
+
+CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后，才可复制、分发、传播或公开提供其版权作品。因此在授权或等效复用依据记录前，CFS 保持 `prototype`；workflow 只上传最小诊断报告，不上传包含官方原因文本的候选 JSONL。
 
 ## 路线图
 

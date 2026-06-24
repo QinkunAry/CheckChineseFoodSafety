@@ -97,6 +97,5 @@ jobs:
             reports/cfs_smoke.json
             reports/cfs_inventory.json
             reports/cfs_candidates.json
-            data/candidates/cfs_cn.jsonl
           if-no-files-found: warn
           retention-days: 30

@@ -59,9 +59,28 @@ discovered detail URLs, and emits candidate normalized records plus a diagnostic
 report. Non-China pages are recorded in the report as `parsed_non_china`; pages
 with explicit China origin become JSONL candidate records.
 
-Candidate output is not a production release. The workflow uploads
-`data/candidates/cfs_cn.jsonl` and `reports/cfs_candidates.json` as artifacts for
-review, without changing the baseline or committing CFS records.
+Candidate output is not a production release. Because CFS reuse terms require
+prior written authorization for reproduction, distribution, dissemination or
+making copyright works available to the public, the workflow uploads only
+diagnostic reports and does not upload `data/candidates/cfs_cn.jsonl`.
+
+## Reuse review
+
+The CFS footer links both `Copyright Notice` and `Disclaimer` to
+<https://www.cfs.gov.hk/english/notices/notices.html>. The notice states that
+the Government of the Hong Kong Special Administrative Region owns the copyright
+works on the website, and that reproduction, adaptation, distribution,
+dissemination or making those works publicly available requires prior written
+authorization from the Food and Environmental Hygiene Department.
+
+Project decision:
+
+- CFS remains `prototype`;
+- no CFS records may be published under `data/processed/` until permission or a
+  clearer reuse basis is recorded;
+- do not commit or upload full CFS HTML, page images, or candidate JSONL records
+  containing official reason text;
+- workflow reports should stay minimal and favor URL/status/count diagnostics.
 
 ## Production gate
 
@@ -71,7 +90,8 @@ before any records are published under `data/processed/`.
 
 Known blockers:
 
-- applicable reuse and attribution terms must be fully recorded;
+- prior written authorization or an equivalent documented reuse basis is needed
+  before publishing normalized CFS records;
 - at least one candidate batch must be manually reviewed;
 - production count/drop quality gates must be added;
 - a separate publishing workflow must be implemented and pass.

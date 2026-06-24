@@ -17,6 +17,36 @@
 
 ---
 
+## 2026-06-24 · Round 22 · CFS reuse/attribution review
+
+### 本轮目标
+
+核对香港 CFS 官方版权/免责声明，判断该来源是否可以进入正式发布。
+
+### 已发现
+
+- CFS 页脚模板中的 `Copyright Notice` 与 `Disclaimer` 指向 `https://www.cfs.gov.hk/english/notices/notices.html`；
+- 该 notice 将网站文本、图像和数据汇编等内容列为版权保护对象；
+- 复制、改编、分发、传播或向公众提供这些版权作品，需要 Food and Environmental Hygiene Department 事先书面授权。
+
+### 本轮修复
+
+- 在 `docs/SOURCE_CFS.md` 增加 reuse review；
+- 明确 CFS 在获得授权或等效复用依据前不能写入 `data/processed/`；
+- 从 CFS smoke/candidate 诊断报告中移除官方标题文本，降低未授权公开传播的风险；
+- CFS workflow 不再上传 `data/candidates/cfs_cn.jsonl` artifact，仅上传最小诊断报告；
+- 更新 README 与 shared checklist 中 CFS 的 blocker。
+
+### 决策
+
+CFS 继续保持 `prototype`。当前可以做结构健康监控和最小诊断，但不能发布标准化 CFS 记录快照。
+
+### 下一轮建议
+
+若要推进 CFS 到 `implemented`，需要先联系或确认 FEHD/CFS 对标准化事实数据再利用的授权边界；否则应转向下一个来源 spike，例如欧盟 RASFF。
+
+---
+
 ## 2026-06-24 · Round 21 · Prototype 到 implemented 发布前门禁
 
 ### 本轮目标
