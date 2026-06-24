@@ -17,6 +17,31 @@
 
 ---
 
+## 2026-06-24 · Round 20 · 香港 CFS 新 URL 候选记录管线
+
+### 本轮目标
+
+在 CFS inventory workflow 手动运行成功后，建立 CFS 新增详情页的候选记录生成流程。
+
+### 已完成
+
+- 新增 `candidate-cfs` 命令；
+- 新增 `cfs_candidates` 模块，按 `data/state/cfs_alert_urls.json` 只选择新增 URL；
+- 对新增详情页执行官方 host 限制、字段解析、中国原产过滤和统一 Schema 校验；
+- 输出候选 JSONL 到 `data/candidates/cfs_cn.jsonl`，诊断报告到 `reports/cfs_candidates.json`；
+- 将候选管线接入只读 CFS workflow，以 artifact 形式保留结果，不提交、不发布、不更新基线；
+- 补充单元测试覆盖无新增 URL、中国与非中国页面分流、解析失败诊断。
+
+### 决策
+
+CFS 候选记录仍不是正式发布数据。只有完成复核、版权/再利用条款确认、覆盖率评估后，才可以考虑将该来源升级为可发布数据源。
+
+### 下一轮建议
+
+手动运行 `Smoke test Hong Kong CFS source`。若通过，下一轮可以建立正式发布前的 review checklist，或转向欧盟 RASFF source spike。
+
+---
+
 ## 2026-06-24 · Round 19 · 香港 CFS 增量 URL 基线
 
 ### 本轮目标

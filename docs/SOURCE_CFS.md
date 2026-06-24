@@ -52,11 +52,21 @@ reports additions and removals. It does not infer origin and does not publish
 alert records. Older year archives can be added later as a deliberate historical
 backfill task.
 
+## Candidate records for new URLs
+
+`candidate-cfs` reads the same official indexes and baseline, fetches only newly
+discovered detail URLs, and emits candidate normalized records plus a diagnostic
+report. Non-China pages are recorded in the report as `parsed_non_china`; pages
+with explicit China origin become JSONL candidate records.
+
+Candidate output is not a production release. The workflow uploads
+`data/candidates/cfs_cn.jsonl` and `reports/cfs_candidates.json` as artifacts for
+review, without changing the baseline or committing CFS records.
+
 ## Production gate
 
 1. Run live smoke on at least two China-origin pages and one non-China page.
-2. Build a candidate-only pipeline before any data release.
-3. Confirm applicable reuse and attribution terms.
-4. Add baseline-count and count-drop protection.
-5. Only then consider adding a publishing workflow and changing status from
+2. Confirm applicable reuse and attribution terms.
+3. Add baseline-count and count-drop protection.
+4. Only then consider adding a publishing workflow and changing status from
    `prototype` to `implemented`.

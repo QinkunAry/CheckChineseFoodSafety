@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from . import __version__
+from .cfs_candidates import candidate_cfs
 from .cfs_inventory import inventory_cfs, write_url_state as write_cfs_url_state
 from .cfs_smoke import build_smoke_report as build_cfs_smoke_report
 from .fda import download, parse_archive, write_jsonl
@@ -123,6 +124,22 @@ def build_parser() -> argparse.ArgumentParser:
     cfs_inventory.add_argument(
         "--accept-current", action="store_true",
         help="Replace the CFS URL baseline with the current official indexes",
+    )
+
+    cfs_candidate = subparsers.add_parser(
+        "candidate-cfs",
+        help="Parse only newly discovered Hong Kong CFS alert URLs into candidate records",
+    )
+    cfs_candidate.add_argument("--index-url", action="append", dest="index_urls")
+    cfs_candidate.add_argument(
+        "--state", type=Path, default=Path("data/state/cfs_alert_urls.json")
+    )
+    cfs_candidate.add_argument("--schema", type=Path, default=Path("schemas/record.schema.json"))
+    cfs_candidate.add_argument(
+        "--output", type=Path, default=Path("data/candidates/cfs_cn.jsonl")
+    )
+    cfs_candidate.add_argument(
+        "--report", type=Path, default=Path("reports/cfs_candidates.json")
     )
     return parser
 
@@ -254,5 +271,21 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0
+
+    if args.command == "candidate-cfs":
+        report, records = candidate_cfs(
+            state_path=args.state,
+            index_urls=args.index_urls,
+            schema=load_schema(args.schema),
+        )
+        write_jsonl_file(records, args.output)
+        write_json_file(report, args.report)
+        print(
+            f"CFS candidates {report['status']}: "
+            f"{report['candidate_url_count']} new URLs; "
+            f"{report['china_record_count']} China records; "
+            f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     return 2

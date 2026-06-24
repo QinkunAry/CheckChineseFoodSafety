@@ -13,6 +13,7 @@ data/processed/*.jsonl
 !data/processed/.gitkeep
 !data/processed/fda_cn.jsonl
 reports/.*.tmp
+reports/cfs_candidates.json
 reports/cfs_smoke.json
 reports/cfs_inventory.json
 reports/fsanz_smoke.json

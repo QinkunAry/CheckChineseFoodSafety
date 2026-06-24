@@ -98,6 +98,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 同一工作流还会把 CFS 当前年度列表与 2025 年列表中的官方详情 URL 和 `data/state/cfs_alert_urls.json` 基线比较，只报告新增和移除 URL。该基线当前覆盖 36 条 alert URL，不代表 36 条都属于中国食品或已进入正式数据集。
 
+当 CFS 官方列表出现新增详情 URL 时，`candidate-cfs` 只抓取这些新增页面，生成 `data/candidates/cfs_cn.jsonl` 和 `reports/cfs_candidates.json` 作为 artifact。候选记录用于人工复核，不会自动合并进正式发布数据。
+
 ## 路线图
 
 - [x] 确定 evidence-first 数据模型
@@ -107,7 +109,7 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 - [x] 增加 GitHub Actions 测试与每周自动更新
 - [x] 增加 FDA 更新失败通知
 - [x] 增加来源级 URL 增量监控
-- [ ] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
+- [x] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入欧盟、新西兰、澳大利亚、日本、韩国、加拿大、香港和台湾来源
 - [ ] 在事实层稳定后提供 API / Agent skill
