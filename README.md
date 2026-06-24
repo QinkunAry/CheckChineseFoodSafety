@@ -107,6 +107,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后，才可复制、分发、传播或公开提供其版权作品。因此在授权或等效复用依据记录前，CFS 保持 `prototype`；workflow 只上传最小诊断报告，不上传包含官方原因文本的候选 JSONL。
 
+欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
+
 ## 路线图
 
 - [x] 确定 evidence-first 数据模型

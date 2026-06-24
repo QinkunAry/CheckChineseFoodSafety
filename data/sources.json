@@ -17,8 +17,11 @@
     "authority_region": "EU",
     "action_type": "mixed_alerts",
     "homepage": "https://webgate.ec.europa.eu/rasff-window/screen/search",
-    "access_method": "research_required",
-    "status": "candidate"
+    "dataset_url": "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en",
+    "metadata_url": "https://data.europa.eu/api/hub/repo/datasets/restored_rasff",
+    "access_method": "data_europa_api_research",
+    "status": "candidate",
+    "notes": "Official data.europa metadata exposes a CC BY 4.0 RASFF JSON distribution for 2020 onward, but the API guide download returned 404 on 2026-06-24; live endpoint and auth requirements still need confirmation."
   },
   {
     "id": "nz_mpi_recalls",

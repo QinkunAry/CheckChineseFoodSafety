@@ -120,5 +120,6 @@ operationally stable, and reviewable by a human maintainer.
 | Source | Status | Implemented blockers |
 | --- | --- | --- |
 | FDA Import Refusals | `implemented` | Existing production source. |
+| EU RASFF | `candidate` | API guide/endpoint confirmation, live sample payload, field mapping, smoke workflow, prototype gate. |
 | FSANZ Recalls | `prototype` | Reuse terms, reviewed candidate batch, production quality gate, publishing workflow. |
 | Hong Kong CFS Alerts | `prototype` | Prior written authorization or equivalent reuse basis, reviewed candidate batch, production quality gate, publishing workflow. |

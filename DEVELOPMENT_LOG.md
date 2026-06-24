@@ -17,6 +17,42 @@
 
 ---
 
+## 2026-06-24 · Round 23 · EU RASFF source spike
+
+### 本轮目标
+
+评估欧盟 RASFF 是否可以作为下一条官方来源，并确定应该通过官方 API/数据门户还是页面抓取接入。
+
+### 已发现
+
+- European Commission RASFF 页面说明 RASFF Window 是公开的 summary notification 搜索入口，当前历史搜索限制为 2020 年以后；
+- RASFF Window public configuration 暴露 `openPortalLink`，指向 data.europa 的 `restored_rasff` 数据集；
+- data.europa metadata API 可返回 `restored_rasff` 的 JSON-LD；
+- metadata 中存在 `Food and Feed Alert Notifications` JSON 分发，许可证标记为 `CC_BY_4_0`，修改时间为 2025-03-07；
+- metadata 说明 API 数据对应 RASFF Window 公共信息，覆盖 2020 年以来通知，默认 JSON，也提供 CSV；
+- metadata 还列出 pre-2021 XLSX 历史公共信息资源；
+- metadata 中的 `APIs User Guide - Download` 在 2026-06-24 实测返回 404，尚不能确认实际 endpoint、鉴权方式和字段契约；
+- DG SANTE developer portal 的 API 列表由自定义 widget 通过 runtime `managementApiUrl/apiVersion/token` 加载，静态 HTML 不暴露 RASFF API catalog；
+- 常见 `/developer/apis` APIM catalog 猜测路径在 2026-06-24 返回 404 或 500，不能作为可实现端点。
+
+### 本轮改动
+
+- 新增 `docs/SOURCE_RASFF.md`，记录官方入口、许可证、覆盖范围、过滤原则和 blocker；
+- 更新 `data/sources.json`，将 RASFF 的 access method 从泛化 research 更新为 data.europa/API 调研；
+- 在发布前 checklist 的当前状态表中加入 EU RASFF；
+- 更新 README，说明 RASFF 仍是 `candidate`，不能直接发布数据；
+- 将 `.tmp-rasff/` 加入 `.gitignore`，避免调研临时文件进入提交。
+
+### 决策
+
+RASFF 不应抓取 Angular 页面作为主路径。下一步优先确认 DG SANTE DataLake API 或官方导出接口；在拿到 live sample payload 前，RASFF 不进入 `prototype`。
+
+### 下一轮建议
+
+继续 RASFF endpoint spike：检查 developer portal 是否需要注册/subscription key，寻找 OpenAPI 规格或可调用导出 URL。若能取得小样本，再实现 `smoke-rasff`；若不能，应转向另一个更开放的来源，例如新西兰 MPI、日本/韩国/加拿大官方 recall feed。
+
+---
+
 ## 2026-06-24 · Round 22 · CFS reuse/attribution review
 
 ### 本轮目标
