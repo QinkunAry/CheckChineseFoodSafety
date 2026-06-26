@@ -4,6 +4,8 @@ __pycache__/
 .venv/
 .tmp-test/
 .tmp-rasff/
+.tmp-canada/
+.tmp-japan/
 tests/tmp*/
 dist/
 build/
@@ -17,6 +19,9 @@ reports/.*.tmp
 reports/cfs_candidates.json
 reports/cfs_smoke.json
 reports/cfs_inventory.json
+reports/canada_origin_probe.json
+reports/japan_caa_probe.json
+reports/japan_caa_smoke.json
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json
 reports/fsanz_inventory.json

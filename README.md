@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml)
 [![Update FDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml)
+[![Smoke test Japan CAA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
 
@@ -107,7 +108,13 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后，才可复制、分发、传播或公开提供其版权作品。因此在授权或等效复用依据记录前，CFS 保持 `prototype`；workflow 只上传最小诊断报告，不上传包含官方原因文本的候选 JSONL。
 
-欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
+加拿大 Recalls and Safety Alerts 当前保持 `candidate`。官方 open data 提供每日更新的 JSON/CSV/RSS，并使用 Open Government Licence - Canada；但已观察到的 open-data 字段和样本详情页没有稳定原产地字段，因此在找到明确 origin evidence 前不能发布中国来源记录。详见 `docs/SOURCE_CANADA.md`。
+
+可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
+
+后续来源优先级调整为：加拿大、日本、韩国、台湾，最后再回到欧盟 RASFF。欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
+
+日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周检查 CAA 食料品列表、固定 CAA 详情页和 MHLW `RCL...` 参照详情；2026-06-27 JST 的真实 smoke 显示 CAA 食料品列表 322 条，固定样本包含 1 条明确 `中国産` 来源证据。该 workflow 不提交或发布日本数据；下一步需要分页/增量 inventory、更广固定样本、candidate 管线和 PDL 1.0 署名规则。详见 `docs/SOURCE_JAPAN.md`。
 
 ## 路线图
 
@@ -120,7 +127,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 增加来源级 URL 增量监控
 - [x] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
 - [ ] 发布静态数据页与筛选界面
-- [ ] 按可获取性接入欧盟、新西兰、澳大利亚、日本、韩国、加拿大、香港和台湾来源
+- [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
 

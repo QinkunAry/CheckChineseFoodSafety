@@ -12,16 +12,19 @@
     "notes": "Official page states that reports are generated from OASIS and updated monthly."
   },
   {
-    "id": "eu_rasff",
-    "authority": "European Commission RASFF",
-    "authority_region": "EU",
-    "action_type": "mixed_alerts",
-    "homepage": "https://webgate.ec.europa.eu/rasff-window/screen/search",
-    "dataset_url": "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en",
-    "metadata_url": "https://data.europa.eu/api/hub/repo/datasets/restored_rasff",
-    "access_method": "data_europa_api_research",
+    "id": "ca_recalls_safety_alerts",
+    "authority": "Government of Canada / Canadian Food Inspection Agency",
+    "authority_region": "CA",
+    "action_type": "recall",
+    "homepage": "https://recalls-rappels.canada.ca/en",
+    "dataset_url": "https://open.canada.ca/data/en/dataset/d38de914-c94c-429b-8ab1-8776c31643e3",
+    "metadata_url": "https://open.canada.ca/data/api/action/package_show?id=d38de914-c94c-429b-8ab1-8776c31643e3",
+    "download_url": "https://recalls-rappels.canada.ca/sites/default/files/opendata-donneesouvertes/HCRSAMOpenData.json",
+    "rss_url": "https://recalls-rappels.canada.ca/en/feed/cfia-alerts-recalls",
+    "access_method": "open_data_json_csv_rss",
+    "update_frequency": "daily",
     "status": "candidate",
-    "notes": "Official data.europa metadata exposes a CC BY 4.0 RASFF JSON distribution for 2020 onward, but the API guide download returned 404 on 2026-06-24; live endpoint and auth requirements still need confirmation."
+    "notes": "Official daily JSON/CSV/RSS feeds are available under the Open Government Licence - Canada. Candidate remains blocked on explicit country-of-origin evidence; observed open-data fields do not include origin."
   },
   {
     "id": "nz_mpi_recalls",
@@ -31,6 +34,50 @@
     "homepage": "https://www.mpi.govt.nz/food-safety-home/food-recalls-and-complaints/recalled-food-products/",
     "access_method": "research_required",
     "status": "candidate"
+  },
+  {
+    "id": "jp_caa_recalls",
+    "authority": "Consumer Affairs Agency / Ministry of Health, Labour and Welfare, Japan",
+    "authority_region": "JP",
+    "action_type": "recall",
+    "homepage": "https://www.recall.caa.go.jp/",
+    "food_list_url": "https://www.recall.caa.go.jp/result/index.php?screenkbn=01&category=1",
+    "mhlw_public_url": "https://i2fas.mhlw.go.jp/faspub/_link.do",
+    "access_method": "caa_food_html_mhlw_detail_html",
+    "status": "prototype",
+    "notes": "Read-only smoke passed on 2026-06-27 JST: CAA food list reported 322 entries; fixed CAA/MHLW sample exposed one explicit China-origin record. Publication remains blocked on pagination/inventory, broader fixed samples, candidate workflow, and PDL attribution wording."
+  },
+  {
+    "id": "kr_food_safety_korea",
+    "authority": "Ministry of Food and Drug Safety / Food Safety Korea",
+    "authority_region": "KR",
+    "action_type": "recall",
+    "homepage": "https://www.foodsafetykorea.go.kr/",
+    "access_method": "research_required",
+    "status": "candidate",
+    "notes": "Added to the post-Canada source queue. Need to locate recall/sales-suspension pages or APIs, origin evidence fields, and reuse terms."
+  },
+  {
+    "id": "tw_tfda",
+    "authority": "Taiwan Food and Drug Administration",
+    "authority_region": "TW",
+    "action_type": "mixed_alerts",
+    "homepage": "https://www.fda.gov.tw/ENG/index.aspx",
+    "access_method": "research_required",
+    "status": "candidate",
+    "notes": "Added to the post-Canada source queue. Need to locate food recall/alert datasets, origin evidence fields, and reuse terms."
+  },
+  {
+    "id": "eu_rasff",
+    "authority": "European Commission RASFF",
+    "authority_region": "EU",
+    "action_type": "mixed_alerts",
+    "homepage": "https://webgate.ec.europa.eu/rasff-window/screen/search",
+    "dataset_url": "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en",
+    "metadata_url": "https://data.europa.eu/api/hub/repo/datasets/restored_rasff",
+    "access_method": "data_europa_api_research",
+    "status": "candidate",
+    "notes": "Official data.europa metadata exposes a CC BY 4.0 RASFF JSON distribution for 2020 onward, but the API guide download returned 404 on 2026-06-24; live endpoint and auth requirements still need confirmation. Deferred until after Canada, Japan, Korea, and Taiwan spikes."
   },
   {
     "id": "au_fsanz_recalls",

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from . import __version__
+from .canada_probe import build_origin_probe_report
 from .cfs_candidates import candidate_cfs
 from .cfs_inventory import inventory_cfs, write_url_state as write_cfs_url_state
 from .cfs_smoke import build_smoke_report as build_cfs_smoke_report
@@ -12,6 +13,8 @@ from .fda import download, parse_archive, write_jsonl
 from .fsanz_candidates import candidate_fsanz
 from .fsanz_smoke import build_smoke_report
 from .fsanz_inventory import inventory_fsanz, write_url_state
+from .japan_probe import build_japan_probe_report
+from .japan_smoke import build_japan_smoke_report
 from .quality import (
     build_quality_report,
     load_schema,
@@ -141,6 +144,74 @@ def build_parser() -> argparse.ArgumentParser:
     cfs_candidate.add_argument(
         "--report", type=Path, default=Path("reports/cfs_candidates.json")
     )
+
+    canada_probe = subparsers.add_parser(
+        "probe-canada-origin",
+        help="Sample official Canada CFIA food recalls and look for explicit origin evidence",
+    )
+    canada_probe.add_argument(
+        "--input",
+        type=Path,
+        help="Read an already downloaded Canada open-data JSON file instead of downloading it",
+    )
+    canada_probe.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Maximum number of latest CFIA food detail pages to inspect",
+    )
+    canada_probe.add_argument(
+        "--china-mention-limit",
+        type=int,
+        default=20,
+        help="Also inspect up to this many CFIA food records whose open-data text mentions China/Chinese",
+    )
+    canada_probe.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/canada_origin_probe.json"),
+    )
+
+    japan_probe = subparsers.add_parser(
+        "probe-japan-caa",
+        help="Sample official Japan CAA food recalls and MHLW references",
+    )
+    japan_probe.add_argument(
+        "--input",
+        type=Path,
+        help="Read an already downloaded CAA food-list HTML file instead of downloading it",
+    )
+    japan_probe.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum number of latest CAA food detail pages to inspect",
+    )
+    japan_probe.add_argument(
+        "--china-mention-limit",
+        type=int,
+        default=5,
+        help="Also inspect up to this many current-list food records whose title mentions China",
+    )
+    japan_probe.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/japan_caa_probe.json"),
+    )
+
+    japan_smoke = subparsers.add_parser(
+        "smoke-japan-caa",
+        help="Read fixed official Japan CAA/MHLW recall pages and report parser drift",
+    )
+    japan_smoke.add_argument("--url", action="append", required=True, dest="urls")
+    japan_smoke.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/japan_caa_smoke.json"),
+    )
+    japan_smoke.add_argument("--min-list-total", type=int, default=100)
+    japan_smoke.add_argument("--min-china-records", type=int, default=1)
+    japan_smoke.add_argument("--min-mhlw-references", type=int, default=1)
     return parser
 
 
@@ -285,6 +356,59 @@ def main(argv: list[str] | None = None) -> int:
             f"{report['candidate_url_count']} new URLs; "
             f"{report['china_record_count']} China records; "
             f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "probe-canada-origin":
+        payload = args.input.read_bytes() if args.input else None
+        report = build_origin_probe_report(
+            limit=args.limit,
+            china_mention_limit=args.china_mention_limit,
+            open_data_payload=payload,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"Canada origin probe {report['status']}: "
+            f"{report['cfia_food_record_count']} CFIA food records; "
+            f"{report['sampled_record_count']} sampled; "
+            f"{report['china_origin_evidence_page_count']} pages with China origin evidence; "
+            f"report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "probe-japan-caa":
+        payload = args.input.read_bytes() if args.input else None
+        report = build_japan_probe_report(
+            limit=args.limit,
+            china_mention_limit=args.china_mention_limit,
+            list_payload=payload,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"Japan CAA probe {report['status']}: "
+            f"{report['list_total_count']} listed food recalls; "
+            f"{report['sampled_record_count']} sampled; "
+            f"{report['china_origin_evidence_page_count']} pages with China origin evidence; "
+            f"{report['mhlw_reference_count']} MHLW references; "
+            f"report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "smoke-japan-caa":
+        report = build_japan_smoke_report(
+            urls=args.urls,
+            min_list_total=args.min_list_total,
+            min_china_records=args.min_china_records,
+            min_mhlw_references=args.min_mhlw_references,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"Japan CAA smoke {report['status']}: "
+            f"{report.get('list_total_count')} listed food recalls; "
+            f"{report.get('tested_page_count', 0)} tested pages; "
+            f"{report.get('china_origin_evidence_page_count', 0)} China-origin pages; "
+            f"{report.get('mhlw_reference_count', 0)} MHLW references; "
+            f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
 

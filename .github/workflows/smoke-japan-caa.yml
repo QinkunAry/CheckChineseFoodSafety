@@ -1,0 +1,60 @@
+name: Smoke test Japan CAA source
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 6 * * 4"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-japan-caa-source
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Smoke test official Japan CAA and MHLW pages
+        run: >-
+          python -m food_safety_watch smoke-japan-caa
+          --report reports/japan_caa_smoke.json
+          --min-list-total 100
+          --min-china-records 1
+          --min-mhlw-references 1
+          --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01'
+
+      - name: Publish diagnostic summary
+        if: always() && hashFiles('reports/japan_caa_smoke.json') != ''
+        shell: bash
+        run: |
+          echo '## Japan CAA smoke diagnostic' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat reports/japan_caa_smoke.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: japan-caa-smoke-report
+          path: reports/japan_caa_smoke.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -17,6 +17,203 @@
 
 ---
 
+## 2026-06-27 · Round 27 · Japan CAA / MHLW read-only smoke prototype
+
+### 本轮目标
+
+把日本 CAA / MHLW 从 probe 推进到只读 smoke prototype：能在本地和 GitHub Actions 中固定检查官方列表、CAA 详情页与 MHLW `RCL...` 参照详情，但仍不发布日本数据。
+
+### 本轮改动
+
+- 新增 `src/food_safety_watch/japan_smoke.py`；
+- 新增 `smoke-japan-caa` CLI 命令；
+- 新增 `tests/test_japan_smoke.py`，覆盖官方 URL 限制、MHLW URL 构造、China-origin evidence 门槛、列表数量门槛和失败关闭；
+- 新增 `.github/workflows/smoke-japan-caa.yml`，每周只读运行，也支持手动触发；
+- 将 `reports/japan_caa_smoke.json` 加入 `.gitignore`；
+- 将日本来源在 `data/sources.json` 中从 `candidate` 调整为只读 `prototype`；
+- 更新 README、Japan source assessment 和 prototype checklist，明确 Japan 仍不能写入 `data/processed/`。
+
+### 真实 smoke 结果
+
+命令：
+
+```powershell
+python -m food_safety_watch smoke-japan-caa --report reports/japan_caa_smoke.json --min-list-total 100 --min-china-records 1 --min-mhlw-references 1 --url "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01"
+```
+
+结果：
+
+- CAA food list total: 322；
+- first-page list items parsed: 15；
+- fixed detail pages tested: 1；
+- pages with explicit China-origin evidence: 1；
+- MHLW references followed: 1；
+- sample: CAA `00000035456` / MHLW `RCL202601495`。
+
+### 验证结果
+
+- 本地全套 68 项单元测试通过；
+- live `smoke-japan-caa` 通过并生成 ignored diagnostic report。
+
+### 决策
+
+Japan 进入只读 `prototype`。这代表 parser/source-health gate 已存在；不代表可以发布正式数据。正式发布前仍需要 CAA 分页或 MHLW 搜索的增量发现、`data/state/` 基线、candidate 管线、至少两个中国来源和一个非中国固定样本、PDL 1.0 署名文案和人工复核。
+
+### 下一轮建议
+
+继续做 Japan inventory：研究 CAA form pagination 或 MHLW public search，建立只读 URL baseline，并让 workflow 能报告新增/移除的官方详情 URL。
+
+---
+
+## 2026-06-25 · Round 26 · Japan CAA / MHLW source probe
+
+### 本轮目标
+
+开始日本来源调研，确认 CAA recall portal 与 MHLW 食品衛生申請等システム是否适合作为中国来源食品 recall 数据源。
+
+### 已发现
+
+- CAA recall portal 可直接访问，HTML 服务端渲染；
+- CAA category `1` 为 `食料品`；
+- CAA 食料品列表在 2026-06-25 显示 320 条 food recall，第一页渲染 15 条；
+- CAA 详情页包含标题、商品名、对象特定信息、対応開始日、備考、管理番号等字段；
+- CAA 详情页可链接到 MHLW 食品衛生申請等システム公开回収详情；
+- 样本 `00000035456` 对应 MHLW `RCL202601495`；
+- MHLW 详情页可直接读取，并以 hidden text field 暴露稳定字段，例如 `_rcl_no_str`、`_rcl_product_str`、`_rcl_info_str`、`_rcl_rsn_type_str`、`_rcl_rsn_memo_str`；
+- MHLW 与 CAA 页面均引用公共数据利用规约 PDL 1.0，需要出典标注；加工数据必须说明加工，不能表现为政府制作。
+
+### 本轮改动
+
+- 新增 `src/food_safety_watch/japan_probe.py`；
+- 新增 `probe-japan-caa` CLI 命令；
+- probe 读取 CAA 官方食料品列表，抽样 CAA 详情页，并跟进 MHLW `RCL...` 参照详情；
+- 新增 Japan probe 单元测试，覆盖 CAA list、CAA detail、MHLW hidden field、明确 `中国産` origin evidence 与非证据文本分离；
+- 新增 `docs/SOURCE_JAPAN.md`；
+- 更新 `data/sources.json` 中日本来源的 authority、food list、MHLW public URL、access method 和 notes；
+- 更新 README 与 prototype checklist；
+- 将 `.tmp-japan/` 与 `reports/japan_caa_probe.json` 加入 `.gitignore`。
+
+### 真实 probe 结果
+
+命令：
+
+```powershell
+python -m food_safety_watch probe-japan-caa --limit 10 --china-mention-limit 5 --report reports/japan_caa_probe.json
+```
+
+结果：
+
+- CAA food list total: 320；
+- first-page list items parsed: 15；
+- sampled detail pages: 10；
+- sampled pages with MHLW reference links: 10；
+- sampled pages with explicit China-origin evidence: 1；
+- China-origin sample: CAA `00000035456` / MHLW `RCL202601495`，标题包含 `中国産うなぎ長焼`。
+
+### 验证结果
+
+- 全套 62 项单元测试通过；
+- live Japan probe 通过并生成 ignored report。
+
+### 决策
+
+日本继续保持 `candidate`，但优先级高于加拿大。它已经证明有明确中国来源证据和 MHLW 稳定详情 ID；下一步应进入 `smoke-japan-caa` / inventory 设计，而不是转向其他国家。
+
+### 下一轮建议
+
+实现日本 prototype：固定两个中国来源样本和一个非中国样本，建立 `smoke-japan-caa`，然后研究 CAA 分页或 MHLW 搜索的安全增量发现方式。
+
+---
+
+## 2026-06-24 · Round 25 · Canada origin evidence probe
+
+### 本轮目标
+
+继续加拿大来源调研，用可复现命令验证 CFIA 食品 recall 详情页是否提供可用于中国来源过滤的明确原产地证据。
+
+### 本轮改动
+
+- 新增 `src/food_safety_watch/canada_probe.py`；
+- 新增 `probe-canada-origin` CLI 命令；
+- probe 从加拿大官方 English JSON feed 中筛选 CFIA 食品记录；
+- probe 同时检查最新 CFIA 食品记录，以及 open-data 文本中提到 China/Chinese 的候选记录；
+- 明确 China/Chinese mention 只用于寻找候选详情页，不等于 origin evidence；
+- 只有 `Country of origin`、`Product of`、`Imported from`、`Manufactured in`、`Made in` 等明确短语才计为 origin evidence；
+- 新增 Canada probe 单元测试，覆盖官方 URL 限制、CFIA 过滤、mention 与 origin evidence 分离、HTML 文本清理和 report 统计；
+- 将 `reports/canada_origin_probe.json` 加入 `.gitignore`；
+- 更新 Canada source assessment 与 README。
+
+### 真实 probe 结果
+
+命令：
+
+```powershell
+python -m food_safety_watch probe-canada-origin --limit 20 --china-mention-limit 20 --report reports/canada_origin_probe.json
+```
+
+结果：
+
+- total open-data records: 33,692；
+- CFIA food records: 5,243；
+- CFIA food records with China/Chinese mentions: 12；
+- sampled detail pages: 32；
+- pages with any supported origin evidence phrase: 0；
+- pages with China origin evidence: 0。
+
+### 验证结果
+
+- 全套 56 项单元测试通过；
+- `python -m food_safety_watch sources` 可正常列出 Canada/Japan/Korea/Taiwan/EU 候选来源；
+- live Canada probe 通过并生成 ignored report。
+
+### 决策
+
+加拿大继续保持 `candidate`，不进入 `prototype`。官方 open data 很适合 general food recall monitoring，但当前不适合本项目的“中国来源食品”事实数据，因为缺少稳定 origin evidence。
+
+### 下一轮建议
+
+转向日本 CAA source spike。若未来加拿大官方详情页或其他 CFIA 数据源提供稳定原产地字段，再回到 Canada prototype。
+
+---
+
+## 2026-06-24 · Round 24 · Canada source spike and Asia source queue
+
+### 本轮目标
+
+评估加拿大官方 recalls 数据源，并按用户建议将后续来源顺序调整为加拿大、日本、韩国、台湾，最后再回到欧盟。
+
+### 已发现
+
+- Government of Canada Recalls and Safety Alerts 门户说明 recall/alert 数据提供 CSV 和 JSON 格式，并每日更新；
+- 2026-06-24 门户显示全类别 19,247 active、14,440 archived；
+- 食品筛选页显示 1,203 条 Food 记录；
+- Open Canada dataset `d38de914-c94c-429b-8ab1-8776c31643e3` 的 package metadata API 可访问；
+- dataset 标题为 `Recalls and Safety Alerts`，许可证为 `Open Government Licence - Canada`；
+- dataset notes 说明该网站是加拿大政府集中发布 food、consumer products、health products、medical devices、cannabis、vehicles recalls and safety alerts 的官方站点；
+- 英文 JSON、英文 CSV 和 CFIA Food RSS feed 均可访问；
+- 英文 JSON 记录字段包括 `NID`、`Title`、`URL`、`Organization`、`Product`、`Issue`、`Category`、`Recall class`、`Last updated`、`Archived`；
+- CFIA 样本详情页字段丰富，但未发现稳定的 country-of-origin 字段。
+
+### 本轮改动
+
+- 新增 `docs/SOURCE_CANADA.md`；
+- 在 `data/sources.json` 新增加拿大来源；
+- 在 `data/sources.json` 新增日本 CAA、韩国 Food Safety Korea、台湾 TFDA 候选来源；
+- 将欧盟 RASFF 在来源队列中延后，并在 notes 中说明；
+- 更新 README，记录新的来源优先级和加拿大 blocker；
+- 更新 checklist 当前来源状态表；
+- 将 `.tmp-canada/` 加入 `.gitignore`。
+
+### 决策
+
+加拿大数据开放程度很好，但当前不能生成中国来源记录。除非找到明确的原产地/进口来源证据字段，否则只能用于 general food recall monitoring，不能进入本项目的中国食品发布数据。
+
+### 下一轮建议
+
+做 Canada deeper sampling：从官方 JSON 中筛选 CFIA Food 记录，抽样详情页查找是否存在 `country of origin`、`imported from`、`product of` 等稳定证据。如果找不到，加拿大保持 `candidate`，转向日本 CAA source spike。
+
+---
+
 ## 2026-06-24 · Round 23 · EU RASFF source spike
 
 ### 本轮目标
