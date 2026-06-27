@@ -14,6 +14,7 @@ from .fsanz_candidates import candidate_fsanz
 from .fsanz_smoke import build_smoke_report
 from .fsanz_inventory import inventory_fsanz, write_url_state
 from .japan_probe import build_japan_probe_report
+from .japan_inventory import inventory_japan_caa, write_url_state as write_japan_url_state
 from .japan_smoke import build_japan_smoke_report
 from .quality import (
     build_quality_report,
@@ -212,6 +213,31 @@ def build_parser() -> argparse.ArgumentParser:
     japan_smoke.add_argument("--min-list-total", type=int, default=100)
     japan_smoke.add_argument("--min-china-records", type=int, default=1)
     japan_smoke.add_argument("--min-mhlw-references", type=int, default=1)
+
+    japan_inventory = subparsers.add_parser(
+        "inventory-japan-caa",
+        help="Compare official Japan CAA food recall pages with a URL baseline",
+    )
+    japan_inventory.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/japan_caa_recall_urls.json"),
+    )
+    japan_inventory.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/japan_caa_inventory.json"),
+    )
+    japan_inventory.add_argument(
+        "--max-pages",
+        type=int,
+        help="Limit scanned CAA list pages for diagnostics; omit for full inventory",
+    )
+    japan_inventory.add_argument(
+        "--accept-current",
+        action="store_true",
+        help="Replace the Japan CAA URL baseline with the current official list",
+    )
     return parser
 
 
@@ -411,5 +437,22 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "inventory-japan-caa":
+        report, current_urls = inventory_japan_caa(
+            state_path=args.state,
+            max_pages=args.max_pages,
+        )
+        write_json_file(report, args.report)
+        if args.accept_current:
+            write_japan_url_state(current_urls, args.state)
+        print(
+            f"Japan CAA inventory {report['status']}: "
+            f"{report['current_count']} current; "
+            f"{report['new_url_count']} new; "
+            f"{report['removed_url_count']} removed; "
+            f"report={args.report}"
+        )
+        return 0
 
     return 2

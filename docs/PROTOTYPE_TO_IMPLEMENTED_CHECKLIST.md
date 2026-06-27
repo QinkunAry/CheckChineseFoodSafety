@@ -123,7 +123,7 @@ operationally stable, and reviewable by a human maintainer.
 | FSANZ Recalls | `prototype` | Reuse terms, reviewed candidate batch, production quality gate, publishing workflow. |
 | Hong Kong CFS Alerts | `prototype` | Prior written authorization or equivalent reuse basis, reviewed candidate batch, production quality gate, publishing workflow. |
 | Canada Recalls and Safety Alerts | `candidate` | Explicit country-of-origin evidence, broader detail-page sampling, smoke workflow, prototype gate. |
-| Japan CAA / MHLW Recalls | `prototype` | Pagination/inventory design, broader fixed live smoke sample set, candidate workflow, PDL attribution wording, reviewed candidate batch, production quality gate. |
+| Japan CAA / MHLW Recalls | `prototype` | Broader fixed live smoke sample set, candidate workflow, PDL attribution wording, reviewed candidate batch, production quality gate. |
 | Korea Food Safety Korea | `candidate` | Source spike not started; recall endpoint/API, origin evidence, reuse terms. |
 | Taiwan TFDA | `candidate` | Source spike not started; food recall/alert dataset, origin evidence, reuse terms. |
 | EU RASFF | `candidate` | API guide/endpoint confirmation, live sample payload, field mapping, smoke workflow, prototype gate. |

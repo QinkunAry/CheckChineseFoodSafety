@@ -17,6 +17,81 @@
 
 ---
 
+## 2026-06-27 · Round 28 · Japan CAA URL inventory baseline
+
+### 本轮目标
+
+把 Japan prototype 从固定样本 smoke 扩展到可发现新增 URL 的 inventory：扫描 CAA 食料品分页，建立 `data/state/` baseline，并让 GitHub Actions 每周报告新增/移除。
+
+### 本轮改动
+
+- 新增 `src/food_safety_watch/japan_inventory.py`；
+- 新增 `inventory-japan-caa` CLI 命令；
+- 新增 `tests/test_japan_inventory.py`，覆盖分页收集、`max_pages` 诊断限制、inventory diff、state round-trip 和非法 state 拒绝；
+- 新增 `data/state/japan_caa_recall_urls.json` baseline；
+- 更新 `.github/workflows/smoke-japan-caa.yml`，在 smoke 后比较 Japan CAA URL inventory，并上传 smoke/inventory reports；
+- 将 workflow timeout 从 10 分钟调整为 20 分钟，避免 22 页官方分页扫描因站点慢而误失败；
+- 更新 README、Japan source assessment、prototype checklist 和 `data/sources.json`。
+
+### 官方分页发现
+
+CAA 食料品列表使用表单分页。第一页为：
+
+```text
+https://www.recall.caa.go.jp/result/index.php?screenkbn=01&category=1
+```
+
+后续页面可向官方 `/result/index.php` POST：
+
+- `screenkbn=01`
+- `category=1`
+- `viewCountdden=15`
+- `portarorder=2`
+- `actionorder=0`
+- `pagingHidden={zero_based_page_index}`
+
+实测第 2 页返回 `16-30件を表示中` 同类分页内容，并包含官方 detail URL。测试期间官方总数曾从 smoke 时的 322 变为 inventory 时的 321，因此以 inventory baseline 的 321 条唯一详情 URL 为准。
+
+### 真实 inventory 结果
+
+初始化 baseline：
+
+```powershell
+python -m food_safety_watch inventory-japan-caa --state data/state/japan_caa_recall_urls.json --report reports/japan_caa_inventory.json --accept-current
+```
+
+结果：
+
+- reported CAA food recall total: 321；
+- expected/scanned pages: 22；
+- unique official CAA detail URLs: 321；
+- new URLs vs empty baseline: 321；
+- removed URLs: 0。
+
+随后再次比较：
+
+```powershell
+python -m food_safety_watch inventory-japan-caa --state data/state/japan_caa_recall_urls.json --report reports/japan_caa_inventory.json
+```
+
+结果：`unchanged`，321 current，0 new，0 removed。
+
+### 验证结果
+
+- 本地全套 73 项单元测试通过；
+- live Japan inventory baseline 生成成功；
+- live Japan inventory 二次比较为 unchanged。
+
+### 决策
+
+Japan prototype 现在具备 smoke + inventory 两个基础门禁。它仍不能发布正式数据；下一步应做 `candidate-japan-caa`，只抓取 inventory 新增 URL，跟进 MHLW 参照详情，生成 ignored candidate JSONL 和诊断报告，供人工复核。
+
+### 下一轮建议
+
+实现 Japan candidate 管线，并补至少一个非中国固定样本和第二个中国来源样本，让 Japan 进入“可人工复核候选记录”的阶段。
+
+---
+
 ## 2026-06-27 · Round 27 · Japan CAA / MHLW read-only smoke prototype
 
 ### 本轮目标

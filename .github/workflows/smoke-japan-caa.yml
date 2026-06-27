@@ -15,7 +15,7 @@ concurrency:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -41,6 +41,12 @@ jobs:
           --min-mhlw-references 1
           --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01'
 
+      - name: Compare Japan CAA food recall URL inventory
+        run: >-
+          python -m food_safety_watch inventory-japan-caa
+          --state data/state/japan_caa_recall_urls.json
+          --report reports/japan_caa_inventory.json
+
       - name: Publish diagnostic summary
         if: always() && hashFiles('reports/japan_caa_smoke.json') != ''
         shell: bash
@@ -49,12 +55,22 @@ jobs:
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat reports/japan_caa_smoke.json >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo '## Japan CAA URL inventory' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/japan_caa_inventory.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/japan_caa_inventory.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Japan CAA inventory report was not generated, likely because an earlier step failed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload diagnostic report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: japan-caa-smoke-report
-          path: reports/japan_caa_smoke.json
+          path: |
+            reports/japan_caa_smoke.json
+            reports/japan_caa_inventory.json
           if-no-files-found: warn
           retention-days: 30

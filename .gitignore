@@ -22,6 +22,7 @@ reports/cfs_inventory.json
 reports/canada_origin_probe.json
 reports/japan_caa_probe.json
 reports/japan_caa_smoke.json
+reports/japan_caa_inventory.json
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json
 reports/fsanz_inventory.json

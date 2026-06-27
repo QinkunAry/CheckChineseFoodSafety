@@ -45,7 +45,7 @@
     "mhlw_public_url": "https://i2fas.mhlw.go.jp/faspub/_link.do",
     "access_method": "caa_food_html_mhlw_detail_html",
     "status": "prototype",
-    "notes": "Read-only smoke passed on 2026-06-27 JST: CAA food list reported 322 entries; fixed CAA/MHLW sample exposed one explicit China-origin record. Publication remains blocked on pagination/inventory, broader fixed samples, candidate workflow, and PDL attribution wording."
+    "notes": "Read-only smoke and inventory exist. Inventory baseline created on 2026-06-27 JST with 321 official CAA food recall detail URLs. Publication remains blocked on broader fixed samples, candidate workflow, reviewed candidate batch, production quality gate, and PDL attribution wording."
   },
   {
     "id": "kr_food_safety_korea",

@@ -114,6 +114,40 @@ GitHub Actions workflow:
 - weekly read-only run plus manual `workflow_dispatch`;
 - uploads `reports/japan_caa_smoke.json` as a diagnostic artifact.
 
+## URL inventory
+
+`inventory-japan-caa` scans the official CAA food recall list across its
+server-side form pagination. Page 0 uses the public food list URL, and later
+pages submit the same official form fields observed in the site HTML:
+
+- `screenkbn=01`;
+- `category=1`;
+- `viewCountdden=15`;
+- `portarorder=2`;
+- `actionorder=0`;
+- `pagingHidden={zero_based_page_index}`.
+
+Baseline result created on 2026-06-27 JST:
+
+- reported CAA food recall total during inventory: 321;
+- expected/scanned pages: 22;
+- unique official CAA detail URLs: 321;
+- baseline path: `data/state/japan_caa_recall_urls.json`.
+
+Command used:
+
+```powershell
+python -m food_safety_watch inventory-japan-caa --state data/state/japan_caa_recall_urls.json --report reports/japan_caa_inventory.json --accept-current
+```
+
+Follow-up verification:
+
+```powershell
+python -m food_safety_watch inventory-japan-caa --state data/state/japan_caa_recall_urls.json --report reports/japan_caa_inventory.json
+```
+
+Result: `unchanged`, with 321 current URLs, 0 new URLs, and 0 removed URLs.
+
 ## Evidence and filtering rules
 
 Before normalized records can be generated:
@@ -148,23 +182,19 @@ Project decision:
 
 ## Known blockers before candidate records / implementation
 
-- CAA pagination/search is JavaScript/form driven; a safe incremental discovery
-  strategy is not yet implemented.
 - MHLW public search is session/form driven; direct detail pages are stable when
   `RCL...` IDs are known, but discovery still needs design.
-- The live probe and smoke currently cover only the first CAA food-list page and
-  fixed detail samples.
+- The inventory currently discovers CAA detail URLs; MHLW `RCL...` IDs are
+  followed from fixed smoke/detail pages and are not yet inventoried directly.
 - At least two China-origin and one non-China live samples should be fixed for
   broader parser regression tests before candidate publication.
-- A candidate command and URL inventory baseline do not yet exist.
+- A candidate command does not yet exist.
 - Attribution wording under PDL 1.0 must be finalized before publication.
 
 ## Implemented gate
 
 Before Japan can move from `prototype` to `implemented`, the project needs:
 
-- a safe inventory strategy for CAA pagination or MHLW public search;
-- a URL or record baseline under `data/state/`;
 - candidate JSONL and diagnostic report generation for newly discovered records;
 - live smoke samples including at least two explicit China-origin records and one
   non-China food recall;

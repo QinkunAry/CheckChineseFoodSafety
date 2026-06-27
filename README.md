@@ -114,7 +114,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 后续来源优先级调整为：加拿大、日本、韩国、台湾，最后再回到欧盟 RASFF。欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
 
-日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周检查 CAA 食料品列表、固定 CAA 详情页和 MHLW `RCL...` 参照详情；2026-06-27 JST 的真实 smoke 显示 CAA 食料品列表 322 条，固定样本包含 1 条明确 `中国産` 来源证据。该 workflow 不提交或发布日本数据；下一步需要分页/增量 inventory、更广固定样本、candidate 管线和 PDL 1.0 署名规则。详见 `docs/SOURCE_JAPAN.md`。
+日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周检查 CAA 食料品列表、固定 CAA 详情页和 MHLW `RCL...` 参照详情；同一 workflow 还会扫描 CAA 食料品分页，并与 `data/state/japan_caa_recall_urls.json` 中的 321 条 URL baseline 比较新增和移除。该 workflow 不提交或发布日本数据；下一步需要更广固定样本、candidate 管线和 PDL 1.0 署名规则。详见 `docs/SOURCE_JAPAN.md`。
 
 ## 路线图
 
