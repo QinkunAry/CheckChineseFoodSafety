@@ -13,6 +13,7 @@ from .fda import download, parse_archive, write_jsonl
 from .fsanz_candidates import candidate_fsanz
 from .fsanz_smoke import build_smoke_report
 from .fsanz_inventory import inventory_fsanz, write_url_state
+from .japan_candidates import candidate_japan_caa
 from .japan_probe import build_japan_probe_report
 from .japan_inventory import inventory_japan_caa, write_url_state as write_japan_url_state
 from .japan_smoke import build_japan_smoke_report
@@ -238,6 +239,31 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Replace the Japan CAA URL baseline with the current official list",
     )
+
+    japan_candidate = subparsers.add_parser(
+        "candidate-japan-caa",
+        help="Parse newly discovered Japan CAA recalls into China-origin candidate records",
+    )
+    japan_candidate.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/japan_caa_recall_urls.json"),
+    )
+    japan_candidate.add_argument(
+        "--schema",
+        type=Path,
+        default=Path("schemas/record.schema.json"),
+    )
+    japan_candidate.add_argument(
+        "--output",
+        type=Path,
+        default=Path("data/candidates/japan_caa_cn.jsonl"),
+    )
+    japan_candidate.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/japan_caa_candidates.json"),
+    )
     return parser
 
 
@@ -454,5 +480,20 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0
+
+    if args.command == "candidate-japan-caa":
+        report, records = candidate_japan_caa(
+            state_path=args.state,
+            schema=load_schema(args.schema),
+        )
+        write_jsonl_file(records, args.output)
+        write_json_file(report, args.report)
+        print(
+            f"Japan CAA candidates {report['status']}: "
+            f"{report['candidate_url_count']} new URLs; "
+            f"{report['china_record_count']} China records; "
+            f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     return 2

@@ -6,6 +6,7 @@ __pycache__/
 .tmp-rasff/
 .tmp-canada/
 .tmp-japan/
+.tmp-japan-*.html
 tests/tmp*/
 dist/
 build/
@@ -23,6 +24,7 @@ reports/canada_origin_probe.json
 reports/japan_caa_probe.json
 reports/japan_caa_smoke.json
 reports/japan_caa_inventory.json
+reports/japan_caa_candidates.json
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json
 reports/fsanz_inventory.json

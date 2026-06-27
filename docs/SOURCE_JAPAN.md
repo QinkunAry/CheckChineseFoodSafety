@@ -10,8 +10,8 @@ Application System public recall detail.
 This source is a **read-only prototype**. It is more promising than Canada for
 the China-origin dataset because current live samples include explicit
 `中国産` product evidence and stable MHLW recall IDs. It still must not publish
-records under `data/processed/` until pagination/inventory, candidate review,
-attribution, and production quality gates are complete.
+records under `data/processed/` until candidate review, attribution, and
+production quality gates are complete.
 
 ## Official endpoints
 
@@ -112,7 +112,7 @@ GitHub Actions workflow:
 
 - `.github/workflows/smoke-japan-caa.yml`;
 - weekly read-only run plus manual `workflow_dispatch`;
-- uploads `reports/japan_caa_smoke.json` as a diagnostic artifact.
+- uploads smoke, inventory, candidate report, and candidate JSONL artifacts.
 
 ## URL inventory
 
@@ -148,6 +148,40 @@ python -m food_safety_watch inventory-japan-caa --state data/state/japan_caa_rec
 
 Result: `unchanged`, with 321 current URLs, 0 new URLs, and 0 removed URLs.
 
+## Candidate generation
+
+`candidate-japan-caa` performs another current CAA inventory scan, compares it
+with `data/state/japan_caa_recall_urls.json`, and parses only newly discovered
+detail URLs. For each new CAA record it:
+
+- validates the official CAA detail URL and management number;
+- reads CAA title, product, action start date, summary, and explicit origin text;
+- follows an official MHLW `RCL...` reference when one is present;
+- checks that the MHLW response identifier matches the referenced identifier;
+- prefers the MHLW recall-start date, with CAA/list dates as deterministic
+  fallbacks;
+- emits a normalized record only when CAA or MHLW explicitly identifies a
+  China-origin product;
+- validates emitted records against `schemas/record.schema.json`;
+- fails closed on detail parse, reference mismatch, or schema errors.
+
+Outputs are intentionally ignored release candidates:
+
+- `data/candidates/japan_caa_cn.jsonl`;
+- `reports/japan_caa_candidates.json`.
+
+An unchanged baseline produces a passing empty candidate batch. A changed
+inventory keeps producing the same candidates on later runs until a human has
+reviewed the batch and explicitly updates the URL baseline. Mixed-origin recall
+events, such as a notice covering both Japanese and Chinese products, require
+human review before publication.
+
+Command:
+
+```powershell
+python -m food_safety_watch candidate-japan-caa --state data/state/japan_caa_recall_urls.json --schema schemas/record.schema.json --output data/candidates/japan_caa_cn.jsonl --report reports/japan_caa_candidates.json
+```
+
 ## Evidence and filtering rules
 
 Before normalized records can be generated:
@@ -180,22 +214,23 @@ Project decision:
 - the source appears legally more tractable than CFS, but it still needs a
   production attribution review before `implemented`.
 
-## Known blockers before candidate records / implementation
+## Known blockers before implementation
 
 - MHLW public search is session/form driven; direct detail pages are stable when
   `RCL...` IDs are known, but discovery still needs design.
-- The inventory currently discovers CAA detail URLs; MHLW `RCL...` IDs are
-  followed from fixed smoke/detail pages and are not yet inventoried directly.
+- The inventory discovers CAA detail URLs; MHLW `RCL...` IDs are followed from
+  each new CAA detail rather than inventoried directly.
 - At least two China-origin and one non-China live samples should be fixed for
   broader parser regression tests before candidate publication.
-- A candidate command does not yet exist.
 - Attribution wording under PDL 1.0 must be finalized before publication.
+- The first non-empty candidate batch must be manually checked, including any
+  recall that combines Chinese and non-Chinese products in one notice.
 
 ## Implemented gate
 
 Before Japan can move from `prototype` to `implemented`, the project needs:
 
-- candidate JSONL and diagnostic report generation for newly discovered records;
+- a manually reviewed non-empty candidate JSONL and diagnostic report;
 - live smoke samples including at least two explicit China-origin records and one
   non-China food recall;
 - unit tests covering list parsing, detail parsing, MHLW hidden-field parsing,

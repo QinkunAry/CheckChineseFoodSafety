@@ -45,7 +45,7 @@
     "mhlw_public_url": "https://i2fas.mhlw.go.jp/faspub/_link.do",
     "access_method": "caa_food_html_mhlw_detail_html",
     "status": "prototype",
-    "notes": "Read-only smoke and inventory exist. Inventory baseline created on 2026-06-27 JST with 321 official CAA food recall detail URLs. Publication remains blocked on broader fixed samples, candidate workflow, reviewed candidate batch, production quality gate, and PDL attribution wording."
+    "notes": "Read-only smoke, inventory, and candidate generation exist. Inventory baseline created on 2026-06-27 JST with 321 official CAA food recall detail URLs. Publication remains blocked on broader fixed samples, a reviewed candidate batch, production quality gates, and final PDL attribution wording."
   },
   {
     "id": "kr_food_safety_korea",

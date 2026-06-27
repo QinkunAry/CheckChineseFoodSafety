@@ -30,10 +30,20 @@ LIST_ITEM_RE = re.compile(
 )
 TOTAL_RE = re.compile(r"(?P<count>\d+)件中")
 HIDDEN_TEXT_RE = re.compile(
-    r'<input type="hidden" name="(?P<name>_[^"]+_str)" value="(?P<value>.*?)" class="TEXT"',
+    r'<input type="hidden" name="(?P<name>_[^"]+_str)" value="(?P<value>.*?)" '
+    r'class="(?:TEXT|DATE)"',
     re.DOTALL,
 )
 DETAIL_TITLE_RE = re.compile(r"<h3>(?P<title>.*?)</h3>", re.DOTALL)
+DETAIL_TITLE_BLOCK_RE = re.compile(
+    r'<div class="detail_title">(?P<body>.*?)</div>',
+    re.DOTALL,
+)
+DETAIL_FIELD_RE = re.compile(
+    r'<span class="detail_cap"[^>]*>(?P<label>.*?)</span>\s*'
+    r'<span class="[^"]*detail_text[^"]*"[^>]*>(?P<value>.*?)</span>',
+    re.DOTALL,
+)
 MHLW_REF_RE = re.compile(
     r'https://i2fas\.mhlw\.go\.jp/faspub/_link\.do\?i=IO_S020502&amp;p=(?P<rcl>RCL\d+)|'
     r'https://i2fas\.mhlw\.go\.jp/faspub/_link\.do\?i=IO_S020502&p=(?P<rcl_plain>RCL\d+)'
@@ -140,19 +150,43 @@ def extract_hidden_text_fields(payload: bytes) -> dict[str, str]:
     return fields
 
 
+def _visible_detail_fields(payload: bytes) -> dict[str, str]:
+    text = payload.decode("utf-8", errors="ignore")
+    fields: dict[str, str] = {}
+    for match in DETAIL_FIELD_RE.finditer(text):
+        label = clean_html_text(match.group("label"))
+        value = clean_html_text(match.group("value"))
+        if label and value:
+            fields[label] = value
+    return fields
+
+
+def _detail_summary(payload: bytes) -> str:
+    text = payload.decode("utf-8", errors="ignore")
+    block = DETAIL_TITLE_BLOCK_RE.search(text)
+    if not block:
+        return ""
+    paragraphs = re.findall(r"<p\b[^>]*>(.*?)</p>", block.group("body"), re.DOTALL)
+    return clean_html_text(paragraphs[0]) if paragraphs else ""
+
+
 def inspect_caa_detail(payload: bytes) -> dict[str, Any]:
     text = payload.decode("utf-8", errors="ignore")
     fields = extract_hidden_text_fields(payload)
+    visible_fields = _visible_detail_fields(payload)
     title_match = DETAIL_TITLE_RE.search(text)
     mhlw_match = MHLW_REF_RE.search(text)
-    product = fields.get("_rcl_product_str") or ""
+    product = fields.get("_rcl_product_str") or visible_fields.get("商品名") or ""
     specific_info = fields.get("_rcl_info_str") or ""
     reason_type = fields.get("_rcl_rsn_type_str") or ""
     reason_memo = fields.get("_rcl_rsn_memo_str") or ""
+    summary = _detail_summary(payload)
+    event_date = visible_fields.get("対応開始日") or ""
     evidence_text = "\n".join([
         clean_html_text(title_match.group("title")) if title_match else "",
         product,
         specific_info,
+        summary,
         reason_memo,
     ])
     mhlw_reference_id = None
@@ -161,8 +195,12 @@ def inspect_caa_detail(payload: bytes) -> dict[str, Any]:
     return {
         "title": clean_html_text(title_match.group("title")) if title_match else None,
         "product": product,
+        "event_date": event_date,
+        "summary": summary,
+        "specific_info": specific_info,
         "specific_info_excerpt": specific_info[:300],
         "reason_type": reason_type,
+        "reason": reason_memo or summary,
         "reason_excerpt": reason_memo[:300],
         "mhlw_reference_id": mhlw_reference_id,
         "china_origin_evidence": has_china_origin_evidence(evidence_text),
@@ -179,8 +217,12 @@ def inspect_mhlw_detail(payload: bytes) -> dict[str, Any]:
     return {
         "rcl_no": fields.get("_rcl_no_str"),
         "product": fields.get("_rcl_product_str"),
+        "event_date": fields.get("_rcl_date_str"),
+        "release_date": fields.get("_rcl_release_date_str"),
+        "specific_info": fields.get("_rcl_info_str") or "",
         "specific_info_excerpt": (fields.get("_rcl_info_str") or "")[:300],
         "reason_type": fields.get("_rcl_rsn_type_str"),
+        "reason": fields.get("_rcl_rsn_memo_str") or "",
         "reason_excerpt": (fields.get("_rcl_rsn_memo_str") or "")[:300],
         "china_origin_evidence": has_china_origin_evidence(evidence_text),
     }

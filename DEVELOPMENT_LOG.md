@@ -17,6 +17,49 @@
 
 ---
 
+## 2026-06-27 · Round 29 · Japan CAA incremental candidate pipeline
+
+### 本轮目标
+
+在 Japan smoke + inventory 之后增加只处理新增 URL 的 candidate 管线；继续保持只读 prototype，不写入 `data/processed/`。
+
+### 本轮改动
+
+- 新增 `src/food_safety_watch/japan_candidates.py` 和 `candidate-japan-caa` CLI；
+- candidate 重新扫描 CAA 食料品分页，只处理不在 321 条 baseline 中的详情 URL；
+- 解析 CAA 商品名、概要和対応開始日，并跟进页面公开的 MHLW `RCL...` 参照详情；
+- MHLW hidden-field 解析新增 `DATE` 字段支持，可读取公开年月日和回收着手日期；
+- 只有 CAA 或 MHLW 明确出现 `中国産`、`中華人民共和国産`、`原産国：中国` 或 `中国製` 才生成候选；
+- MHLW 返回编号与 CAA 引用编号不一致、页面解析失败或 schema 错误时失败关闭；
+- 日本语食品分类和 labeling/allergen/microbiological/chemical/adulteration 初始标签映射只用于候选检索；
+- 新增 `tests/test_japan_candidates.py`，覆盖空增量、China/non-China 分流、统一 schema、日期、分类和 MHLW 编号不一致；
+- GitHub workflow 在 smoke 和 inventory 后运行 candidate，并上传 ignored JSONL 与诊断报告；
+- 更新 README、Japan source assessment、prototype checklist、source registry 和 `.gitignore`。
+
+### 真实字段复核
+
+2026-06-27 再次检查 CAA `00000035456` / MHLW `RCL202601495`：CAA 页面公开商品名、対応開始日 `2026年06月21日` 和 MHLW 引用；MHLW 页面公开 `_rcl_release_date_str=2026-06-22`、`_rcl_date_str=2026-06-21`、商品、回收原因与明确 `中国産` 文本。候选记录优先采用回收着手日期。
+
+### 决策
+
+- Japan 保持 `prototype`；candidate artifact 不是正式发布数据；
+- baseline 不由 workflow 自动更新，必须在人工复核新候选后显式接受；
+- 同一召回同时包含日本产与中国产商品时保留为候选，但必须人工确认产品粒度，不能自动当作纯中国商品事件发布；
+- 正式发布仍受更广固定样本、首个非空候选批次人工复核、PDL 1.0 署名文案和生产质量门禁阻断。
+
+### 验证结果
+
+- 全套 79 项单元测试通过；
+- `candidate-japan-caa --help` 正常；
+- live candidate 扫描 321 条当前 URL，对比 321 条 baseline 后得到 0 new URLs、0 China records、0 schema errors，报告状态为 `passed`；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 下一轮建议
+
+提交后手动运行 Japan workflow。若 candidate 为空且 workflow 通过，下一步为 Japan 增加第二个中国来源和一个非中国固定 smoke 样本；若出现新 URL，则先人工复核 candidate artifact，再决定是否更新 baseline。
+
+---
+
 ## 2026-06-27 · Round 28 · Japan CAA URL inventory baseline
 
 ### 本轮目标

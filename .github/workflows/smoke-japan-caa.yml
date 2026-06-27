@@ -47,6 +47,14 @@ jobs:
           --state data/state/japan_caa_recall_urls.json
           --report reports/japan_caa_inventory.json
 
+      - name: Build Japan CAA candidate records from new URLs
+        run: >-
+          python -m food_safety_watch candidate-japan-caa
+          --state data/state/japan_caa_recall_urls.json
+          --schema schemas/record.schema.json
+          --output data/candidates/japan_caa_cn.jsonl
+          --report reports/japan_caa_candidates.json
+
       - name: Publish diagnostic summary
         if: always() && hashFiles('reports/japan_caa_smoke.json') != ''
         shell: bash
@@ -63,6 +71,14 @@ jobs:
           else
             echo 'Japan CAA inventory report was not generated, likely because an earlier step failed.' >> "$GITHUB_STEP_SUMMARY"
           fi
+          echo '## Japan CAA candidates' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/japan_caa_candidates.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/japan_caa_candidates.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Japan CAA candidate report was not generated, likely because an earlier step failed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload diagnostic report
         if: always()
@@ -72,5 +88,7 @@ jobs:
           path: |
             reports/japan_caa_smoke.json
             reports/japan_caa_inventory.json
+            reports/japan_caa_candidates.json
+            data/candidates/japan_caa_cn.jsonl
           if-no-files-found: warn
           retention-days: 30

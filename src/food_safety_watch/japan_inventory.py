@@ -11,6 +11,7 @@ from typing import Any, Callable
 from .japan_probe import (
     CAA_FOOD_URL,
     CAA_HOST,
+    CaaListItem,
     SOURCE_ID,
     USER_AGENT,
     parse_caa_food_list,
@@ -73,11 +74,11 @@ def load_url_state(path: Path) -> list[str]:
     return sorted(set(urls))
 
 
-def collect_caa_food_urls(
+def collect_caa_food_items(
     *,
     page_fetcher: PageFetcher = fetch_caa_food_page,
     max_pages: int | None = None,
-) -> tuple[list[str], dict[str, Any]]:
+) -> tuple[list[CaaListItem], dict[str, Any]]:
     if max_pages is not None and max_pages < 1:
         raise ValueError("max_pages must be at least 1")
 
@@ -90,7 +91,7 @@ def collect_caa_food_urls(
     first_page_size = len(first_items)
     expected_page_count = math.ceil(first_total / first_page_size)
     page_count = min(expected_page_count, max_pages) if max_pages else expected_page_count
-    urls: set[str] = {item.url for item in first_items}
+    items_by_url: dict[str, CaaListItem] = {item.url: item for item in first_items}
     page_results: list[dict[str, Any]] = [
         {
             "page_index": 0,
@@ -104,7 +105,7 @@ def collect_caa_food_urls(
 
     for page_index in range(1, page_count):
         total_count, items = parse_caa_food_list(page_fetcher(page_index), base_url=CAA_FOOD_URL)
-        urls.update(item.url for item in items)
+        items_by_url.update((item.url, item) for item in items)
         page_results.append(
             {
                 "page_index": page_index,
@@ -130,7 +131,19 @@ def collect_caa_food_urls(
         "page_results": page_results,
         "warnings": warnings,
     }
-    return sorted(urls), diagnostics
+    return sorted(items_by_url.values(), key=lambda item: item.url), diagnostics
+
+
+def collect_caa_food_urls(
+    *,
+    page_fetcher: PageFetcher = fetch_caa_food_page,
+    max_pages: int | None = None,
+) -> tuple[list[str], dict[str, Any]]:
+    items, diagnostics = collect_caa_food_items(
+        page_fetcher=page_fetcher,
+        max_pages=max_pages,
+    )
+    return [item.url for item in items], diagnostics
 
 
 def build_inventory_report(

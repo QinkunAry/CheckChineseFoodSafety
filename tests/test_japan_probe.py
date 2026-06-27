@@ -37,7 +37,12 @@ def list_page() -> bytes:
 
 def caa_detail() -> bytes:
     return """
-    <h3>マルエツ「中国産うなぎ」 - 返金／回収</h3>
+    <div class="detail_title">
+      <h3>マルエツ「中国産うなぎ」 - 返金／回収</h3>
+      <p>消費期限の誤表示</p>
+    </div>
+    <span class="detail_cap">対応開始日</span>
+    <span class="detail_text">2026年06月21日</span>
     <input type="hidden" name="_rcl_product_str" value="中国産うなぎ長焼" class="TEXT"/>
     <input type="hidden" name="_rcl_info_str" value="商品名：中国産うなぎ長焼" class="TEXT"/>
     <input type="hidden" name="_rcl_rsn_type_str" value="食品表示法違反" class="TEXT"/>
@@ -50,6 +55,7 @@ def mhlw_detail() -> bytes:
     return """
     <input type="hidden" name="_rcl_no_str" value="RCL202601495" class="TEXT"/>
     <input type="hidden" name="_rcl_product_str" value="中国産うなぎ長焼" class="TEXT"/>
+    <input type="hidden" name="_rcl_date_str" value="2026-06-21" class="DATE"/>
     <input type="hidden" name="_rcl_info_str" value="商品名：中国産うなぎ長焼" class="TEXT"/>
     <input type="hidden" name="_rcl_rsn_type_str" value="食品表示法違反" class="TEXT"/>
     <input type="hidden" name="_rcl_rsn_memo_str" value="期限表示の印字誤り" class="TEXT"/>
@@ -76,11 +82,14 @@ class JapanProbeTests(unittest.TestCase):
     def test_inspect_caa_detail_extracts_mhlw_reference_and_evidence(self) -> None:
         detail = inspect_caa_detail(caa_detail())
         self.assertEqual(detail["mhlw_reference_id"], "RCL202601495")
+        self.assertEqual(detail["event_date"], "2026年06月21日")
+        self.assertEqual(detail["summary"], "消費期限の誤表示")
         self.assertTrue(detail["china_origin_evidence"])
 
     def test_inspect_mhlw_detail_extracts_hidden_fields(self) -> None:
         detail = inspect_mhlw_detail(mhlw_detail())
         self.assertEqual(detail["rcl_no"], "RCL202601495")
+        self.assertEqual(detail["event_date"], "2026-06-21")
         self.assertEqual(detail["reason_type"], "食品表示法違反")
         self.assertTrue(detail["china_origin_evidence"])
 
