@@ -33,6 +33,14 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s tests -v
 
+      - name: Require the main branch for production publishing
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Production publishing must run from main; got $GITHUB_REF" >&2
+            exit 1
+          fi
+
       - name: Fetch, validate, and publish Taiwan TFDA snapshot
         run: >-
           python -m food_safety_watch update-taiwan-tfda
@@ -44,6 +52,14 @@ jobs:
           --min-records 300
           --max-drop-percent 25
           --max-unclassified 0
+
+      - name: Verify generated release files agree
+        shell: bash
+        run: |
+          test -s data/processed/taiwan_tfda_cn.jsonl
+          test -s data/processed/taiwan_tfda_cn.metadata.json
+          test -s reports/taiwan_tfda_quality.json
+          python -c "import json,pathlib; data=pathlib.Path('data/processed/taiwan_tfda_cn.jsonl'); count=sum(1 for line in data.open(encoding='utf-8') if line.strip()); metadata=json.loads(pathlib.Path('data/processed/taiwan_tfda_cn.metadata.json').read_text(encoding='utf-8')); report=json.loads(pathlib.Path('reports/taiwan_tfda_quality.json').read_text(encoding='utf-8')); assert report['status']=='passed'; assert count==metadata['record_count']==report['record_count']; print(f'Verified {count} mutually consistent Taiwan TFDA records')"
 
       - name: Upload quality report
         if: always()
@@ -58,18 +74,28 @@ jobs:
           retention-days: 30
 
       - name: Commit verified release
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          first_release=false
+          if ! git cat-file -e HEAD:data/processed/taiwan_tfda_cn.jsonl 2>/dev/null; then
+            first_release=true
+          fi
           git add \
             data/processed/taiwan_tfda_cn.jsonl \
             data/processed/taiwan_tfda_cn.metadata.json \
             reports/taiwan_tfda_quality.json
+          git status --short
           if git diff --cached --quiet; then
-            echo "No verified Taiwan TFDA data changes to publish."
+            if [[ "$first_release" == "true" ]]; then
+              echo "First Taiwan TFDA release produced no staged data files." >&2
+              exit 1
+            fi
+            echo "No verified Taiwan TFDA release changes to publish."
           else
             git commit -m "data: update Taiwan TFDA noncompliance records"
-            git push
+            git push origin HEAD:main
           fi
 
       - name: Open or update failure issue

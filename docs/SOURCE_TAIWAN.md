@@ -97,3 +97,9 @@ It runs weekly or manually, commits only a passing release, opens one persistent
 failure issue, and closes that issue after recovery. On failure, the prior data
 release remains unchanged. Rollback is a revert of the automated data commit;
 the failed quality artifact remains attached to its workflow run.
+
+Production publishing is restricted to `main`. Before commit, the workflow
+requires all three release files to exist and verifies that JSONL line count,
+metadata record count and quality-report record count agree. The first release
+must create a staged data commit; a green no-op cannot silently satisfy the
+implementation gate.

@@ -17,6 +17,29 @@
 
 ---
 
+## 2026-06-29 · Round 38 · Taiwan first-publish evidence hardening
+
+### 触发原因
+
+维护者报告台湾生产 workflow 运行绿色，但同步并刷新全部远端引用后，`origin/main` 仍停在生产代码提交 `38b5246`。仓库中没有 `data/processed/taiwan_tfda_cn.jsonl`、metadata、质量报告或自动数据提交，因此不能仅凭绿色状态把台湾标为 `implemented`。
+
+### 本轮修正
+
+- 生产 workflow 强制只能从 `main` 发布，其他分支直接失败；
+- 更新命令后检查 JSONL、metadata 与质量报告均存在且非空；
+- 比较 JSONL 行数、metadata `record_count` 和质量报告 `record_count`，三者必须一致；
+- 首次发布通过 `git cat-file` 判断正式 JSONL 尚未进入 HEAD；
+- 首次发布若没有 staged data files，workflow 明确失败，不允许绿色 no-op；
+- commit 前输出 `git status --short`，便于诊断；
+- 推送改为显式 `git push origin HEAD:main`，避免 checkout 处于 detached HEAD 或错误分支时没有发布到主分支；
+- 来源继续保持 `prototype`，直到远端出现可核验的自动数据提交。
+
+### 下一步
+
+提交修正后重新运行 `Update Taiwan TFDA data`，确认日志出现 `Verified ... mutually consistent Taiwan TFDA records`，并确认远端新增 `data: update Taiwan TFDA noncompliance records` 提交。完成后再升级为 `implemented`，随后开始中国大陆国家级抽检 source spike。
+
+---
+
 ## 2026-06-29 · Round 37 · Taiwan TFDA production publishing gate
 
 ### 本轮目标
