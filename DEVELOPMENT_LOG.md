@@ -17,6 +17,41 @@
 
 ---
 
+## 2026-06-27 · Round 30 · Japan expanded fixed smoke samples
+
+### 本轮目标
+
+完成 Japan prototype 的固定样本覆盖门槛：至少两条明确中国来源记录和一条非中国对照，避免 smoke 只验证单一页面结构。
+
+### 本轮改动
+
+- 新增中国来源固定样本 CAA `00000035471` / MHLW `RCL202601519`，商品为 `とんぶり瓶詰（中国産）`；
+- 保留原中国来源样本 CAA `00000035456` / MHLW `RCL202601495`；
+- 新增非中国对照 CAA `00000035460` / MHLW `RCL202601408`；
+- workflow 门槛从 1 条中国记录、1 个 MHLW 引用提高为 2 条中国记录、3 个 MHLW 引用；
+- 增加三页组合回归测试，验证 China/non-China 分流和引用计数；
+- 更新 README、Japan source assessment、source registry 和 prototype checklist，移除“固定样本不足”阻断项。
+
+### 真实 smoke 结果
+
+2026-06-27 本地读取官方页面：CAA 食料品总数 321，固定详情 3 页，明确中国来源 2 页，MHLW 引用 3 个，smoke 状态 `passed`。第二条中国样本公开回收原因为检出芽胞菌（クロストリジウム属菌），対応開始日为 2026-06-12。
+
+### 验证结果
+
+- 全套 80 项单元测试通过；
+- 三条固定官方详情和三个 MHLW 参照均可实时读取；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 决策与剩余阻断
+
+Japan 仍为 `prototype`。固定样本覆盖已完成；升级 `implemented` 前仍需首个非空 candidate batch 人工复核、最终 PDL 1.0 署名文案、生产质量门禁与发布 workflow。
+
+### 下一轮建议
+
+提交后重新运行 Japan workflow 验证三样本门槛。通过后进入韩国 Food Safety Korea source spike；Japan 等待未来新增 URL 形成非空候选批次。
+
+---
+
 ## 2026-06-27 · Round 29 · Japan CAA incremental candidate pipeline
 
 ### 本轮目标

@@ -12,8 +12,10 @@ from food_safety_watch.japan_smoke import (
 
 CHINA_CAA_URL = "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01"
 OTHER_CAA_URL = "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035460&screenkbn=01"
+SECOND_CHINA_CAA_URL = "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035471&screenkbn=01"
 CHINA_MHLW_URL = "https://i2fas.mhlw.go.jp/faspub/_link.do?i=IO_S020502&p=RCL202601495"
 OTHER_MHLW_URL = "https://i2fas.mhlw.go.jp/faspub/_link.do?i=IO_S020502&p=RCL202601499"
+SECOND_CHINA_MHLW_URL = "https://i2fas.mhlw.go.jp/faspub/_link.do?i=IO_S020502&p=RCL202601519"
 
 
 def list_page(total: int = 320) -> bytes:
@@ -93,6 +95,27 @@ class JapanSmokeTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "failed")
         self.assertIn("China-origin evidence pages 0 below minimum 1", report["blocking_errors"])
+
+    def test_smoke_report_supports_two_china_samples_and_non_china_control(self) -> None:
+        payloads = {
+            CAA_FOOD_URL: list_page(),
+            CHINA_CAA_URL: caa_detail(china=True, mhlw_id="RCL202601495"),
+            SECOND_CHINA_CAA_URL: caa_detail(china=True, mhlw_id="RCL202601519"),
+            OTHER_CAA_URL: caa_detail(china=False, mhlw_id="RCL202601499"),
+            CHINA_MHLW_URL: mhlw_detail(china=True, rcl_id="RCL202601495"),
+            SECOND_CHINA_MHLW_URL: mhlw_detail(china=True, rcl_id="RCL202601519"),
+            OTHER_MHLW_URL: mhlw_detail(china=False, rcl_id="RCL202601499"),
+        }
+        report = build_japan_smoke_report(
+            urls=[CHINA_CAA_URL, SECOND_CHINA_CAA_URL, OTHER_CAA_URL],
+            min_china_records=2,
+            min_mhlw_references=3,
+            fetcher=payloads.__getitem__,
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["tested_page_count"], 3)
+        self.assertEqual(report["china_origin_evidence_page_count"], 2)
+        self.assertEqual(report["mhlw_reference_count"], 3)
 
     def test_smoke_report_fails_closed_when_list_count_drops(self) -> None:
         payloads = {

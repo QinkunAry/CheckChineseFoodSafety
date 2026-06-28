@@ -94,18 +94,27 @@ narrow:
 - require at least one fixed page with explicit China-origin evidence;
 - write a diagnostic report only, without publishing normalized data.
 
-Live result on 2026-06-27 JST:
+Latest expanded live result on 2026-06-27 JST:
 
-- CAA food list total: 322;
+- CAA food list total: 321;
 - visible list entries parsed: 15;
-- fixed detail pages tested: 1;
-- fixed pages with MHLW reference links: 1;
-- fixed pages with explicit China-origin evidence: 1.
+- fixed detail pages tested: 3;
+- fixed pages with MHLW reference links: 3;
+- fixed pages with explicit China-origin evidence: 2;
+- fixed non-China control pages: 1.
+
+Fixed samples:
+
+- China: CAA `00000035456` / MHLW `RCL202601495`, mixed Miyazaki- and
+  China-origin eel products;
+- China: CAA `00000035471` / MHLW `RCL202601519`, `とんぶり瓶詰（中国産）`;
+- non-China control: CAA `00000035460` / MHLW `RCL202601408`, fresh udon
+  and cold noodles without China-origin evidence.
 
 Command used:
 
 ```powershell
-python -m food_safety_watch smoke-japan-caa --report reports/japan_caa_smoke.json --min-list-total 100 --min-china-records 1 --min-mhlw-references 1 --url "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01"
+python -m food_safety_watch smoke-japan-caa --report reports/japan_caa_smoke.json --min-list-total 100 --min-china-records 2 --min-mhlw-references 3 --url "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01" --url "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035471&screenkbn=01" --url "https://www.recall.caa.go.jp/result/detail.php?rcl=00000035460&screenkbn=01"
 ```
 
 GitHub Actions workflow:
@@ -220,8 +229,6 @@ Project decision:
   `RCL...` IDs are known, but discovery still needs design.
 - The inventory discovers CAA detail URLs; MHLW `RCL...` IDs are followed from
   each new CAA detail rather than inventoried directly.
-- At least two China-origin and one non-China live samples should be fixed for
-  broader parser regression tests before candidate publication.
 - Attribution wording under PDL 1.0 must be finalized before publication.
 - The first non-empty candidate batch must be manually checked, including any
   recall that combines Chinese and non-Chinese products in one notice.
@@ -231,8 +238,8 @@ Project decision:
 Before Japan can move from `prototype` to `implemented`, the project needs:
 
 - a manually reviewed non-empty candidate JSONL and diagnostic report;
-- live smoke samples including at least two explicit China-origin records and one
-  non-China food recall;
+- continued successful live smoke coverage for the two explicit China-origin
+  records and one non-China food recall fixed above;
 - unit tests covering list parsing, detail parsing, MHLW hidden-field parsing,
   non-China exclusion, inventory changes, candidate generation, and source-drift
   diagnostics;
