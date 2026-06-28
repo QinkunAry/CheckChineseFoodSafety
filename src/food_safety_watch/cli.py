@@ -25,6 +25,8 @@ from .quality import (
     write_json_file,
     write_jsonl_file,
 )
+from .taiwan_candidates import candidate_taiwan_tfda
+from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
 from .update import QualityCheckFailed, update_fda
 
@@ -214,6 +216,52 @@ def build_parser() -> argparse.ArgumentParser:
     taiwan_probe.add_argument("--min-china-records", type=int, default=300)
     taiwan_probe.add_argument(
         "--report", type=Path, default=Path("reports/taiwan_tfda_probe.json")
+    )
+
+    taiwan_inventory = subparsers.add_parser(
+        "inventory-taiwan-tfda",
+        help="Compare Taiwan TFDA open-data records with a hash baseline",
+    )
+    taiwan_inventory.add_argument("--input", type=Path)
+    taiwan_inventory.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/taiwan_tfda_record_ids.json"),
+    )
+    taiwan_inventory.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/taiwan_tfda_inventory.json"),
+    )
+    taiwan_inventory.add_argument(
+        "--accept-current",
+        action="store_true",
+        help="Replace the Taiwan TFDA hash baseline with the current official dataset",
+    )
+
+    taiwan_candidate = subparsers.add_parser(
+        "candidate-taiwan-tfda",
+        help="Normalize new China-origin Taiwan TFDA records into candidate JSONL",
+    )
+    taiwan_candidate.add_argument("--input", type=Path)
+    taiwan_candidate.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/taiwan_tfda_record_ids.json"),
+    )
+    taiwan_candidate.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    taiwan_candidate.add_argument(
+        "--output", type=Path, default=Path("data/candidates/taiwan_tfda_cn.jsonl")
+    )
+    taiwan_candidate.add_argument(
+        "--report", type=Path, default=Path("reports/taiwan_tfda_candidates.json")
+    )
+    taiwan_candidate.add_argument(
+        "--include-current",
+        action="store_true",
+        help="Explicitly include the full current dataset for a manual review batch",
     )
 
     japan_probe = subparsers.add_parser(
@@ -503,6 +551,42 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('china_record_count', 0)} China-origin; "
             f"{report.get('china_human_food_candidate_count', 0)} China food candidates; "
             f"report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "inventory-taiwan-tfda":
+        payload = args.input.read_bytes() if args.input else None
+        report, current_ids = inventory_taiwan_tfda(
+            state_path=args.state,
+            payload=payload,
+        )
+        write_json_file(report, args.report)
+        if args.accept_current:
+            write_record_state(current_ids, args.state)
+        print(
+            f"Taiwan TFDA inventory {report['status']}: "
+            f"{report['current_count']} current; "
+            f"{report['new_record_count']} new; "
+            f"{report['removed_record_count']} removed; "
+            f"report={args.report}"
+        )
+        return 0
+
+    if args.command == "candidate-taiwan-tfda":
+        payload = args.input.read_bytes() if args.input else None
+        report, records = candidate_taiwan_tfda(
+            state_path=args.state,
+            schema=load_schema(args.schema),
+            payload=payload,
+            include_current=args.include_current,
+        )
+        write_jsonl_file(records, args.output)
+        write_json_file(report, args.report)
+        print(
+            f"Taiwan TFDA candidates {report['status']}: "
+            f"{report['new_record_count']} scoped records; "
+            f"{report['china_human_food_candidate_count']} China food candidates; "
+            f"output={args.output}; report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
 

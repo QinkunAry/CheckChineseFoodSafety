@@ -2,6 +2,12 @@ name: Probe Taiwan TFDA source
 
 on:
   workflow_dispatch:
+    inputs:
+      include_current:
+        description: Build a full current candidate batch for manual review
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "53 6 * * 6"
 
@@ -28,12 +34,41 @@ jobs:
         run: python -m pip install -e .
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
+      - name: Download one consistent official Taiwan TFDA snapshot
+        shell: bash
+        run: >-
+          curl -L --fail --silent --show-error --ipv4 --http1.1
+          --retry 3 --retry-all-errors --connect-timeout 20 --max-time 120
+          --user-agent 'FoodSafetyWatch/0.1 (+https://github.com/QinkunAry/CheckChineseFoodSafety)'
+          --output "$RUNNER_TEMP/taiwan-tfda.json"
+          https://data.fda.gov.tw/data/opendata/export/52/json
       - name: Probe official Taiwan TFDA open data
         run: >-
           python -m food_safety_watch probe-taiwan-tfda
+          --input "$RUNNER_TEMP/taiwan-tfda.json"
           --min-records 2000
           --min-china-records 300
           --report reports/taiwan_tfda_probe.json
+      - name: Compare Taiwan TFDA record inventory
+        run: >-
+          python -m food_safety_watch inventory-taiwan-tfda
+          --input "$RUNNER_TEMP/taiwan-tfda.json"
+          --state data/state/taiwan_tfda_record_ids.json
+          --report reports/taiwan_tfda_inventory.json
+      - name: Build incremental Taiwan TFDA candidates
+        shell: bash
+        run: |
+          extra_args=()
+          if [[ "${{ inputs.include_current }}" == "true" ]]; then
+            extra_args+=(--include-current)
+          fi
+          python -m food_safety_watch candidate-taiwan-tfda \
+            --input "$RUNNER_TEMP/taiwan-tfda.json" \
+            --state data/state/taiwan_tfda_record_ids.json \
+            --schema schemas/record.schema.json \
+            --output data/candidates/taiwan_tfda_cn.jsonl \
+            --report reports/taiwan_tfda_candidates.json \
+            "${extra_args[@]}"
       - name: Publish diagnostic summary
         if: always()
         shell: bash
@@ -46,11 +81,31 @@ jobs:
           else
             echo 'Taiwan TFDA probe report was not generated.' >> "$GITHUB_STEP_SUMMARY"
           fi
+          echo '## Taiwan TFDA inventory' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/taiwan_tfda_inventory.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/taiwan_tfda_inventory.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Taiwan TFDA inventory report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo '## Taiwan TFDA candidates' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/taiwan_tfda_candidates.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/taiwan_tfda_candidates.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Taiwan TFDA candidate report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload diagnostic report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: taiwan-tfda-probe-report
-          path: reports/taiwan_tfda_probe.json
+          path: |
+            reports/taiwan_tfda_probe.json
+            reports/taiwan_tfda_inventory.json
+            reports/taiwan_tfda_candidates.json
+            data/candidates/taiwan_tfda_cn.jsonl
           if-no-files-found: warn
           retention-days: 30

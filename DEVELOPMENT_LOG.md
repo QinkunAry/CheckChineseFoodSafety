@@ -17,6 +17,43 @@
 
 ---
 
+## 2026-06-28 · Round 35 · Taiwan TFDA incremental inventory and candidates
+
+### 本轮结果
+
+维护者确认上一轮 `Probe Taiwan TFDA source` GitHub Action 已通过。台湾源继续从只读 probe 推进到增量 inventory 与候选 JSONL 阶段，但仍保持 `prototype`，不会写入 `data/processed/`。
+
+### 本轮改动
+
+- 新增 `inventory-taiwan-tfda`，用完整规范化官方记录的 SHA-256 与基线比较；
+- 建立 `data/state/taiwan_tfda_record_ids.json` 首个基线，包含 2026-06-28 快照的 2,472 条记录；
+- 新增 `candidate-taiwan-tfda`，正常模式只处理基线后新增记录；
+- 增加显式 `--include-current` 人工复核模式，可生成当前完整候选批次；
+- 中国来源只接受官方 `產地` 字段，食品范围继续使用确定性税则规则；
+- 新增台湾税则食品分类、中文风险标签、统一 Schema 映射和失败关闭诊断；
+- 扩展台湾 GitHub Action：只下载一次一致快照，依次运行 probe、inventory、candidate，并上传报告与候选 artifact；
+- 更新来源文档、README、来源登记、发布前 checklist 和忽略规则。
+
+### 身份与修订语义
+
+TFDA 数据没有原生行 ID。基线使用完整 canonical JSON 的 SHA-256；因此官方修改一条既有记录时，inventory 会报告一个旧哈希被移除、一个新哈希出现。项目不把二者自动合并，留给维护者按 artifact 复核。
+
+### 验证结果
+
+- 全套 108 项单元测试通过；
+- 真实全量复核模式读取 2,472 条记录，生成 384 条中国来源食品候选；
+- 384 条候选 Schema 错误 0、重复 ID 0，日期范围 2023-01-03 至 2026-06-23；
+- 首个基线建立后，正常 inventory 为 `unchanged`：0 新增、0 移除；
+- 正常 candidate 增量为空并通过：0 条 scoped record、0 条候选；
+- `data/state/taiwan_tfda_record_ids.json` 含 2,472 个唯一 64 位哈希；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 下一步
+
+提交后重新手动运行扩展后的 `Probe Taiwan TFDA source`。首次运行建议勾选 `include_current`，下载 384 条候选 artifact 并抽样复核产地、食品范围、类别、风险标签和官方文本；通过人工验收后，再定义 production 发布门禁。
+
+---
+
 ## 2026-06-28 · Round 34 · Taiwan TFDA border noncompliance prototype
 
 ### 本轮结果

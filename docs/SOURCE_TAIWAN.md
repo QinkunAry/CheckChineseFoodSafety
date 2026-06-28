@@ -30,23 +30,40 @@ Human-food scope is an initial deterministic project filter: tariff chapters
 explicitly identifies food-contact containers/utensils are excluded. This rule
 must be reviewed before candidate publication.
 
-## Probe and workflow
+## Probe, inventory and candidate workflow
 
 ```powershell
 python -m food_safety_watch probe-taiwan-tfda --min-records 2000 --min-china-records 300 --report reports/taiwan_tfda_probe.json
+python -m food_safety_watch inventory-taiwan-tfda --state data/state/taiwan_tfda_record_ids.json --report reports/taiwan_tfda_inventory.json
+python -m food_safety_watch candidate-taiwan-tfda --state data/state/taiwan_tfda_record_ids.json --output data/candidates/taiwan_tfda_cn.jsonl --report reports/taiwan_tfda_candidates.json
 ```
 
 The probe validates required fields, dates, stable project IDs, duplicate IDs,
-minimum total count and minimum China-origin count. It stores short China and
-non-China samples in an ignored report and publishes no data.
+minimum total count and minimum China-origin count. The committed baseline uses
+the canonical full-record SHA-256 because TFDA does not publish a native row ID.
+Consequently, an official correction appears as one removed hash and one new
+hash; this is deliberately surfaced for human review rather than silently
+treated as an in-place update.
 
-`.github/workflows/probe-taiwan-tfda.yml` runs manually and weekly with
-`contents: read`, writes a Job Summary and uploads the diagnostic report.
+The candidate command normally selects only hashes absent from the baseline,
+requires explicit China origin and the deterministic human-food scope, maps the
+records to the shared schema, and writes ignored JSONL plus a quality report.
+`--include-current` is an explicit manual-review mode that builds the full
+current candidate batch; scheduled runs never enable it automatically.
+
+The first baseline was created on 2026-06-28 from 2,472 official records and is
+stored at `data/state/taiwan_tfda_record_ids.json`. A maintainer should update
+it only after reviewing the corresponding inventory and candidate artifacts.
+
+`.github/workflows/probe-taiwan-tfda.yml` downloads one consistent snapshot,
+runs probe, inventory and candidate steps manually and weekly with
+`contents: read`, writes a Job Summary and uploads diagnostic/candidate
+artifacts. It never commits or publishes processed data.
 
 ## Before candidate publication
 
 - review tariff-based food/non-food exclusions against a larger sample;
-- design an incremental baseline despite the dataset lacking a native row ID;
-- confirm stable-ID collision behavior when TFDA corrects existing rows;
-- implement normalized candidate JSONL and schema validation;
+- manually review a full current candidate batch generated with
+  `--include-current`;
+- document the baseline acceptance process after reviewed incremental records;
 - finalize attribution wording and retain the official dataset/search links.
