@@ -27,6 +27,8 @@ reports/japan_caa_inventory.json
 reports/japan_caa_candidates.json
 reports/korea_recall_probe.json
 .tmp-korea/
+reports/taiwan_tfda_probe.json
+.tmp-taiwan/
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json
 reports/fsanz_inventory.json

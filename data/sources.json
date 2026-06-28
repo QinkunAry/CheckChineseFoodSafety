@@ -66,11 +66,14 @@
     "id": "tw_tfda",
     "authority": "Taiwan Food and Drug Administration",
     "authority_region": "TW",
-    "action_type": "mixed_alerts",
+    "action_type": "inspection_failure",
     "homepage": "https://www.fda.gov.tw/ENG/index.aspx",
-    "access_method": "research_required",
-    "status": "candidate",
-    "notes": "Added to the post-Canada source queue. Need to locate food recall/alert datasets, origin evidence fields, and reuse terms."
+    "dataset_url": "https://data.gov.tw/dataset/6133",
+    "download_url": "https://data.fda.gov.tw/data/opendata/export/52/json",
+    "search_url": "https://www.fda.gov.tw/UnsafeFood/UnsafeFood.aspx?idx=0",
+    "access_method": "open_data_json",
+    "status": "prototype",
+    "notes": "Official open data includes explicit origin, product, reason, disposition and dates under Taiwan Open Government Data License 1.0. Read-only probe workflow exists; candidate publication awaits food-scope review, incremental baseline and normalized candidate gates."
   },
   {
     "id": "eu_rasff",

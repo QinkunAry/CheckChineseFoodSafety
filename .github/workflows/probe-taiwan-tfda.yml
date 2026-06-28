@@ -1,0 +1,56 @@
+name: Probe Taiwan TFDA source
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "53 6 * * 6"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-taiwan-tfda-source
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install project
+        run: python -m pip install -e .
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Probe official Taiwan TFDA open data
+        run: >-
+          python -m food_safety_watch probe-taiwan-tfda
+          --min-records 2000
+          --min-china-records 300
+          --report reports/taiwan_tfda_probe.json
+      - name: Publish diagnostic summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## Taiwan TFDA border noncompliance probe' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/taiwan_tfda_probe.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/taiwan_tfda_probe.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Taiwan TFDA probe report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: taiwan-tfda-probe-report
+          path: reports/taiwan_tfda_probe.json
+          if-no-files-found: warn
+          retention-days: 30

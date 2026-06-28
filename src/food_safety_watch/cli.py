@@ -25,6 +25,7 @@ from .quality import (
     write_json_file,
     write_jsonl_file,
 )
+from .taiwan_probe import build_taiwan_probe_report
 from .update import QualityCheckFailed, update_fda
 
 
@@ -201,6 +202,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--report",
         type=Path,
         default=Path("reports/korea_recall_probe.json"),
+    )
+
+    taiwan_probe = subparsers.add_parser(
+        "probe-taiwan-tfda",
+        help="Probe Taiwan TFDA border noncompliance open data",
+    )
+    taiwan_probe.add_argument("--input", type=Path)
+    taiwan_probe.add_argument("--limit", type=int, default=10)
+    taiwan_probe.add_argument("--min-records", type=int, default=2_000)
+    taiwan_probe.add_argument("--min-china-records", type=int, default=300)
+    taiwan_probe.add_argument(
+        "--report", type=Path, default=Path("reports/taiwan_tfda_probe.json")
     )
 
     japan_probe = subparsers.add_parser(
@@ -471,6 +484,24 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('portal_total_count')} portal records; "
             f"{report.get('sampled_record_count', 0)} sampled; "
             f"{report.get('china_origin_evidence_page_count', 0)} pages with China origin evidence; "
+            f"report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "probe-taiwan-tfda":
+        payload = args.input.read_bytes() if args.input else None
+        report = build_taiwan_probe_report(
+            payload=payload,
+            limit=args.limit,
+            min_records=args.min_records,
+            min_china_records=args.min_china_records,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"Taiwan TFDA probe {report['status']}: "
+            f"{report.get('record_count', 0)} records; "
+            f"{report.get('china_record_count', 0)} China-origin; "
+            f"{report.get('china_human_food_candidate_count', 0)} China food candidates; "
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1

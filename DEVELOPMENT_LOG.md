@@ -17,6 +17,36 @@
 
 ---
 
+## 2026-06-28 · Round 34 · Taiwan TFDA border noncompliance prototype
+
+### 本轮结果
+
+定位台湾 TFDA 官方“不符合食品資訊資料集”：JSON 直接包含产地、产品、原因、进口商、税则号、检验结果、处置和日期，并采用政府资料开放授权条款第 1 版。
+
+2026-06-28 官方 JSON 共 2,472 条，日期范围 2023-01-03 至 2026-06-23；中国大陆/中国来源 576 条。按税则第 01–24 章、排除第 23 章饲料及明确容器具原因后，384 条为中国来源可食用候选。
+
+### 本轮改动
+
+- 新增 `probe-taiwan-tfda`、解析器与稳定项目 ID；
+- 增加字段、日期、重复 ID、总记录数和中国记录数门禁；
+- 新增每周/手动只读 GitHub Action 和 artifact；
+- 新增 6 项单元测试与 `docs/SOURCE_TAIWAN.md`；
+- 台湾从 `candidate` 升为只读 `prototype`，不写入 `data/processed/`。
+
+首次真实验收发现少数字段组合会产生 147 个 ID 碰撞；由于官方数据没有原生行 ID，现改为对完整规范化官方记录做 canonical JSON SHA-256，2,472 条记录碰撞数降为 0。
+
+### 下一步
+
+提交后手动运行 `Probe Taiwan TFDA source`。通过后继续设计台湾增量 baseline 与 candidate 管线。
+
+### 验证结果
+
+- 全套 97 项单元测试通过；
+- 真实官方 JSON probe 通过：2,472 条总记录、576 条中国来源、384 条中国可食用候选、0 个重复 ID、0 个日期错误；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+---
+
 ## 2026-06-28 · Round 33 · Korea GitHub Runner timeout hardening
 
 ### 故障
@@ -50,6 +80,8 @@
 ### 下一步建议
 
 提交并重新手动运行 `Probe Korea Food Safety source`；若仍超时，保存新 artifact，下一步将固定详情健康检查与列表覆盖检查拆成独立步骤。
+
+后续结果：修复提交后的 GitHub Actions 手动运行已由维护者确认通过。
 
 ---
 
