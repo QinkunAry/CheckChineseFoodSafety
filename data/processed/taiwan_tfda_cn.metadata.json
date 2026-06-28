@@ -1,0 +1,14 @@
+{
+  "attribution": "資料提供：衛生福利部食品藥物管理署，2026，《不符合食品資訊資料集》（資料提供者未標示獨立版本號）；本專案提供標準化衍生資料。",
+  "authority": "衛生福利部食品藥物管理署",
+  "dataset_title": "不符合食品資訊資料集",
+  "dataset_url": "https://data.gov.tw/dataset/6133",
+  "dataset_version": "not_specified_by_provider",
+  "download_url": "https://data.fda.gov.tw/data/opendata/export/52/json",
+  "human_search_url": "https://www.fda.gov.tw/UnsafeFood/UnsafeFood.aspx?idx=0",
+  "license": "政府資料開放授權條款-第1版",
+  "license_url": "https://data.gov.tw/license",
+  "record_count": 388,
+  "snapshot_retrieved_at": "2026-06-28T19:47:38.857677+00:00",
+  "source_id": "tw_tfda"
+}
