@@ -17,6 +17,54 @@
 
 ---
 
+## 2026-06-29 · Round 37 · Taiwan TFDA production publishing gate
+
+### 本轮目标
+
+将已通过候选复核的台湾 TFDA 来源推进到首次正式发布前的最后阶段：完整快照重建、生产质量门禁、数据署名、原子替换、失败通知和独立自动发布 workflow。
+
+维护者已确认上一轮修正后的 388 条全量候选 GitHub Action 运行通过，首次候选复核状态由 `conditionally_passed` 更新为 `passed`。
+
+### 授权与署名核验
+
+- 官方数据集页面确认提供机关为“卫生福利部食品药物管理署”、数据集名为“不符合食品资讯资料集”；
+- 授权方式为“政府资料开放授权条款-第1版”，允许不限目的利用、改作及再授权，但要求明确显名；
+- 新增 `docs/DATA_ATTRIBUTION.md`；
+- 每次发布同时生成 metadata，记录提供机关、数据集名、抓取时间、记录数、官方链接、授权链接与署名文本；
+- 项目 MIT License 只覆盖代码，不将监管来源数据重新声明为 MIT。
+
+### 生产更新器
+
+- 新增 `update-taiwan-tfda`，每次从官方完整快照重建正式数据，不增量拼接；
+- 正式路径为 `data/processed/taiwan_tfda_cn.jsonl`、同名 metadata 和 `reports/taiwan_tfda_quality.json`；
+- 门禁要求：官方源不少于 2,000 条、正式记录不少于 300 条、相对上次下降不超过 25%、Schema/重复 ID/解析错误均为 0、未分类风险为 0；
+- 对 ID 未变化的记录保留首次 `retrieved_at`；官方修订导致完整行哈希改变时按新记录处理；
+- 质量失败时只写诊断报告，不替换正式数据或 metadata；
+- 通过门禁后使用同目录临时文件与 `Path.replace` 原子替换。
+
+### 自动化与恢复
+
+- 新增独立 `Update Taiwan TFDA data` Action，不与只读 probe 混合；
+- workflow 每周或手动运行测试和生产更新，仅提交通过验证的数据、metadata 与质量报告；
+- 失败时创建或更新唯一 Issue，恢复后自动评论并关闭；
+- 回滚方式为 revert 自动数据提交，失败质量报告保留在 workflow artifact。
+
+### 验证结果
+
+- 全套 117 项单元测试通过；
+- 真实官方快照的内存生产构建通过：388 条记录、Schema 错误 0、重复 ID 0、未分类风险 0；
+- 覆盖最小源数量、最小发布数量、数量突降、未分类风险、失败不发布、原子发布异常诊断、首次抓取时间保留、署名 metadata 和临时文件替换顺序；
+- `data/sources.json` 通过 JSON 解析；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 验收边界与下一步
+
+受管桌面沙箱允许写临时文件但拒绝 Windows 文件替换操作，因此本地未生成正式发布文件；原子替换流程由独立单元测试覆盖。首次真正的端到端发布验收由 GitHub Linux Runner 完成。Action 通过并产生经复核的自动数据提交后，再把台湾从 `prototype` 改为 `implemented`。
+
+产品顺序建议：台湾正式落地后，先对中国大陆官方抽检来源做独立 source spike，再进入欧盟 RASFF；境内抽检与境外发现中国来源食品必须使用不同的数据范围标签和统计口径。
+
+---
+
 ## 2026-06-28 · Round 36 · Taiwan TFDA first candidate acceptance review
 
 ### 本轮结果

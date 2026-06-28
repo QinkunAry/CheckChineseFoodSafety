@@ -5,6 +5,7 @@
 [![Smoke test Japan CAA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml)
 [![Probe Korea Food Safety source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml)
 [![Probe Taiwan TFDA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml)
+[![Update Taiwan TFDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
 
@@ -13,6 +14,7 @@ GitHub 仓库：[QinkunAry/CheckChineseFoodSafety](https://github.com/QinkunAry/
 > 本项目提供监管信息聚合，不进行医学诊断、实验室检测或“某食品一定安全/有毒”的判断。
 
 完整产品方向见 [`PRODUCT_GOALS.md`](PRODUCT_GOALS.md)，每轮开发过程见 [`DEVELOPMENT_LOG.md`](DEVELOPMENT_LOG.md)。
+各监管数据来源的授权和署名见 [`docs/DATA_ATTRIBUTION.md`](docs/DATA_ATTRIBUTION.md)。
 
 新增来源从 `prototype` 升级为 `implemented` 前，必须通过
 [`docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md`](docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)。
@@ -78,6 +80,7 @@ schemas/record.schema.json 统一记录契约
 src/food_safety_watch/     采集与标准化代码
 tests/                     单元测试
 docs/ARCHITECTURE.md       架构和路线图
+docs/DATA_ATTRIBUTION.md   监管数据授权与署名
 docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md 来源发布前门禁
 PRODUCT_GOALS.md           最终产品目标与里程碑
 DEVELOPMENT_LOG.md         每轮开发记录
@@ -121,6 +124,8 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 
 台湾 TFDA 已进入只读 `prototype`。官方不符合食品 JSON 直接提供产地、产品、原因、处置与日期；2026-06-28 共 2,472 条，其中 576 条明确为中国大陆/中国来源，修正食品添加物范围后形成 388 条候选。`probe-taiwan-tfda` 执行结构门禁，`inventory-taiwan-tfda` 以完整官方记录哈希监控新增与删除，`candidate-taiwan-tfda` 只把新增的中国来源食品转换为 Schema 验证候选。所有产物仍只作为 artifact，不进入正式发布数据。详见 `docs/SOURCE_TAIWAN.md` 和首次候选复核记录 `docs/reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`。
+
+台湾生产发布命令 `update-taiwan-tfda` 每次重建完整快照，并在通过来源数量、发布数量、数量突降、Schema、重复 ID、解析错误及未分类风险门禁后原子替换正式文件。独立的 `Update Taiwan TFDA data` Action 负责提交通过验证的数据、保存质量报告，并通过唯一 Issue 报告失败；首次 Action 尚未通过前，来源状态仍保持 `prototype`。
 
 ## 路线图
 

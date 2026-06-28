@@ -2,9 +2,9 @@
 
 ## Review status
 
-`conditionally_passed` — the local corrected batch passed field and scope
-review. The expanded GitHub Action must be rerun with `include_current` after
-the corrections in this review are committed.
+`passed` — the corrected local batch passed field and scope review, and the
+maintainer subsequently confirmed the GitHub Action passed with
+`include_current` after the corrections were committed.
 
 ## Reviewed snapshot
 
@@ -66,10 +66,7 @@ container/utensil migration-test reason, while the remaining ten are packaging
 or utensils such as paper boxes, trays and steamer cloth. No observed edible
 product remains in the excluded set.
 
-## Remaining gates
+## Remaining gate
 
-- rerun the GitHub Action with `include_current` and confirm 388 candidates;
-- finalize Taiwan Open Government Data License attribution wording;
-- define production minimum-count and count-drop gates;
-- add a separate publishing workflow and rollback procedure;
-- change the source to `implemented` only with the reviewed production publish.
+- run and review the first production publish, then change the source to
+  `implemented` in a separate status-confirmation commit.

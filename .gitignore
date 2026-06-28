@@ -16,6 +16,7 @@ data/candidates/*.jsonl
 data/processed/*.jsonl
 !data/processed/.gitkeep
 !data/processed/fda_cn.jsonl
+!data/processed/taiwan_tfda_cn.jsonl
 reports/.*.tmp
 reports/cfs_candidates.json
 reports/cfs_smoke.json

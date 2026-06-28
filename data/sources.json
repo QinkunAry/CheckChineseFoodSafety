@@ -73,7 +73,7 @@
     "search_url": "https://www.fda.gov.tw/UnsafeFood/UnsafeFood.aspx?idx=0",
     "access_method": "open_data_json",
     "status": "prototype",
-    "notes": "Official open data includes explicit origin, product, reason, disposition and dates under Taiwan Open Government Data License 1.0. Read-only probe, full-record hash inventory and schema-validated candidate generation exist. The corrected local review covers 388 candidates; publication awaits a corrected GitHub Action batch, final attribution wording and production gates."
+    "notes": "Official open data includes explicit origin, product, reason, disposition and dates under Taiwan Open Government Data License 1.0. Probe, hash inventory, candidate review, attribution metadata and a fail-closed full-snapshot publishing workflow exist. The source remains prototype until the first production Action passes and its automated data commit is reviewed."
   },
   {
     "id": "eu_rasff",

@@ -28,6 +28,7 @@ from .quality import (
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
+from .taiwan_update import update_taiwan_tfda
 from .update import QualityCheckFailed, update_fda
 
 
@@ -263,6 +264,30 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Explicitly include the full current dataset for a manual review batch",
     )
+
+    taiwan_update = subparsers.add_parser(
+        "update-taiwan-tfda",
+        help="Fetch, validate and atomically publish the full Taiwan TFDA release",
+    )
+    taiwan_update.add_argument("--input", type=Path)
+    taiwan_update.add_argument(
+        "--output", type=Path, default=Path("data/processed/taiwan_tfda_cn.jsonl")
+    )
+    taiwan_update.add_argument(
+        "--metadata",
+        type=Path,
+        default=Path("data/processed/taiwan_tfda_cn.metadata.json"),
+    )
+    taiwan_update.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    taiwan_update.add_argument(
+        "--report", type=Path, default=Path("reports/taiwan_tfda_quality.json")
+    )
+    taiwan_update.add_argument("--min-source-records", type=int, default=2_000)
+    taiwan_update.add_argument("--min-records", type=int, default=300)
+    taiwan_update.add_argument("--max-drop-percent", type=float, default=25.0)
+    taiwan_update.add_argument("--max-unclassified", type=int, default=0)
 
     japan_probe = subparsers.add_parser(
         "probe-japan-caa",
@@ -589,6 +614,28 @@ def main(argv: list[str] | None = None) -> int:
             f"output={args.output}; report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "update-taiwan-tfda":
+        try:
+            report = update_taiwan_tfda(
+                output=args.output,
+                report_path=args.report,
+                metadata_path=args.metadata,
+                schema_path=args.schema,
+                input_path=args.input,
+                min_source_records=args.min_source_records,
+                min_records=args.min_records,
+                max_drop_fraction=args.max_drop_percent / 100,
+                max_unclassified=args.max_unclassified,
+            )
+        except QualityCheckFailed as error:
+            print(error)
+            return 1
+        print(
+            f"Published {report['record_count']} Taiwan TFDA records to {args.output}; "
+            f"quality report={args.report}; metadata={args.metadata}"
+        )
+        return 0
 
     if args.command == "probe-japan-caa":
         payload = args.input.read_bytes() if args.input else None

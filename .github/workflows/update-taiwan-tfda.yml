@@ -1,0 +1,143 @@
+name: Update Taiwan TFDA data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 7 * * 0"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: update-taiwan-tfda-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Fetch, validate, and publish Taiwan TFDA snapshot
+        run: >-
+          python -m food_safety_watch update-taiwan-tfda
+          --output data/processed/taiwan_tfda_cn.jsonl
+          --metadata data/processed/taiwan_tfda_cn.metadata.json
+          --report reports/taiwan_tfda_quality.json
+          --schema schemas/record.schema.json
+          --min-source-records 2000
+          --min-records 300
+          --max-drop-percent 25
+          --max-unclassified 0
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taiwan-tfda-quality-report
+          path: |
+            reports/taiwan_tfda_quality.json
+            data/processed/taiwan_tfda_cn.jsonl
+            data/processed/taiwan_tfda_cn.metadata.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Commit verified release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/processed/taiwan_tfda_cn.jsonl \
+            data/processed/taiwan_tfda_cn.metadata.json \
+            reports/taiwan_tfda_quality.json
+          if git diff --cached --quiet; then
+            echo "No verified Taiwan TFDA data changes to publish."
+          else
+            git commit -m "data: update Taiwan TFDA noncompliance records"
+            git push
+          fi
+
+      - name: Open or update failure issue
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = "[automation] Taiwan TFDA data update failed";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "The scheduled Taiwan TFDA data update failed.",
+              "",
+              `- Workflow run: ${runUrl}`,
+              `- Branch: ${context.ref}`,
+              `- Commit: ${context.sha}`,
+              `- Trigger: ${context.eventName}`,
+              "",
+              "The previous verified release remains available. Review the quality artifact before publishing new data."
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title && !issue.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body
+              });
+            }
+
+      - name: Close resolved failure issue
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = "[automation] Taiwan TFDA data update failed";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title && !issue.pull_request);
+            if (existing) {
+              const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Taiwan TFDA data update recovered successfully: ${runUrl}`
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: "closed",
+                state_reason: "completed"
+              });
+            }

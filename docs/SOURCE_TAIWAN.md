@@ -15,7 +15,10 @@ field. No origin inference or cross-dataset join is required.
 The metadata lists origin, subject, reason, importer, tariff code, inspection
 method, detailed finding, legal limit, manufacturer/exporter, disposition,
 release date and acceptance date. It uses Taiwan's Open Government Data License
-1.0, is free, and has an irregular update frequency.
+1.0, is free, and has an irregular update frequency. The licence permits reuse
+and derivatives for any purpose but requires explicit attribution. The project
+uses the attribution recorded in `docs/DATA_ATTRIBUTION.md` and embeds the same
+source identity in each release metadata file.
 
 ## Live result (2026-06-28 JST)
 
@@ -66,12 +69,31 @@ runs probe, inventory and candidate steps manually and weekly with
 `contents: read`, writes a Job Summary and uploads diagnostic/candidate
 artifacts. It never commits or publishes processed data.
 
-## Before candidate publication
+## Before implemented status
 
-- confirm the corrected 388-record batch in GitHub Actions with
-  `--include-current`;
-- document the baseline acceptance process after reviewed incremental records;
-- finalize attribution wording and retain the official dataset/search links.
+- run the first production Action and review its automated data commit;
+- confirm the published JSONL, metadata and quality report are mutually consistent;
+- then change the source registry from `prototype` to `implemented`.
 
 The initial review record is
 [`reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`](reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md).
+
+## Production release design
+
+`update-taiwan-tfda` rebuilds the complete current China-origin food snapshot.
+It does not append inventory deltas. Before atomically replacing the published
+JSONL, it requires at least 2,000 official source rows, at least 300 normalized
+records, no schema or duplicate-ID errors, no parse errors, no unclassified
+hazards, and no drop greater than 25% from the previous release.
+
+Published paths:
+
+- `data/processed/taiwan_tfda_cn.jsonl`;
+- `data/processed/taiwan_tfda_cn.metadata.json`;
+- `reports/taiwan_tfda_quality.json`.
+
+`.github/workflows/update-taiwan-tfda.yml` is separate from the read-only probe.
+It runs weekly or manually, commits only a passing release, opens one persistent
+failure issue, and closes that issue after recovery. On failure, the prior data
+release remains unchanged. Rollback is a revert of the automated data commit;
+the failed quality artifact remains attached to its workflow run.
