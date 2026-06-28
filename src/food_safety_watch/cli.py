@@ -17,6 +17,7 @@ from .japan_candidates import candidate_japan_caa
 from .japan_probe import build_japan_probe_report
 from .japan_inventory import inventory_japan_caa, write_url_state as write_japan_url_state
 from .japan_smoke import build_japan_smoke_report
+from .korea_probe import build_korea_probe_report
 from .quality import (
     build_quality_report,
     load_schema,
@@ -172,6 +173,33 @@ def build_parser() -> argparse.ArgumentParser:
         "--report",
         type=Path,
         default=Path("reports/canada_origin_probe.json"),
+    )
+
+    korea_probe = subparsers.add_parser(
+        "probe-korea-recalls",
+        help="Sample official Food Safety Korea recalls and explicit origin evidence",
+    )
+    korea_probe.add_argument(
+        "--input",
+        type=Path,
+        help="Read an already downloaded Korea portal list JSON instead of requesting it",
+    )
+    korea_probe.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum number of latest recall detail pages to inspect",
+    )
+    korea_probe.add_argument(
+        "--origin-mention-limit",
+        type=int,
+        default=20,
+        help="Also inspect up to this many records with explicit country-origin wording",
+    )
+    korea_probe.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/korea_recall_probe.json"),
     )
 
     japan_probe = subparsers.add_parser(
@@ -424,6 +452,23 @@ def main(argv: list[str] | None = None) -> int:
             f"{report['cfia_food_record_count']} CFIA food records; "
             f"{report['sampled_record_count']} sampled; "
             f"{report['china_origin_evidence_page_count']} pages with China origin evidence; "
+            f"report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "probe-korea-recalls":
+        payload = args.input.read_bytes() if args.input else None
+        report = build_korea_probe_report(
+            limit=args.limit,
+            origin_mention_limit=args.origin_mention_limit,
+            list_payload=payload,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"Korea recall probe {report['status']}: "
+            f"{report.get('portal_total_count')} portal records; "
+            f"{report.get('sampled_record_count', 0)} sampled; "
+            f"{report.get('china_origin_evidence_page_count', 0)} pages with China origin evidence; "
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1

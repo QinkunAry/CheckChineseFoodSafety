@@ -124,6 +124,6 @@ operationally stable, and reviewable by a human maintainer.
 | Hong Kong CFS Alerts | `prototype` | Prior written authorization or equivalent reuse basis, reviewed candidate batch, production quality gate, publishing workflow. |
 | Canada Recalls and Safety Alerts | `candidate` | Explicit country-of-origin evidence, broader detail-page sampling, smoke workflow, prototype gate. |
 | Japan CAA / MHLW Recalls | `prototype` | Final PDL attribution wording, reviewed non-empty candidate batch, production quality gate, publishing workflow. |
-| Korea Food Safety Korea | `candidate` | Source spike not started; recall endpoint/API, origin evidence, reuse terms. |
+| Korea Food Safety Korea | `candidate` | Second explicit China-origin live sample, fixed smoke set, production access decision (registered `I0490` API vs portal endpoint), inventory design. |
 | Taiwan TFDA | `candidate` | Source spike not started; food recall/alert dataset, origin evidence, reuse terms. |
 | EU RASFF | `candidate` | API guide/endpoint confirmation, live sample payload, field mapping, smoke workflow, prototype gate. |

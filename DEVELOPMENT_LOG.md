@@ -17,6 +17,60 @@
 
 ---
 
+## 2026-06-28 · Round 31 · Korea Food Safety Korea source probe
+
+### 本轮目标
+
+评估韩国 Food Safety Korea 是否能提供可自动读取、可明确证明中国产地、且具备可接受再利用条件的召回数据源。
+
+### 官方来源发现
+
+- 官方“회수·판매중지”页面通过同域 POST JSON endpoint 加载召回列表；
+- 详情页使用数字 `rtrvldsuse_seq`，可直接读取产品名、登记日期、召回原因、经营者、地址、条码、召回等级和食品分类；
+- 官方 OpenAPI 服务 `I0490` 提供 19 个召回字段，持续更新，但需要注册登录并申请认证 key；
+- `I0490` metadata 标明需署名，可商用/非商用并允许制作衍生作品；
+- `I0490` 输出字段没有制造国或原产国。
+
+### 真实数据结果
+
+2026-06-28 读取门户全部 359 条当前记录：
+
+- 明确国家产地措辞的产品名 4 条；
+- 明确中国来源 1 条；
+- `mnf_natncd` 制造国字段非空 0 条；
+- `incmfood_prdtcd` 进口产品代码非空 0 条；
+- `prdlst_report_ledg_no` 可跨表报告号非空 0 条。
+
+中国样本为 `3000227626`：`정성 가득 담은 고춧가루(중국산)`，登记日 2026-06-19，召回原因为金属性异物（铁粉）标准不合格。非中国对照 `3000227684` 明确写 `베트남산`（越南产）。
+
+### 本轮改动
+
+- 新增 `src/food_safety_watch/korea_probe.py`；
+- 新增 `probe-korea-recalls` CLI；
+- probe 读取官方门户 JSON，组合最新样本与明确产地措辞样本，并逐页核验官方详情；
+- 仅接受 `중국산`、`중화인민공화국산`、`원산지: 중국`、`제조국: 중국` 等明确措辞；`중국식`、企业名和产品风格不算产地证据；
+- 非官方 URL、非法编号、缺产品/日期/原因或结构漂移时失败关闭；
+- 新增 7 项 Korea probe 测试；
+- 新增 `docs/SOURCE_KOREA.md`，并更新 README、source registry、checklist 与 `.gitignore`。
+
+### 决策
+
+韩国保持 `candidate`。技术访问和再利用基础较好，但当前只有一条明确中国来源，未达到“两条中国 + 一条非中国”固定 smoke 门槛。生产自动化还需在申请 `I0490` key 与使用门户 endpoint 之间做正式选择；当前 probe 不发布数据。
+
+### 验证结果
+
+- 全套 88 项单元测试通过，包括“召回原因提到中国但产品并无中国产地证据”不得纳入的假阳性测试；
+- 官方门户 JSON 返回 359/359 条记录；
+- 使用真实官方 JSON 和三张真实详情页执行 probe，结果为 `passed`：3 个样本、1 条中国来源、0 个 blocking errors；
+- 当前受管桌面环境拒绝 Python `urllib` 直接联网，因此官方响应通过 curl 下载后交给同一 probe 解析；默认联网命令仍需在普通本地环境或未来 GitHub Actions 中验证；
+- `data/sources.json` 通过 JSON 解析。
+
+### 下一轮建议
+
+运行一次 live `probe-korea-recalls` 并保存诊断结果。若结果符合预期，韩国暂时等待第二条明确中国来源记录，项目转入台湾 TFDA source spike。
+
+---
+
 ## 2026-06-27 · Round 30 · Japan expanded fixed smoke samples
 
 ### 本轮目标

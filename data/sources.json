@@ -53,9 +53,14 @@
     "authority_region": "KR",
     "action_type": "recall",
     "homepage": "https://www.foodsafetykorea.go.kr/",
-    "access_method": "research_required",
+    "portal_list_url": "https://www.foodsafetykorea.go.kr/portal/fooddanger/suspension.do?menu_grp=MENU_NEW02&menu_no=2713",
+    "portal_endpoint": "https://www.foodsafetykorea.go.kr/portal/fooddanger/searchSuspensionList.do",
+    "detail_url_pattern": "https://www.foodsafetykorea.go.kr/layer/suspensionDetail.do?search_keyword={record_id}",
+    "api_service_id": "I0490",
+    "api_metadata_url": "https://www.foodsafetykorea.go.kr/api/openApiInfo.do?menu_grp=MENU_GRP31&menu_no=661&show_cnt=10&start_idx=1&svc_no=I0490&svc_type_cd=API_TYPE06",
+    "access_method": "portal_json_html_probe_registered_openapi_available",
     "status": "candidate",
-    "notes": "Added to the post-Canada source queue. Need to locate recall/sales-suspension pages or APIs, origin evidence fields, and reuse terms."
+    "notes": "Read-only probe exists. On 2026-06-28 the portal exposed 359 records and one explicit China-origin product; embedded manufacturing-country/import join fields were empty. A second China-origin live sample and a production access decision for registered OpenAPI I0490 versus the portal endpoint are required before prototype."
   },
   {
     "id": "tw_tfda",

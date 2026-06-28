@@ -116,6 +116,8 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
+韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 可无密钥读取官方召回门户列表和详情；2026-06-28 的 359 条当前记录中发现 1 条明确 `중국산` 产品，但制造国和进口产品关联字段均为空，尚未满足两条中国来源固定样本门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
+
 ## 路线图
 
 - [x] 确定 evidence-first 数据模型
@@ -127,6 +129,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 增加来源级 URL 增量监控
 - [x] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
 - [x] 将日本 CAA / MHLW 推进到 smoke、inventory 与 candidate 管线
+- [x] 完成韩国 Food Safety Korea 来源 probe 与原产地证据评估
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill
