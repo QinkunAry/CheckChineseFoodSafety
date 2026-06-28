@@ -205,16 +205,19 @@ def select_probe_records(
     for record in records[:limit]:
         append(record)
 
-    origin_count = 0
-    for record in records:
-        if not origin_mention_limit:
-            break
-        if not has_origin_mention(str(record.get("prdtnm") or "")):
-            continue
+    china_records = [
+        record
+        for record in records
+        if has_china_origin_evidence(str(record.get("prdtnm") or ""))
+    ]
+    other_origin_records = [
+        record
+        for record in records
+        if has_origin_mention(str(record.get("prdtnm") or ""))
+        and not has_china_origin_evidence(str(record.get("prdtnm") or ""))
+    ]
+    for record in (china_records + other_origin_records)[:origin_mention_limit]:
         append(record)
-        origin_count += 1
-        if origin_count >= origin_mention_limit:
-            break
     return selected
 
 
@@ -284,9 +287,12 @@ def build_korea_probe_report(
     *,
     limit: int = 10,
     origin_mention_limit: int = 20,
+    min_china_records: int = 0,
     list_payload: bytes | None = None,
     detail_fetcher: DetailFetcher = fetch_official_detail,
 ) -> dict[str, Any]:
+    if min_china_records < 0:
+        raise ValueError("min_china_records must not be negative")
     generated_at = datetime.now(timezone.utc).isoformat()
     blocking_errors: list[str] = []
     warnings: list[str] = []
@@ -311,6 +317,7 @@ def build_korea_probe_report(
             "portal_returned_count": 0,
             "sampled_record_count": 0,
             "china_origin_evidence_page_count": 0,
+            "minimum_china_records": min_china_records,
             "page_results": [],
         }
 
@@ -352,6 +359,10 @@ def build_korea_probe_report(
         for result in page_results
         if result.get("detail", {}).get("china_origin_evidence")
     )
+    if china_pages < min_china_records:
+        blocking_errors.append(
+            f"China-origin evidence pages {china_pages} below minimum {min_china_records}"
+        )
     explicit_origin_records = sum(
         1 for record in records if has_origin_mention(str(record.get("prdtnm") or ""))
     )
@@ -384,6 +395,7 @@ def build_korea_probe_report(
         "origin_mention_sample_limit": origin_mention_limit,
         "sampled_record_count": len(selected),
         "china_origin_evidence_page_count": china_pages,
+        "minimum_china_records": min_china_records,
         "page_results": page_results,
         "warnings": warnings,
         "blocking_errors": blocking_errors,

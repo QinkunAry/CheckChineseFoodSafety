@@ -60,7 +60,7 @@
     "api_metadata_url": "https://www.foodsafetykorea.go.kr/api/openApiInfo.do?menu_grp=MENU_GRP31&menu_no=661&show_cnt=10&start_idx=1&svc_no=I0490&svc_type_cd=API_TYPE06",
     "access_method": "portal_json_html_probe_registered_openapi_available",
     "status": "candidate",
-    "notes": "Read-only probe exists. On 2026-06-28 the portal exposed 359 records and one explicit China-origin product; embedded manufacturing-country/import join fields were empty. A second China-origin live sample and a production access decision for registered OpenAPI I0490 versus the portal endpoint are required before prototype."
+    "notes": "A weekly read-only probe workflow checks the portal and requires the current explicit China-origin sample. On 2026-06-28 the portal exposed 359 records and one explicit China-origin product; embedded manufacturing-country/import join fields were empty. A second China-origin live sample and a production access decision for registered OpenAPI I0490 versus the portal endpoint are required before prototype."
   },
   {
     "id": "tw_tfda",

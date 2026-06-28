@@ -3,6 +3,7 @@
 [![CI](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml)
 [![Update FDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml)
 [![Smoke test Japan CAA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml)
+[![Probe Korea Food Safety source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
 
@@ -116,7 +117,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
-韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 可无密钥读取官方召回门户列表和详情；2026-06-28 的 359 条当前记录中发现 1 条明确 `중국산` 产品，但制造国和进口产品关联字段均为空，尚未满足两条中国来源固定样本门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
+韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 
 ## 路线图
 

@@ -1,0 +1,63 @@
+name: Probe Korea Food Safety source
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 6 * * 5"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-korea-food-safety-source
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Probe official Korea recall list and details
+        run: >-
+          python -m food_safety_watch probe-korea-recalls
+          --limit 1
+          --origin-mention-limit 2
+          --min-china-records 1
+          --report reports/korea_recall_probe.json
+
+      - name: Publish diagnostic summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## Korea Food Safety recall probe' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/korea_recall_probe.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/korea_recall_probe.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Korea probe report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: korea-recall-probe-report
+          path: reports/korea_recall_probe.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -85,7 +85,7 @@ class KoreaProbeTests(unittest.TestCase):
         selected = select_probe_records(records, limit=1, origin_mention_limit=2)
         self.assertEqual(
             [value["rtrvldsuse_seq"] for value in selected],
-            [DOMESTIC_ID, VIETNAM_ID, CHINA_ID],
+            [DOMESTIC_ID, CHINA_ID, VIETNAM_ID],
         )
 
     def test_detail_parser_extracts_required_fields_and_origin(self) -> None:
@@ -129,6 +129,24 @@ class KoreaProbeTests(unittest.TestCase):
         self.assertEqual(report["china_origin_evidence_page_count"], 1)
         self.assertEqual(report["sampled_record_count"], 3)
         self.assertEqual(report["portal_manufacturing_country_field_count"], 0)
+
+    def test_probe_can_enforce_minimum_china_coverage(self) -> None:
+        payload = json.dumps(
+            {"total_cnt": 1, "list": [record(DOMESTIC_ID, "자숙홍합살")]},
+            ensure_ascii=False,
+        ).encode()
+        report = build_korea_probe_report(
+            limit=1,
+            origin_mention_limit=0,
+            min_china_records=1,
+            list_payload=payload,
+            detail_fetcher=lambda _: detail_page("자숙홍합살"),
+        )
+        self.assertEqual(report["status"], "failed")
+        self.assertIn(
+            "China-origin evidence pages 0 below minimum 1",
+            report["blocking_errors"],
+        )
 
     def test_probe_report_fails_closed_on_detail_drift(self) -> None:
         report = build_korea_probe_report(

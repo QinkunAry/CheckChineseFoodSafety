@@ -17,6 +17,40 @@
 
 ---
 
+## 2026-06-28 · Round 32 · Korea read-only GitHub Action
+
+### 本轮目标
+
+补齐上一轮遗漏：将韩国只读 probe 接入 GitHub Actions，使 source spike 不只停留在本地命令。
+
+### 本轮改动
+
+- 新增 `.github/workflows/probe-korea-recalls.yml`；
+- 支持手动 `workflow_dispatch` 和每周五定时运行；
+- workflow 权限仅为 `contents: read`，不提交、不发布数据；
+- 运行完整单元测试后读取韩国官方列表，并核验 1 条最新详情、已知中国来源和非中国产地对照；
+- 新增 `--min-china-records`，workflow 设为 1，已知中国来源消失或解析失败时变红；
+- 产地样本选择改为优先中国记录，再补其他国家产地记录，避免列表顺序变化漏掉已知样本；
+- 无论成功失败都写入 Job Summary，并上传 `korea-recall-probe-report` artifact，保留 30 天；
+- README 新增韩国 workflow badge，来源文档、registry 和 checklist 同步更新。
+
+### 状态边界
+
+新增 Action 不改变来源状态。韩国仍是 `candidate`：当前门槛 1 只用于监控已知样本；发现第二条明确中国来源后，才能将门槛提高到 2 并评估升级 `prototype`。
+
+### 验证结果
+
+- 全套 89 项单元测试通过；
+- `probe-korea-recalls --help` 显示覆盖门槛参数；
+- 最低中国样本门槛和中国优先抽样均有回归测试；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 下一步建议
+
+提交后手动运行 `Probe Korea Food Safety source`。若绿色，韩国进入等待第二条中国样本的监控状态，随后开始台湾 TFDA source spike。
+
+---
+
 ## 2026-06-28 · Round 31 · Korea Food Safety Korea source probe
 
 ### 本轮目标

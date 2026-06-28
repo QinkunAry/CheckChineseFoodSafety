@@ -80,17 +80,27 @@ not the location of the recalling business.
 ## Probe command
 
 `probe-korea-recalls` requests up to 400 current portal records, samples the
-latest records, adds records whose product names contain explicit country-origin
-wording, and validates their official detail pages.
+latest records, prioritizes explicit China-origin product names, adds other
+records with country-origin wording, and validates their official detail pages.
 
 ```powershell
-python -m food_safety_watch probe-korea-recalls --limit 10 --origin-mention-limit 20 --report reports/korea_recall_probe.json
+python -m food_safety_watch probe-korea-recalls --limit 1 --origin-mention-limit 2 --min-china-records 1 --report reports/korea_recall_probe.json
 ```
 
 The probe fails closed on malformed list responses, invalid identifiers,
 non-official detail URLs, or missing product/date/reason fields. It does not fail
 merely because only one China-origin record currently exists; instead, the count
-is preserved in the report for the prototype decision.
+is preserved in the report for the prototype decision. The weekly workflow sets
+`--min-china-records 1`, so disappearance or parser loss of the known China
+sample turns the Action red.
+
+GitHub Actions workflow:
+
+- `.github/workflows/probe-korea-recalls.yml`;
+- manual `workflow_dispatch` plus a weekly read-only schedule;
+- repository permission is `contents: read`;
+- uploads `reports/korea_recall_probe.json` for 30 days;
+- never writes candidate or processed data.
 
 ## Evidence rules
 
@@ -132,8 +142,8 @@ production access method and attribution wording are finalized.
 
 - A second live recall with explicit China-origin evidence is needed to satisfy
   the shared two-China/one-non-China smoke gate.
-- A fixed non-China detail sample must be included alongside the two China
-  samples in a GitHub Actions smoke workflow.
+- The current workflow gate must be raised from one to two China-origin records
+  when a second live sample becomes available.
 - The maintainer must decide whether to register for an `I0490` OpenAPI key or
   obtain confirmation that the portal JSON endpoint is suitable for scheduled
   use.

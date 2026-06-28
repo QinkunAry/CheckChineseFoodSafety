@@ -196,6 +196,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=20,
         help="Also inspect up to this many records with explicit country-origin wording",
     )
+    korea_probe.add_argument("--min-china-records", type=int, default=0)
     korea_probe.add_argument(
         "--report",
         type=Path,
@@ -461,6 +462,7 @@ def main(argv: list[str] | None = None) -> int:
         report = build_korea_probe_report(
             limit=args.limit,
             origin_mention_limit=args.origin_mention_limit,
+            min_china_records=args.min_china_records,
             list_payload=payload,
         )
         write_json_file(report, args.report)
