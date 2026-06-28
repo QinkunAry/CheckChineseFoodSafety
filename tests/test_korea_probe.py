@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import unittest
+from unittest.mock import patch
 
 from food_safety_watch.korea_probe import (
     build_korea_probe_report,
     detail_url,
+    fetch_probe_recall_records,
+    fetch_recall_list,
     has_china_origin_evidence,
     inspect_recall_detail,
     parse_recall_list,
@@ -68,6 +72,58 @@ def detail_page(
 
 
 class KoreaProbeTests(unittest.TestCase):
+    def test_list_fetch_uses_retrying_ipv4_curl_request(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=b'{"total_cnt":0,"list":[]}',
+            stderr=b"",
+        )
+        with (
+            patch("food_safety_watch.korea_probe.shutil.which", return_value="curl"),
+            patch(
+                "food_safety_watch.korea_probe.subprocess.run",
+                return_value=completed,
+            ) as run,
+        ):
+            payload = fetch_recall_list(show_count=12, search_keyword="중국산")
+        self.assertEqual(payload, completed.stdout)
+        command = run.call_args.args[0]
+        self.assertIn("--ipv4", command)
+        self.assertIn("--http1.1", command)
+        self.assertIn("--retry-all-errors", command)
+        self.assertIn("show_cnt=12", command)
+        self.assertIn("search_keyword=중국산", command)
+
+    def test_live_discovery_merges_latest_and_china_search(self) -> None:
+        latest = json.dumps(
+            {
+                "total_cnt": 359,
+                "list": [
+                    record(DOMESTIC_ID, "자숙홍합살"),
+                    record(VIETNAM_ID, "고춧가루(베트남산)"),
+                ],
+            },
+            ensure_ascii=False,
+        ).encode()
+        china = json.dumps(
+            {"total_cnt": 1, "list": [record(CHINA_ID, "고춧가루(중국산)")]},
+            ensure_ascii=False,
+        ).encode()
+
+        def fetch(**kwargs: object) -> bytes:
+            return china if kwargs.get("search_keyword") == "중국산" else latest
+
+        with patch("food_safety_watch.korea_probe.fetch_recall_list", side_effect=fetch):
+            total, records, diagnostics = fetch_probe_recall_records()
+        self.assertEqual(total, 359)
+        self.assertEqual(len(records), 3)
+        self.assertEqual(diagnostics["china_search_total"], 1)
+        self.assertEqual(
+            [value["rtrvldsuse_seq"] for value in records],
+            [DOMESTIC_ID, VIETNAM_ID, CHINA_ID],
+        )
+
     def test_origin_evidence_requires_explicit_product_of_china_phrase(self) -> None:
         self.assertTrue(has_china_origin_evidence("고춧가루(중국산)"))
         self.assertTrue(has_china_origin_evidence("원산지: 중국"))

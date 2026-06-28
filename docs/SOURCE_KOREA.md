@@ -79,9 +79,11 @@ not the location of the recalling business.
 
 ## Probe command
 
-`probe-korea-recalls` requests up to 400 current portal records, samples the
-latest records, prioritizes explicit China-origin product names, adds other
-records with country-origin wording, and validates their official detail pages.
+`probe-korea-recalls` requests the latest 60 portal records, makes a second
+small product-name search for `중국산`, merges the two responses by official
+sequence ID, prioritizes explicit China-origin product names, and validates the
+selected official detail pages. This avoids a large list response on hosted
+runners while retaining the known China-origin coverage gate.
 
 ```powershell
 python -m food_safety_watch probe-korea-recalls --limit 1 --origin-mention-limit 2 --min-china-records 1 --report reports/korea_recall_probe.json
@@ -101,6 +103,12 @@ GitHub Actions workflow:
 - repository permission is `contents: read`;
 - uploads `reports/korea_recall_probe.json` for 30 days;
 - never writes candidate or processed data.
+
+The first GitHub Actions run timed out while Python `urllib` requested 400
+records in one POST. The network layer now uses curl with IPv4, HTTP/1.1,
+connection and total timeouts, three retries across all error types, User-Agent,
+Referer, and AJAX headers. The list discovery was split into the latest 60 plus
+the dedicated China-origin search.
 
 ## Evidence rules
 

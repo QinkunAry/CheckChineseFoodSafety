@@ -3,8 +3,8 @@ from __future__ import annotations
 import html
 import json
 import re
-import urllib.parse
-import urllib.request
+import shutil
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable
@@ -35,6 +35,10 @@ USER_AGENT = (
 )
 
 DetailFetcher = Callable[[str], bytes]
+
+
+class KoreaFetchError(RuntimeError):
+    pass
 
 CHINA_ORIGIN_RE = re.compile(
     r"(?:중국산|중화인민공화국산)(?=$|[\s()\[\],/·])|"
@@ -105,7 +109,7 @@ def detail_url(record_id: str) -> str:
 def fetch_recall_list(
     *,
     page: int = 1,
-    show_count: int = 400,
+    show_count: int = 60,
     search_keyword: str = "",
     timeout: float = 45,
 ) -> bytes:
@@ -113,30 +117,20 @@ def fetch_recall_list(
         raise ValueError("page must be at least 1")
     if show_count < 1:
         raise ValueError("show_count must be at least 1")
-    form = urllib.parse.urlencode(
-        {
+    return _curl_request(
+        PORTAL_LIST_ENDPOINT,
+        data={
             "menu_no": "2713",
             "menu_grp": "MENU_NEW02",
             "start_idx": str(page),
             "show_cnt": str(show_count),
             "search_type": "01",
             "search_keyword": search_keyword,
-        }
-    ).encode("utf-8")
-    request = urllib.request.Request(
-        PORTAL_LIST_ENDPOINT,
-        data=form,
-        headers={
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "Referer": PORTAL_LIST_URL,
-            "User-Agent": USER_AGENT,
-            "X-Requested-With": "XMLHttpRequest",
         },
-        method="POST",
+        accept="application/json, text/javascript, */*; q=0.01",
+        extra_headers=["X-Requested-With: XMLHttpRequest"],
+        timeout=timeout,
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        return response.read()
 
 
 def fetch_official_detail(url: str, *, timeout: float = 45) -> bytes:
@@ -149,16 +143,61 @@ def fetch_official_detail(url: str, *, timeout: float = 45) -> bytes:
     record_ids = query.get("search_keyword") or []
     if len(record_ids) != 1 or not re.fullmatch(r"\d+", record_ids[0]):
         raise ValueError("Korea recall detail URL requires one numeric search_keyword")
-    request = urllib.request.Request(
+    return _curl_request(
         url,
-        headers={
-            "Accept": "text/html,*/*;q=0.8",
-            "Referer": PORTAL_LIST_URL,
-            "User-Agent": USER_AGENT,
-        },
+        accept="text/html,*/*;q=0.8",
+        timeout=timeout,
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        return response.read()
+
+
+def _curl_request(
+    url: str,
+    *,
+    data: dict[str, str] | None = None,
+    accept: str,
+    extra_headers: list[str] | None = None,
+    timeout: float = 120,
+) -> bytes:
+    curl = shutil.which("curl")
+    if not curl:
+        raise KoreaFetchError("curl is required for Food Safety Korea requests")
+    command = [
+        curl,
+        "-L",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--ipv4",
+        "--http1.1",
+        "--retry",
+        "3",
+        "--retry-all-errors",
+        "--connect-timeout",
+        "20",
+        "--max-time",
+        str(max(1, int(timeout))),
+        "--user-agent",
+        USER_AGENT,
+        "--referer",
+        PORTAL_LIST_URL,
+        "--header",
+        f"Accept: {accept}",
+    ]
+    for header in extra_headers or []:
+        command.extend(["--header", header])
+    for key, value in (data or {}).items():
+        command.extend(["--data-urlencode", f"{key}={value}"])
+    command.append(url)
+    try:
+        completed = subprocess.run(command, check=True, capture_output=True)
+    except subprocess.CalledProcessError as error:
+        message = error.stderr.decode("utf-8", errors="replace").strip()
+        raise KoreaFetchError(
+            f"Food Safety Korea request failed for {url}: {message or error}"
+        ) from error
+    if not completed.stdout:
+        raise KoreaFetchError(f"Food Safety Korea returned an empty response for {url}")
+    return completed.stdout
 
 
 def parse_recall_list(payload: bytes | str) -> tuple[int, list[dict[str, Any]]]:
@@ -181,6 +220,28 @@ def parse_recall_list(payload: bytes | str) -> tuple[int, list[dict[str, Any]]]:
             raise ValueError(f"Korea recall list item {index} lacks ID or product name")
         records.append(record)
     return total_count, records
+
+
+def fetch_probe_recall_records() -> tuple[int, list[dict[str, Any]], dict[str, int | str]]:
+    total_count, latest_records = parse_recall_list(
+        fetch_recall_list(show_count=60)
+    )
+    china_total, china_records = parse_recall_list(
+        fetch_recall_list(show_count=60, search_keyword="중국산")
+    )
+    records_by_id: dict[str, dict[str, Any]] = {}
+    for record in [*latest_records, *china_records]:
+        records_by_id.setdefault(str(record["rtrvldsuse_seq"]), record)
+    return (
+        total_count,
+        list(records_by_id.values()),
+        {
+            "discovery_mode": "latest_60_plus_china_origin_search",
+            "latest_returned_count": len(latest_records),
+            "china_search_total": china_total,
+            "china_search_returned_count": len(china_records),
+        },
+    )
 
 
 def select_probe_records(
@@ -299,8 +360,18 @@ def build_korea_probe_report(
     page_results: list[dict[str, Any]] = []
 
     try:
-        payload = list_payload if list_payload is not None else fetch_recall_list()
-        total_count, records = parse_recall_list(payload)
+        if list_payload is None:
+            total_count, records, discovery = fetch_probe_recall_records()
+        else:
+            total_count, records = parse_recall_list(list_payload)
+            discovery = {
+                "discovery_mode": "provided_list_payload",
+                "latest_returned_count": len(records),
+                "china_search_total": 0,
+                "china_search_returned_count": 0,
+            }
+        if total_count < 1 or not records:
+            raise ValueError("Korea recall discovery returned no records")
     except Exception as error:
         return {
             "status": "failed",
@@ -313,6 +384,7 @@ def build_korea_probe_report(
                 f"Korea recall list fetch/parse failed: {type(error).__name__}: {error}"
             ],
             "warnings": [],
+            "discovery_mode": "unavailable",
             "portal_total_count": None,
             "portal_returned_count": 0,
             "sampled_record_count": 0,
@@ -321,7 +393,7 @@ def build_korea_probe_report(
             "page_results": [],
         }
 
-    if len(records) < total_count:
+    if list_payload is not None and len(records) < total_count:
         warnings.append(
             f"portal returned {len(records)} of {total_count} records; probe coverage is partial"
         )
@@ -380,6 +452,7 @@ def build_korea_probe_report(
         "api_metadata_url": API_METADATA_URL,
         "portal_total_count": total_count,
         "portal_returned_count": len(records),
+        **discovery,
         "portal_explicit_origin_mention_count": explicit_origin_records,
         "portal_china_origin_product_count": china_list_records,
         "portal_manufacturing_country_field_count": sum(

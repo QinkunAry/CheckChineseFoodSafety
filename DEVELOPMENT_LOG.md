@@ -17,6 +17,42 @@
 
 ---
 
+## 2026-06-28 · Round 33 · Korea GitHub Runner timeout hardening
+
+### 故障
+
+首次 `Probe Korea Food Safety source` GitHub Actions 在列表阶段失败：Python `urllib` 对一次请求 400 条记录的官方 portal POST 超时，未进入 JSON 解析或详情验证。
+
+### 本轮修复
+
+- 韩国网络层由 `urllib` 改为参数数组调用 curl；
+- 强制 IPv4 与 HTTP/1.1，设置连接/总超时、三次 `--retry-all-errors`、User-Agent、Referer 和 AJAX header；
+- 列表发现从单次 400 条改为“最新 60 条 + `중국산` 产品名专项搜索”；
+- 两份官方响应按 `rtrvldsuse_seq` 去重合并，仍优先抽取中国来源；
+- 报告新增 discovery mode、最新列表返回数和中国专项搜索计数；
+- 增加 curl 参数和双列表合并回归测试。
+
+### 状态边界
+
+本次只修复 GitHub Runner 网络可靠性，不降低最低 1 条中国来源门槛，也不改变韩国 `candidate` 状态。
+
+### 验证说明
+
+受管桌面 sandbox 会把子进程 curl 指向不可用的本地代理，因此默认联网命令在该 sandbox 内不能作为验收依据；同样的官方 POST 使用获准的外部 curl 已成功返回数据。最终效果需由下一次 GitHub Actions run 验证。
+
+### 验证结果
+
+- 全套 91 项单元测试通过；
+- curl 的 IPv4、HTTP/1.1、重试和表单参数有独立回归测试；
+- 最新列表与中国专项搜索的去重合并有独立回归测试；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 下一步建议
+
+提交并重新手动运行 `Probe Korea Food Safety source`；若仍超时，保存新 artifact，下一步将固定详情健康检查与列表覆盖检查拆成独立步骤。
+
+---
+
 ## 2026-06-28 · Round 32 · Korea read-only GitHub Action
 
 ### 本轮目标
