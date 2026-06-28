@@ -30,6 +30,9 @@ class TaiwanProbeTests(unittest.TestCase):
 
     def test_food_scope_uses_tariff_chapters_and_excludes_feed(self) -> None:
         self.assertTrue(is_human_food_candidate(record("中國", "桂花", "1211.90")))
+        self.assertTrue(
+            is_human_food_candidate(record("中國", "辣椒樹脂", "3301.90.19.00-0"))
+        )
         self.assertFalse(is_human_food_candidate(record("中國", "砧板", "3924.10", "容器具-溶出試驗不符規定")))
         self.assertFalse(is_human_food_candidate(record("中國", "飼料", "2309.90")))
 

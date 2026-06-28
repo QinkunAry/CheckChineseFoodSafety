@@ -25,7 +25,12 @@ AUTHORITY = "Taiwan Food and Drug Administration"
 
 
 def product_category(record: dict[str, str]) -> str:
-    match = re.match(r"\s*(\d{2})", record.get("貨品分類號列", ""))
+    tariff_code = record.get("貨品分類號列", "").strip()
+    if tariff_code.startswith(("2836.30", "3203.00", "3301.90", "3802.90")):
+        return "food_additives_and_processing_aids"
+    if tariff_code.startswith("1905.90.10"):
+        return "food_capsules"
+    match = re.match(r"\s*(\d{2})", tariff_code)
     chapter = int(match.group(1)) if match else 0
     categories = {
         2: "meat_and_poultry",
@@ -61,6 +66,7 @@ def hazard_tags(reasons: list[str]) -> list[str]:
             "農藥", "動物用藥", "重金屬", "防腐劑", "甜味劑", "漂白劑",
             "著色劑", "二氧化硫", "塑化劑", "三聚氰胺", "真菌毒素",
             "污染物質", "毒素", "抗氧化劑", "化學",
+            "戴奧辛", "多氯聯苯", "環氧乙烷", "磷酸鹽", "氯化物", "污染", "咖啡因",
         ),
         "allergen": ("過敏原", "致敏"),
         "labeling": ("標示", "標籤"),

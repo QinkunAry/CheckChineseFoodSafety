@@ -125,5 +125,5 @@ operationally stable, and reviewable by a human maintainer.
 | Canada Recalls and Safety Alerts | `candidate` | Explicit country-of-origin evidence, broader detail-page sampling, smoke workflow, prototype gate. |
 | Japan CAA / MHLW Recalls | `prototype` | Final PDL attribution wording, reviewed non-empty candidate batch, production quality gate, publishing workflow. |
 | Korea Food Safety Korea | `candidate` | Second explicit China-origin live sample and raising the workflow gate to two, production access decision (registered `I0490` API vs portal endpoint), inventory design. |
-| Taiwan TFDA Border Noncompliance | `prototype` | Food-scope review, manually reviewed candidate batch, attribution wording, production quality gate and publishing workflow. |
+| Taiwan TFDA Border Noncompliance | `prototype` | Corrected 388-record Action batch confirmation, attribution wording, production quality gate and publishing workflow. |
 | EU RASFF | `candidate` | API guide/endpoint confirmation, live sample payload, field mapping, smoke workflow, prototype gate. |

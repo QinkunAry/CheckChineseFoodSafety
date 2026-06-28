@@ -23,6 +23,12 @@ REQUIRED_FIELDS = {
     "處置情形", "發布日期", "報驗受理日期",
 }
 CHINA_ORIGINS = {"中國大陸", "中國", "中華人民共和國"}
+FOOD_ADDITIVE_TARIFF_PREFIXES = (
+    "2836.30",  # sodium bicarbonate
+    "3203.00",  # food colour preparations
+    "3301.90",  # plant extracts and oleoresins
+    "3802.90",  # food-processing mineral preparations
+)
 
 
 class TaiwanFetchError(RuntimeError):
@@ -69,13 +75,18 @@ def is_china_origin(record: dict[str, str]) -> bool:
 
 
 def is_human_food_candidate(record: dict[str, str]) -> bool:
-    match = re.match(r"\s*(\d{2})", record.get("貨品分類號列", ""))
+    tariff_code = record.get("貨品分類號列", "").strip()
+    if "容器具" in record.get("原因", ""):
+        return False
+    if tariff_code.startswith(FOOD_ADDITIVE_TARIFF_PREFIXES):
+        return True
+    match = re.match(r"\s*(\d{2})", tariff_code)
     if not match:
         return False
     chapter = int(match.group(1))
     if chapter == 23 or not 1 <= chapter <= 24:
         return False
-    return "容器具" not in record.get("原因", "")
+    return True
 
 
 def stable_record_id(record: dict[str, str]) -> str:

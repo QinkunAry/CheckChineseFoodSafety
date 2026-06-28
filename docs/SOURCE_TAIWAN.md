@@ -22,13 +22,19 @@ release date and acceptance date. It uses Taiwan's Open Government Data License
 - total records: 2,472;
 - date range: 2023-01-03 through 2026-06-23;
 - explicit `中國大陸` or `中國` records: 576;
-- likely human-food records: 2,179;
-- likely China-origin human-food records: 384.
+- likely human-food and food-additive records: 2,183;
+- likely China-origin human-food and food-additive records: 388.
 
-Human-food scope is an initial deterministic project filter: tariff chapters
-01–24 are included, chapter 23 animal feed is excluded, and records whose reason
-explicitly identifies food-contact containers/utensils are excluded. This rule
-must be reviewed before candidate publication.
+Human-food scope is a deterministic project filter: tariff chapters 01–24 are
+included, chapter 23 animal feed is excluded, and records whose reason explicitly
+identifies food-contact containers/utensils are excluded. Four reviewed tariff
+prefixes outside chapters 01–24 cover observed food additives or processing aids:
+`2836.30`, `3203.00`, `3301.90`, and `3802.90`.
+
+The first candidate review found and corrected three issues: four food-additive
+records were initially excluded, five empty-capsule records were too broadly
+labelled as bakery products, and ten chemical findings were unclassified. The
+corrected full batch contains 388 candidates with no unclassified hazard tags.
 
 ## Probe, inventory and candidate workflow
 
@@ -62,8 +68,10 @@ artifacts. It never commits or publishes processed data.
 
 ## Before candidate publication
 
-- review tariff-based food/non-food exclusions against a larger sample;
-- manually review a full current candidate batch generated with
+- confirm the corrected 388-record batch in GitHub Actions with
   `--include-current`;
 - document the baseline acceptance process after reviewed incremental records;
 - finalize attribution wording and retain the official dataset/search links.
+
+The initial review record is
+[`reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`](reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md).

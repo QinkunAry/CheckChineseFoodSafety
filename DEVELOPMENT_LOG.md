@@ -17,6 +17,43 @@
 
 ---
 
+## 2026-06-28 · Round 36 · Taiwan TFDA first candidate acceptance review
+
+### 本轮结果
+
+维护者确认带 inventory 与 candidate 的台湾 GitHub Action 已运行通过。随后对首次全量候选执行字段回链、食品范围、类别和风险标签复核；验收发现并修正了三类规则问题，候选数由 384 调整为 388。
+
+### 全量回链检查
+
+- 2,472 条官方记录与候选使用完整记录哈希一一关联；
+- 每条候选均来自官方 `產地` 明确为中国大陆/中国的记录；
+- 产品名、发布日期、出口商、税则号、原因和详细检出说明均与原始行一致；
+- 修正后 388 条候选覆盖集合与确定性食品范围完全一致；
+- 388 个 candidate ID 与 source record ID 均无重复。
+
+### 复核发现与修正
+
+- 辣椒红、碳酸氢钠、活化酸性白土、辣椒树脂属于食品添加物或加工助剂，但税则位于第 24 章之外；新增四个窄范围税则前缀白名单；
+- 5 条税则 `1905.90.10` 空胶囊不应标为烘焙谷物，改为 `food_capsules`；
+- 10 条“其他卫生项目”详情实际为戴奥辛、多氯联苯、环氧乙烷、磷酸盐、氯化物或污染，补充化学风险词表；
+- 修正后 388 条候选中 `other_or_unclassified` 降为 0；
+- 其余 188 条被排除的中国来源记录均为餐盒、纸托、刀具、吸管、蒸笼布等食品接触器具或非食品相关产品。
+
+### 文档与验证
+
+- 新增 `docs/reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`；
+- 更新台湾来源文档、README、来源登记和发布前 checklist；
+- 全套 109 项单元测试通过；
+- 真实官方快照 probe 通过：2,472 条总记录、576 条中国来源、388 条中国食品/添加物候选；
+- 全量 candidate 通过：Schema 错误 0、重复 ID 0、未分类风险 0；
+- `git diff --check` 通过（仅有 Windows LF/CRLF 提示）。
+
+### 状态与下一步
+
+本地首次候选复核为 `conditionally_passed`，台湾仍保持 `prototype`。提交修正后需要再次手动运行 Action 并勾选 `include_current`，确认 artifact 中为 388 条候选；之后处理授权署名和 production 发布门禁。
+
+---
+
 ## 2026-06-28 · Round 35 · Taiwan TFDA incremental inventory and candidates
 
 ### 本轮结果

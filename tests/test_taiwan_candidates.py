@@ -9,6 +9,7 @@ from food_safety_watch.quality import load_schema
 from food_safety_watch.taiwan_candidates import (
     build_candidate_report,
     candidate_taiwan_tfda,
+    hazard_tags,
     parse_candidate_record,
     product_category,
 )
@@ -100,6 +101,17 @@ class TaiwanCandidateTests(unittest.TestCase):
     def test_tariff_category_is_deterministic(self) -> None:
         self.assertEqual(product_category(record(tariff="0306.17")), "seafood")
         self.assertEqual(product_category(record(tariff="2106.90")), "prepared_foods")
+        self.assertEqual(product_category(record(tariff="1905.90.10")), "food_capsules")
+        self.assertEqual(
+            product_category(record(tariff="3301.90.19")),
+            "food_additives_and_processing_aids",
+        )
+
+    def test_observed_other_hygiene_chemicals_are_classified(self) -> None:
+        for substance in (
+            "戴奧辛", "多氯聯苯", "環氧乙烷", "磷酸鹽", "氯化物", "咖啡因污染",
+        ):
+            self.assertEqual(hazard_tags([substance]), ["chemical"])
 
     def test_candidate_pipeline_selects_only_hashes_after_baseline(self) -> None:
         existing = record(subject="既有草莓")

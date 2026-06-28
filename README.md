@@ -120,7 +120,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 
-台湾 TFDA 已进入只读 `prototype`。官方不符合食品 JSON 直接提供产地、产品、原因、处置与日期；2026-06-28 共 2,472 条，其中 576 条明确为中国大陆/中国来源。`probe-taiwan-tfda` 执行结构门禁，`inventory-taiwan-tfda` 以完整官方记录哈希监控新增与删除，`candidate-taiwan-tfda` 只把新增的中国来源食品转换为 Schema 验证候选。手动 Action 可显式生成全量当前候选供首次人工复核；所有产物仍只作为 artifact，不进入正式发布数据。详见 `docs/SOURCE_TAIWAN.md`。
+台湾 TFDA 已进入只读 `prototype`。官方不符合食品 JSON 直接提供产地、产品、原因、处置与日期；2026-06-28 共 2,472 条，其中 576 条明确为中国大陆/中国来源，修正食品添加物范围后形成 388 条候选。`probe-taiwan-tfda` 执行结构门禁，`inventory-taiwan-tfda` 以完整官方记录哈希监控新增与删除，`candidate-taiwan-tfda` 只把新增的中国来源食品转换为 Schema 验证候选。所有产物仍只作为 artifact，不进入正式发布数据。详见 `docs/SOURCE_TAIWAN.md` 和首次候选复核记录 `docs/reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`。
 
 ## 路线图
 
