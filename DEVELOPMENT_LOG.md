@@ -17,6 +17,81 @@
 
 ---
 
+## 2026-06-29 · Round 40 · China SAMR national sampling source probe
+
+### 本轮目标
+
+在台湾 TFDA 正式发布完成后，启动中国大陆国家级食品安全监督抽检 source spike；验证官方公告能否自动发现、附件是否有稳定产品字段，并明确境内抽检与境外中国来源事件的统计边界。
+
+台湾生产 workflow 本轮再次运行后远端仍停在 `21e8d22`。由于官方快照没有变化，工作流没有生成空数据提交，行为符合预期；台湾 `implemented` 状态不变。
+
+### 来源发现与边界
+
+- 定位国家市场监督管理总局食品安全抽检监测司公告列表、产品结果查询系统和两种官方附件格式；
+- 官方公告 CMS 响应报告 259 条列表项，当前测试页发现 4 条“批次食品抽检不合格情况”通报；
+- 产品结果查询系统要求 image token 与滑块结果，不作为无人值守采集入口，也不尝试绕过；
+- 自动化改用官方公告列表、公告详情与 XLSX/ZIP 附件；
+- 来源范围登记为 `domestic_regulatory_scope`，未来不得与境外进口拒绝、召回或边境不合格事件静默混合统计；
+- SAMR 网站声明没有提供清晰开放数据许可证，当前只发布结构诊断，不提交官方附件、候选 JSONL 或正式数据。
+
+### 实现内容
+
+- 新增 `probe-china-samr` 命令和 `china_samr_probe.py`；
+- 限制请求为 SAMR 官方 HTTPS host；
+- 解析官方 CMS JSON 中的列表总数、公告标题、日期和 URL；
+- 解析通报发布日期、声明的不合格批次数和 XLSX/ZIP 附件；
+- 使用 Python 标准库读取 XLSX XML，不增加运行时 spreadsheet 依赖；
+- 同时支持直链 XLSX 与 ZIP 内多个 XLSX，并检查八个核心字段；
+- 新增只读 `Probe China SAMR sampling source` GitHub Action，仅上传诊断报告；
+- 新增来源评估文档、来源登记、README badge/说明、发布前 checklist 状态和忽略规则；
+- 新增 7 项 SAMR 回归测试。
+
+### 真实样本结果
+
+- 一份 46 批次通报 ZIP 包含 21 个分类工作簿；
+- 21 个工作簿全部通过核心字段检查，列数范围为 16–19；
+- 73 个物理数据行对应 46 个唯一 `抽样编号`；
+- 结果确认同一食品的多个不合格项目会占用延续行，正式解析必须按抽样编号聚合或前向填充，不能把每行当作独立事件；
+- 本地用刚下载的官方列表、公告和 ZIP 快照完成离线端到端 probe：`passed`、259 条列表项、4 条当前批次通报、21 个工作簿、73 行、46 个唯一抽样编号。
+
+### 验证与状态
+
+- 全套 124 项单元测试通过；
+- `data/sources.json` 解析通过，`sources` 命令显示 `cn_samr_sampling` 为 `candidate`；
+- CLI help、官方列表解析、公告解析、ZIP/XLSX 字段检查通过；
+- `git diff --check` 通过，仅有 Windows LF/CRLF 提示；
+- SAMR 保持 `candidate`，新 Action 尚待提交后首次 GitHub 手动运行验收。
+
+### 下一步
+
+提交并手动运行 `Probe China SAMR sampling source`。通过后实现公告完整分页与 URL baseline，再实现按抽样编号聚合、延续行、Excel 日期及修订语义；完成境内 scope 模型和复用依据评审后，才评估升级 `prototype`。中国 source spike 达到该阶段后回到欧盟 RASFF。
+
+---
+
+## 2026-06-29 · Round 39 · Taiwan TFDA implemented acceptance
+
+### 验收证据
+
+- 正确的 `Update Taiwan TFDA data` workflow 从 `main` 运行通过；
+- GitHub Actions 自动生成并推送提交 `21e8d22 data: update Taiwan TFDA noncompliance records`；
+- 正式提交包含 `data/processed/taiwan_tfda_cn.jsonl`、同名 metadata 和 `reports/taiwan_tfda_quality.json`；
+- JSONL、metadata 和质量报告记录数一致，均为 388；
+- 质量报告状态为 `passed`，Schema 错误 0、重复 ID 0、解析错误 0、未分类风险 0；
+- 正式数据日期范围为 2023-01-03 至 2026-06-23；
+- metadata 包含提供机关、数据集名、抓取时间、官方链接、授权链接和署名文本。
+
+### 状态变更
+
+- 台湾 TFDA 从 `prototype` 正式升级为 `implemented`；
+- 更新来源登记、README、发布前 checklist、来源文档与首次候选复核记录；
+- 台湾成为 FDA 之后第二个正式生产数据源。
+
+### 下一步
+
+开始中国大陆国家级食品安全抽检 source spike。中国境内抽检必须使用独立范围标签，不与境外监管机构发现的中国来源食品混合统计；先验证国家级来源的结构化访问、公告覆盖、字段证据、增量标识和再利用条件，再决定是否进入 prototype。
+
+---
+
 ## 2026-06-29 · Round 38 · Taiwan first-publish evidence hardening
 
 ### 触发原因

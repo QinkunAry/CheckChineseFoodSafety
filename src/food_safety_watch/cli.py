@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import __version__
 from .canada_probe import build_origin_probe_report
+from .china_samr_probe import build_china_samr_probe_report
 from .cfs_candidates import candidate_cfs
 from .cfs_inventory import inventory_cfs, write_url_state as write_cfs_url_state
 from .cfs_smoke import build_smoke_report as build_cfs_smoke_report
@@ -205,6 +206,27 @@ def build_parser() -> argparse.ArgumentParser:
         "--report",
         type=Path,
         default=Path("reports/korea_recall_probe.json"),
+    )
+
+    china_probe = subparsers.add_parser(
+        "probe-china-samr",
+        help="Probe official SAMR sampling notices and XLSX/ZIP attachments",
+    )
+    china_probe.add_argument(
+        "--url",
+        action="append",
+        dest="urls",
+        help="Inspect an explicit official SAMR notice instead of the latest discovered notice",
+    )
+    china_probe.add_argument("--max-notices", type=int, default=1)
+    china_probe.add_argument("--max-attachments", type=int, default=2)
+    china_probe.add_argument("--min-listing-count", type=int, default=100)
+    china_probe.add_argument("--min-discovered-notices", type=int, default=2)
+    china_probe.add_argument("--min-workbooks", type=int, default=1)
+    china_probe.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/china_samr_probe.json"),
     )
 
     taiwan_probe = subparsers.add_parser(
@@ -557,6 +579,25 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('portal_total_count')} portal records; "
             f"{report.get('sampled_record_count', 0)} sampled; "
             f"{report.get('china_origin_evidence_page_count', 0)} pages with China origin evidence; "
+            f"report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "probe-china-samr":
+        report = build_china_samr_probe_report(
+            notice_urls=args.urls,
+            max_notices=args.max_notices,
+            max_attachments=args.max_attachments,
+            min_listing_count=args.min_listing_count,
+            min_discovered_notices=args.min_discovered_notices,
+            min_workbooks=args.min_workbooks,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"China SAMR probe {report['status']}: "
+            f"{report.get('listing_count', 0)} listed items; "
+            f"{report.get('discovered_notice_count', 0)} batch notices on the tested page; "
+            f"{report.get('inspected_workbook_count', 0)} workbooks; "
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1

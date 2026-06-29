@@ -2,7 +2,7 @@
 
 ## Decision
 
-Taiwan TFDA is a strong read-only `prototype`. Its official open dataset covers
+Taiwan TFDA is an `implemented` production source. Its official open dataset covers
 noncompliant imported food and related products and exposes an explicit `產地`
 field. No origin inference or cross-dataset join is required.
 
@@ -69,11 +69,13 @@ runs probe, inventory and candidate steps manually and weekly with
 `contents: read`, writes a Job Summary and uploads diagnostic/candidate
 artifacts. It never commits or publishes processed data.
 
-## Before implemented status
+## Implementation acceptance
 
-- run the first production Action and review its automated data commit;
-- confirm the published JSONL, metadata and quality report are mutually consistent;
-- then change the source registry from `prototype` to `implemented`.
+The first production Action created automated commit `21e8d22`. Independent
+post-publish validation confirmed 388 JSONL records, matching metadata and
+quality-report counts, a passing schema check, zero duplicate IDs and zero
+unclassified hazards. The source therefore meets the project's `implemented`
+gate.
 
 The initial review record is
 [`reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`](reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md).

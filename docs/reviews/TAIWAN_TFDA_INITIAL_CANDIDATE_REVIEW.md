@@ -66,7 +66,8 @@ container/utensil migration-test reason, while the remaining ten are packaging
 or utensils such as paper boxes, trays and steamer cloth. No observed edible
 product remains in the excluded set.
 
-## Remaining gate
+## Production follow-up
 
-- run and review the first production publish, then change the source to
-  `implemented` in a separate status-confirmation commit.
+Completed: production Action commit `21e8d22` published 388 mutually consistent
+records, metadata and a passing quality report. Taiwan TFDA is now an
+`implemented` source.

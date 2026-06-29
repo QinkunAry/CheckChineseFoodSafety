@@ -72,8 +72,21 @@
     "download_url": "https://data.fda.gov.tw/data/opendata/export/52/json",
     "search_url": "https://www.fda.gov.tw/UnsafeFood/UnsafeFood.aspx?idx=0",
     "access_method": "open_data_json",
-    "status": "prototype",
-    "notes": "Official open data includes explicit origin, product, reason, disposition and dates under Taiwan Open Government Data License 1.0. Probe, hash inventory, candidate review, attribution metadata and a fail-closed full-snapshot publishing workflow exist. The source remains prototype until the first production Action passes and its automated data commit is reviewed."
+    "status": "implemented",
+    "notes": "Official open data includes explicit origin, product, reason, disposition and dates under Taiwan Open Government Data License 1.0. Probe, hash inventory, reviewed candidates, attribution metadata and a fail-closed full-snapshot publishing workflow are operational. The first verified production Action published 388 records in commit 21e8d22."
+  },
+  {
+    "id": "cn_samr_sampling",
+    "authority": "State Administration for Market Regulation",
+    "authority_region": "CN",
+    "action_type": "inspection_failure",
+    "homepage": "https://www.samr.gov.cn/spcjs/index.html",
+    "announcement_url": "https://www.samr.gov.cn/spcjs/xxfb/index.html",
+    "query_url": "https://spcjsac.gsxt.gov.cn/",
+    "access_method": "official_cms_json_notice_html_xlsx_zip_probe",
+    "scope": "domestic_regulatory_scope",
+    "status": "candidate",
+    "notes": "The official announcement CMS and attached XLSX/ZIP files are technically accessible. A read-only probe validates notice discovery and workbook headers without bypassing the separate query system's slider challenge. Publication is blocked on historical coverage, sampling-number normalization, domestic-scope modelling, candidate review, and reuse-rights clarification."
   },
   {
     "id": "eu_rasff",

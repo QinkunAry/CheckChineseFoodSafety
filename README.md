@@ -6,6 +6,7 @@
 [![Probe Korea Food Safety source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml)
 [![Probe Taiwan TFDA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml)
 [![Update Taiwan TFDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml)
+[![Probe China SAMR source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
 
@@ -117,15 +118,17 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
 
-后续来源优先级调整为：加拿大、日本、韩国、台湾，最后再回到欧盟 RASFF。欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
+台湾正式发布后，来源优先级调整为：中国大陆国家级抽检，随后回到欧盟 RASFF。欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 
-台湾 TFDA 已进入只读 `prototype`。官方不符合食品 JSON 直接提供产地、产品、原因、处置与日期；2026-06-28 共 2,472 条，其中 576 条明确为中国大陆/中国来源，修正食品添加物范围后形成 388 条候选。`probe-taiwan-tfda` 执行结构门禁，`inventory-taiwan-tfda` 以完整官方记录哈希监控新增与删除，`candidate-taiwan-tfda` 只把新增的中国来源食品转换为 Schema 验证候选。所有产物仍只作为 artifact，不进入正式发布数据。详见 `docs/SOURCE_TAIWAN.md` 和首次候选复核记录 `docs/reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`。
+台湾 TFDA 已升级为 `implemented`。官方不符合食品 JSON 直接提供产地、产品、原因、处置与日期；首次正式发布从 2,472 条官方记录中生成 388 条中国来源食品及食品添加物记录。`update-taiwan-tfda` 每次重建完整快照，通过生产门禁后原子替换 `data/processed/taiwan_tfda_cn.jsonl`，并同步发布署名 metadata 与质量报告。详见 `docs/SOURCE_TAIWAN.md` 和首次候选复核记录 `docs/reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`。
 
-台湾生产发布命令 `update-taiwan-tfda` 每次重建完整快照，并在通过来源数量、发布数量、数量突降、Schema、重复 ID、解析错误及未分类风险门禁后原子替换正式文件。独立的 `Update Taiwan TFDA data` Action 负责提交通过验证的数据、保存质量报告，并通过唯一 Issue 报告失败；首次 Action 尚未通过前，来源状态仍保持 `prototype`。
+台湾生产发布命令 `update-taiwan-tfda` 每次重建完整快照，并在通过来源数量、发布数量、数量突降、Schema、重复 ID、解析错误及未分类风险门禁后原子替换正式文件。独立的 `Update Taiwan TFDA data` Action 负责提交通过验证的数据、保存质量报告，并通过唯一 Issue 报告失败。首次生产 Action 已在提交 `21e8d22` 完成 388 条记录的正式发布。
+
+中国大陆 SAMR 国家级食品安全监督抽检当前为 `candidate`。只读 `probe-china-samr` 从官方公告 CMS 发现抽检不合格通报，并验证直链 XLSX 或 ZIP 内 XLSX 的核心字段；它不会绕过产品查询系统的滑块验证，也不会上传或提交官方附件。2026-06-29 检查的一份 46 批次通报包含 21 个工作簿，73 个物理行对应 46 个唯一抽样编号，说明后续标准化必须按抽样编号合并多项不合格结果。境内抽检将使用独立 `domestic_regulatory_scope`，不能与境外监管发现的中国来源食品混合统计。版权和标准化复用依据明确前不发布候选或正式数据。详见 `docs/SOURCE_CHINA_SAMR.md`。
 
 ## 路线图
 
@@ -141,6 +144,9 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 完成韩国 Food Safety Korea 来源 probe 与原产地证据评估
 - [x] 将台湾 TFDA 边境不合格食品推进到只读 probe prototype
 - [x] 为台湾 TFDA 增加增量记录基线与候选 JSONL 管线
+- [x] 将台湾 TFDA 升级为 implemented 正式数据源
+- [x] 完成中国大陆 SAMR 公告与 XLSX/ZIP 只读 source probe
+- [ ] 为中国大陆 SAMR 建立历史公告 baseline、抽样编号聚合和候选复核
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill
