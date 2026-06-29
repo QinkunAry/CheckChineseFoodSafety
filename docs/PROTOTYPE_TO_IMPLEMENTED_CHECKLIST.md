@@ -126,5 +126,5 @@ operationally stable, and reviewable by a human maintainer.
 | Japan CAA / MHLW Recalls | `prototype` | Final PDL attribution wording, reviewed non-empty candidate batch, production quality gate, publishing workflow. |
 | Korea Food Safety Korea | `candidate` | Second explicit China-origin live sample and raising the workflow gate to two, production access decision (registered `I0490` API vs portal endpoint), inventory design. |
 | Taiwan TFDA Border Noncompliance | `implemented` | First production Action and automated data commit `21e8d22` reviewed. |
-| China SAMR National Sampling | `candidate` | GitHub smoke acceptance, historical notice baseline, sampling-number grouping, domestic-scope model, candidate review, reuse-rights decision. |
+| China SAMR National Sampling | `candidate` | Expanded inventory Action acceptance, sampling-number grouping, domestic-scope model, candidate review, reuse-rights decision. |
 | EU RASFF | `candidate` | API guide/endpoint confirmation, live sample payload, field mapping, smoke workflow, prototype gate. |

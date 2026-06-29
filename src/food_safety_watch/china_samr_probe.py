@@ -48,6 +48,9 @@ CORE_HEADERS = {
     "食品细类",
     "抽样编号",
 }
+INSPECTION_NOTICE_RE = re.compile(
+    r"\d+批次食品抽检不合格情况的(?:通报|通告)"
+)
 
 Fetcher = Callable[[str], bytes]
 
@@ -154,7 +157,7 @@ def parse_listing_response(payload: bytes | str) -> tuple[int, list[SamrNotice]]
         if not anchor_match:
             continue
         title = _clean_text(anchor_match.group("title") or anchor_match.group("body"))
-        if not re.search(r"\d+批次食品抽检不合格情况的通报", title):
+        if not INSPECTION_NOTICE_RE.search(title):
             continue
         url = _normalize_url(
             urljoin(LIST_PAGE_URL, html.unescape(anchor_match.group("href")))
@@ -178,7 +181,10 @@ def parse_notice_page(payload: bytes | str, *, url: str) -> dict[str, Any]:
     _validate_url(url)
     text = payload.decode("utf-8", errors="replace") if isinstance(payload, bytes) else payload
     visible_text = _clean_text(text)
-    title_match = re.search(r"市场监管总局[^。]{0,30}?关于\d+批次食品抽检不合格情况的通报", visible_text)
+    title_match = re.search(
+        r"市场监管总局[^。]{0,30}?关于\d+批次食品抽检不合格情况的(?:通报|通告)",
+        visible_text,
+    )
     if not title_match:
         raise ValueError("SAMR page is not a batch food-inspection notice")
     batch_match = re.search(r"检出\s*(\d+)\s*批次样品不合格", visible_text)

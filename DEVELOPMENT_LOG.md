@@ -17,6 +17,46 @@
 
 ---
 
+## 2026-06-30 · Round 41 · China SAMR complete notice inventory
+
+### 触发结果
+
+维护者确认首次 `Probe China SAMR sampling source` GitHub Action 运行通过。SAMR 官方公告发现、通报详情、ZIP/XLSX 下载和核心字段检查已在 GitHub Runner 上完成首次验收；来源仍保持 `candidate`。
+
+### 本轮实现
+
+- 扩大公告标题规则，同时接受“食品抽检不合格情况的通报”和“通告”；
+- 验证官方 CMS 的 `paramJson.pageNo/pageSize` 分页参数；
+- 确认服务器单页最多返回 99 条，完整 259 条列表需要 3 页；
+- 新增 `inventory-china-samr`，完整扫描时要求各页总数一致、每页非空且物理列表项合计严格等于官方总数；
+- 支持 `--max-pages` 诊断，但部分扫描禁止通过 `--accept-current` 替换 baseline；
+- 建立 `data/state/china_samr_notice_urls.json` 首个 URL baseline；
+- 扩展 SAMR GitHub Action，在 probe 后运行完整 inventory 并上传两份结构诊断报告；
+- 更新 README、来源登记、来源评估、checklist 和忽略规则；
+- 新增 7 项 inventory 回归测试。
+
+### 真实 inventory 结果
+
+- 官方 CMS 报告 259 条全部类型列表项；
+- 3 页实际返回 99、99、61 条，合计严格为 259；
+- 其中 78 条标题符合批次食品抽检不合格通报/通告；
+- baseline 覆盖 2021 至 2026 年公告 URL；
+- 78 个 URL 无重复；
+- 使用同一完整官方快照回读 baseline，inventory 状态为 `unchanged`：78 current、0 new、0 removed。
+
+### 验证
+
+- 全套 131 项单元测试通过；
+- baseline 为 78 个唯一、排序后的官方 HTTPS URL，声明数量与数组长度一致；
+- `inventory-china-samr --help`、来源 registry JSON 和 baseline JSON 解析通过；
+- `git diff --check` 通过，仅有 Windows LF/CRLF 提示。
+
+### 状态与下一步
+
+首次 probe Action 已通过；加入 inventory 后的扩展 workflow 仍需提交并再次手动运行。通过后进入产品行标准化：先解析一份直链 XLSX 通报与一份 ZIP 通报，完成 `抽样编号` 聚合、延续行前向填充、Excel 日期转换和修订语义，再决定是否生成仅供本地人工复核的 candidate。
+
+---
+
 ## 2026-06-29 · Round 40 · China SAMR national sampling source probe
 
 ### 本轮目标

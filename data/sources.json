@@ -86,7 +86,7 @@
     "access_method": "official_cms_json_notice_html_xlsx_zip_probe",
     "scope": "domestic_regulatory_scope",
     "status": "candidate",
-    "notes": "The official announcement CMS and attached XLSX/ZIP files are technically accessible. A read-only probe validates notice discovery and workbook headers without bypassing the separate query system's slider challenge. Publication is blocked on historical coverage, sampling-number normalization, domestic-scope modelling, candidate review, and reuse-rights clarification."
+    "notes": "The official announcement CMS and attached XLSX/ZIP files are technically accessible. Read-only probe and full three-page inventory exist without bypassing the separate query system's slider challenge; the 2026-06-30 baseline contains 78 batch-notice URLs from 259 indexed items. Publication is blocked on sampling-number normalization, domestic-scope modelling, candidate review, and reuse-rights clarification."
   },
   {
     "id": "eu_rasff",

@@ -6,6 +6,10 @@ from pathlib import Path
 
 from . import __version__
 from .canada_probe import build_origin_probe_report
+from .china_samr_inventory import (
+    inventory_china_samr,
+    write_url_state as write_china_samr_url_state,
+)
 from .china_samr_probe import build_china_samr_probe_report
 from .cfs_candidates import candidate_cfs
 from .cfs_inventory import inventory_cfs, write_url_state as write_cfs_url_state
@@ -227,6 +231,31 @@ def build_parser() -> argparse.ArgumentParser:
         "--report",
         type=Path,
         default=Path("reports/china_samr_probe.json"),
+    )
+
+    china_inventory = subparsers.add_parser(
+        "inventory-china-samr",
+        help="Compare all official SAMR batch notices with a URL baseline",
+    )
+    china_inventory.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/china_samr_notice_urls.json"),
+    )
+    china_inventory.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/china_samr_inventory.json"),
+    )
+    china_inventory.add_argument(
+        "--max-pages",
+        type=int,
+        help="Limit scanned CMS pages for diagnostics; omit for a complete inventory",
+    )
+    china_inventory.add_argument(
+        "--accept-current",
+        action="store_true",
+        help="Replace the SAMR notice URL baseline with the complete current inventory",
     )
 
     taiwan_probe = subparsers.add_parser(
@@ -601,6 +630,26 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "inventory-china-samr":
+        report, notices = inventory_china_samr(
+            state_path=args.state,
+            max_pages=args.max_pages,
+        )
+        write_json_file(report, args.report)
+        if args.accept_current:
+            if not report["complete_scan"]:
+                print("Refusing to replace the SAMR baseline from a partial scan")
+                return 1
+            write_china_samr_url_state(notices, args.state)
+        print(
+            f"China SAMR inventory {report['status']}: "
+            f"{report['current_count']} current notices; "
+            f"{report['new_url_count']} new; "
+            f"{report['removed_url_count']} removed; "
+            f"report={args.report}"
+        )
+        return 0
 
     if args.command == "probe-taiwan-tfda":
         payload = args.input.read_bytes() if args.input else None

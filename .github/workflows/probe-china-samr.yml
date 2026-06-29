@@ -42,6 +42,12 @@ jobs:
           --min-workbooks 1
           --report reports/china_samr_probe.json
 
+      - name: Compare complete SAMR notice inventory with baseline
+        run: >-
+          python -m food_safety_watch inventory-china-samr
+          --state data/state/china_samr_notice_urls.json
+          --report reports/china_samr_inventory.json
+
       - name: Publish diagnostic summary
         if: always()
         shell: bash
@@ -54,12 +60,22 @@ jobs:
           else
             echo 'China SAMR probe report was not generated.' >> "$GITHUB_STEP_SUMMARY"
           fi
+          echo '## China SAMR notice inventory' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/china_samr_inventory.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/china_samr_inventory.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'China SAMR inventory report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload diagnostic report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: china-samr-probe-report
-          path: reports/china_samr_probe.json
+          path: |
+            reports/china_samr_probe.json
+            reports/china_samr_inventory.json
           if-no-files-found: warn
           retention-days: 30

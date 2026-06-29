@@ -9,8 +9,8 @@ or ZIP archives of XLSX files, and the workbooks expose product-level sampling
 identifiers and noncompliance evidence.
 
 The source is not yet a `prototype`. Reuse rights for publishing normalized
-derivatives need a documented decision, historical discovery has not been
-baselined, and product-row normalization has not yet passed candidate review.
+derivatives need a documented decision, and product-row normalization has not
+yet passed candidate review.
 
 This source has a different scope from the project's overseas sources. It
 describes national sampling in the Chinese domestic market and must carry a
@@ -33,9 +33,11 @@ China-origin products.
 ## Discovery result (2026-06-29 JST)
 
 The official announcement page loads its listing from a same-origin CMS JSON
-endpoint. The first response reported 259 indexed items and exposed normal
-pagination metadata. The tested page contained four national notices whose
-titles explicitly identify batches of noncompliant food.
+endpoint. The endpoint reported 259 indexed items and exposed normal pagination
+metadata. The server returns at most 99 items per request, so the inventory scans
+three pages and verifies that their item counts add back to 259. It recognizes
+both `通报` and `通告` title forms and found 78 batch-level noncompliance notices
+covering 2021 through 2026.
 
 The separate product-result query is not suitable for unattended collection:
 its public request flow obtains an image token and requires a slider result.
@@ -95,7 +97,20 @@ are checked.
 
 `.github/workflows/probe-china-samr.yml` runs the probe manually and weekly with
 `contents: read`. It runs the complete unit-test suite, uploads only
-`reports/china_samr_probe.json`, and never commits candidate or processed data.
+structural diagnostic reports, and never commits candidate or processed data.
+The initial probe workflow passed on GitHub Actions on 2026-06-30.
+
+The same workflow now runs the complete inventory after the probe:
+
+```powershell
+python -m food_safety_watch inventory-china-samr --state data/state/china_samr_notice_urls.json --report reports/china_samr_inventory.json
+```
+
+The committed baseline was created on 2026-06-30 after a complete three-page
+scan: 259 indexed items, 78 matching batch notices, zero duplicate notice URLs.
+It is stored at `data/state/china_samr_notice_urls.json`. A partial scan may be
+used for diagnostics, but `--accept-current` refuses to replace the baseline
+unless the scan is complete.
 
 ## Reuse and publication boundary
 
@@ -116,8 +131,7 @@ Until a defensible reuse basis or permission is recorded:
 
 ## Gates before prototype
 
-- Pass the read-only workflow on GitHub Actions.
-- Confirm paginated historical discovery and create a dated notice baseline.
+- Pass the expanded probe plus inventory workflow on GitHub Actions.
 - Parse at least two notices covering both direct-XLSX and ZIP packaging.
 - Implement sampling-number grouping, continuation-row handling and Excel date
   conversion with regression fixtures.
