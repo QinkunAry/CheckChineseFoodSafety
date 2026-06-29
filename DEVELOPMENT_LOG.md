@@ -17,6 +17,67 @@
 
 ---
 
+## 2026-06-30 · Round 42 · China SAMR grouped local candidates
+
+### 触发结果
+
+维护者确认加入完整 inventory 后的 `Probe China SAMR sampling source` GitHub Action 运行通过。SAMR 的只读公告健康检查与 78 条 URL baseline 监控均已在 GitHub Runner 验收。
+
+### 本轮目标
+
+实现产品级候选解析，但继续遵守复用边界：候选 JSONL 仅在本地生成，不加入定时 workflow，不作为公开 artifact 上传。
+
+### 工作簿复核与解析
+
+- 按 spreadsheet skill 使用官方工作簿复核行结构、日期值和合并区域；
+- 直链酒类 XLSX 的 5 个物理数据行聚合为 3 个抽样事件；
+- ZIP 中 21 个工作簿的 73 个物理数据行聚合为 46 个抽样事件，其中 27 行为延续行；
+- 聚合同时识别序号变化和抽样编号变化；同一序号在不同合并区域重复出现时仍保留为同一事件；
+- 一个抽样事件保留全部不合格项目、检验值、标准值、标签要求和两个备注列；
+- 支持 Excel 数字日期、普通文本日期及 `购进日期：2025/4/12` 等前缀形式；
+- `抽样编号` 作为来源记录 ID，46 条候选无重复来源 ID 或项目 ID；
+- 新增本地手动 `candidate-china-samr` 命令，支持官方详情页配合本地 XLSX/ZIP；
+- 新增 6 项聚合、日期、ZIP、scope、失败关闭和 Schema 回归测试。
+
+### 重要范围修正
+
+首次映射曾尝试依据 `标称生产企业地址` 判断中国来源，真实候选立即暴露出错误：进口食品可能在该字段包含中国进口商、经销商或代理地址。该字段不能证明产品原产地。
+
+SAMR 候选现统一使用：
+
+- `regulatory_scope: domestic_market`；
+- `market_country: CN`；
+- `origin_country: unknown`。
+
+生产企业地址继续作为官方证据字段保留，包含大陆地区词的数量仅作为诊断，不再转成原产地。46 条 ZIP 候选中 37 条有大陆生产企业地址证据，但全部 46 条均诚实保留为来源国未知。
+
+### 候选质量结果
+
+- ZIP 工作簿：21；
+- 物理数据行：73；
+- 聚合事件：46；
+- 延续行：27；
+- 重复抽样编号：0；
+- Schema 错误：0；
+- 来源国：46 `unknown`；
+- 类别覆盖：14 类；
+- 风险标签覆盖：chemical、microbiological、labeling、adulteration、composition/quality；
+- 新增 `docs/reviews/CHINA_SAMR_INITIAL_CANDIDATE_REVIEW.md`，状态为 `conditionally_passed`。
+
+### 验证
+
+- 全套 137 项单元测试通过；
+- 真实直链 XLSX 候选命令通过：5 行聚合为 3 条；
+- 真实 ZIP 候选命令通过：73 行聚合为 46 条；
+- 两批候选均无 Schema 或重复 ID 错误；
+- `git diff --check` 通过，仅有 Windows LF/CRLF 提示。
+
+### 状态与下一步
+
+SAMR 继续保持 `candidate`，不会因为解析成功就升级。下一步需要扩大人工字段抽样，定义修订公告中同一抽样编号的更新语义，验证历史年份的类别/风险覆盖，并解决标准化事实与简短原因文本的复用依据。完成后再评估升级 `prototype`；随后回到欧盟 RASFF。
+
+---
+
 ## 2026-06-30 · Round 41 · China SAMR complete notice inventory
 
 ### 触发结果

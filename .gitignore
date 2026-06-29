@@ -34,6 +34,7 @@ reports/taiwan_tfda_candidates.json
 .tmp-taiwan/
 reports/china_samr_probe.json
 reports/china_samr_inventory.json
+reports/china_samr*_candidates.json
 .tmp-china/
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json

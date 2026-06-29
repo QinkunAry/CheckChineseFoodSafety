@@ -8,7 +8,7 @@
 [![Update Taiwan TFDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml)
 [![Probe China SAMR source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml)
 
-一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，保留原始出处，并转换为可检索的统一记录。
+一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，也研究中国境内官方抽检不合格信息；所有范围保留原始出处并转换为可区分监管语境的统一记录。
 
 GitHub 仓库：[QinkunAry/CheckChineseFoodSafety](https://github.com/QinkunAry/CheckChineseFoodSafety)
 
@@ -128,7 +128,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 台湾生产发布命令 `update-taiwan-tfda` 每次重建完整快照，并在通过来源数量、发布数量、数量突降、Schema、重复 ID、解析错误及未分类风险门禁后原子替换正式文件。独立的 `Update Taiwan TFDA data` Action 负责提交通过验证的数据、保存质量报告，并通过唯一 Issue 报告失败。首次生产 Action 已在提交 `21e8d22` 完成 388 条记录的正式发布。
 
-中国大陆 SAMR 国家级食品安全监督抽检当前为 `candidate`。只读 `probe-china-samr` 从官方公告 CMS 发现抽检不合格通报，并验证直链 XLSX 或 ZIP 内 XLSX 的核心字段；`inventory-china-samr` 用 3 页完整扫描与 78 条公告 URL baseline 比较增删。它不会绕过产品查询系统的滑块验证，也不会上传或提交官方附件。2026-06-29 检查的一份 46 批次通报包含 21 个工作簿，73 个物理行对应 46 个唯一抽样编号，说明后续标准化必须按抽样编号合并多项不合格结果。境内抽检将使用独立 `domestic_regulatory_scope`，不能与境外监管发现的中国来源食品混合统计。版权和标准化复用依据明确前不发布候选或正式数据。详见 `docs/SOURCE_CHINA_SAMR.md`。
+中国大陆 SAMR 国家级食品安全监督抽检当前为 `candidate`。只读 `probe-china-samr` 验证公告和 XLSX/ZIP 核心字段；`inventory-china-samr` 用 3 页完整扫描与 78 条公告 URL baseline 比较增删；二者组成的扩展 Action 已在 GitHub Runner 通过。手动 `candidate-china-samr` 可在本地把 73 个物理行按抽样编号聚合成 46 个事件，处理延续行和 Excel 日期并通过统一 Schema，但不会加入定时 workflow 或上传候选 artifact。SAMR 是中国市场监管范围，不是原产地数据集：候选记录使用 `regulatory_scope: domestic_market`、`market_country: CN` 和 `origin_country: unknown`，不能根据生产商、进口商或代理地址推断来源国。版权和标准化复用依据明确前不发布候选或正式数据。详见 `docs/SOURCE_CHINA_SAMR.md` 和首次本地复核 `docs/reviews/CHINA_SAMR_INITIAL_CANDIDATE_REVIEW.md`。
 
 ## 路线图
 
@@ -147,7 +147,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 将台湾 TFDA 升级为 implemented 正式数据源
 - [x] 完成中国大陆 SAMR 公告与 XLSX/ZIP 只读 source probe
 - [x] 为中国大陆 SAMR 建立完整分页与 78 条公告 URL baseline
-- [ ] 为中国大陆 SAMR 实现抽样编号聚合和候选复核
+- [x] 为中国大陆 SAMR 实现抽样编号聚合和本地候选复核
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill

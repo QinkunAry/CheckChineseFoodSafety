@@ -38,6 +38,7 @@ FDA 官方 ZIP/CSV
 
 - 行为类型分开：进口拒绝、召回、警报、检测不合格不能混为一个结论。
 - 机构地区与产品来源分开：`authority_region` 不等于 `origin_country`。
+- 产品来源与监管市场分开：`origin_country` 不明确时保留 `unknown`；境内抽检使用 `regulatory_scope: domestic_market` 与 `market_country: CN`，不能据生产商、进口商或代理地址反推原产地。
 - 原始原因与项目标签分开：`reasons` 保存监管文本，`hazard_tags` 用于筛选。
 - 每条记录带 `source_url`、`source_record_id` 和 `retrieved_at`。
 - 稳定 ID 根据来源与来源记录标识生成，支持重复运行去重。

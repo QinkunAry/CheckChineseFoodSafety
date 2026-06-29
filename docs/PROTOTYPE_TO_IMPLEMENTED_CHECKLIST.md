@@ -46,10 +46,12 @@ operationally stable, and reviewable by a human maintainer.
 
 ## 4. Field evidence and normalization
 
-- [ ] At least two explicit China-origin records and one non-China record have
-      passed live smoke validation.
-- [ ] Origin is taken only from an explicit official field; it is never inferred
-      from product name, cuisine, importer, brand, or URL.
+- [ ] For an origin-focused source, at least two explicit China-origin records
+      and one non-China record have passed live smoke validation.
+- [ ] For a domestic-market source, `market_country` and `regulatory_scope` are
+      explicit, and unknown product origin is not silently replaced by the market.
+- [ ] Origin is taken only from explicit official evidence; it is never inferred
+      from product name, cuisine, producer/importer/agent address, brand, or URL.
 - [ ] Title or product name extraction is validated.
 - [ ] Event date extraction is validated and normalized to ISO `YYYY-MM-DD`.
 - [ ] Official reason or hazard text extraction is validated.
@@ -126,5 +128,5 @@ operationally stable, and reviewable by a human maintainer.
 | Japan CAA / MHLW Recalls | `prototype` | Final PDL attribution wording, reviewed non-empty candidate batch, production quality gate, publishing workflow. |
 | Korea Food Safety Korea | `candidate` | Second explicit China-origin live sample and raising the workflow gate to two, production access decision (registered `I0490` API vs portal endpoint), inventory design. |
 | Taiwan TFDA Border Noncompliance | `implemented` | First production Action and automated data commit `21e8d22` reviewed. |
-| China SAMR National Sampling | `candidate` | Expanded inventory Action acceptance, sampling-number grouping, domestic-scope model, candidate review, reuse-rights decision. |
+| China SAMR National Sampling | `candidate` | Broader human candidate review, amended-notice correction semantics, historical category/risk coverage, reuse-rights decision. |
 | EU RASFF | `candidate` | API guide/endpoint confirmation, live sample payload, field mapping, smoke workflow, prototype gate. |

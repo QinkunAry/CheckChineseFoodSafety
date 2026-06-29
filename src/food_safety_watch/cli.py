@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import __version__
 from .canada_probe import build_origin_probe_report
+from .china_samr_candidates import candidate_china_samr
 from .china_samr_inventory import (
     inventory_china_samr,
     write_url_state as write_china_samr_url_state,
@@ -256,6 +257,33 @@ def build_parser() -> argparse.ArgumentParser:
         "--accept-current",
         action="store_true",
         help="Replace the SAMR notice URL baseline with the complete current inventory",
+    )
+
+    china_candidate = subparsers.add_parser(
+        "candidate-china-samr",
+        help="Build a local-only SAMR candidate batch from one official notice",
+    )
+    china_candidate.add_argument("--url", required=True, help="Official SAMR notice URL")
+    china_candidate.add_argument(
+        "--notice-html",
+        type=Path,
+        help="Read an already downloaded official notice page",
+    )
+    china_candidate.add_argument(
+        "--attachment",
+        action="append",
+        type=Path,
+        dest="attachments",
+        help="Read a local official XLSX or ZIP; repeat for multiple attachments",
+    )
+    china_candidate.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    china_candidate.add_argument(
+        "--output", type=Path, default=Path("data/candidates/china_samr_market.jsonl")
+    )
+    china_candidate.add_argument(
+        "--report", type=Path, default=Path("reports/china_samr_candidates.json")
     )
 
     taiwan_probe = subparsers.add_parser(
@@ -650,6 +678,24 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0
+
+    if args.command == "candidate-china-samr":
+        report, records = candidate_china_samr(
+            notice_url=args.url,
+            schema=load_schema(args.schema),
+            notice_payload=args.notice_html.read_bytes() if args.notice_html else None,
+            local_attachments=args.attachments,
+        )
+        write_jsonl_file(records, args.output)
+        write_json_file(report, args.report)
+        print(
+            f"China SAMR candidates {report['status']}: "
+            f"{report['workbook_count']} workbooks; "
+            f"{report['physical_row_count']} physical rows; "
+            f"{report['candidate_count']} grouped candidates; "
+            f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     if args.command == "probe-taiwan-tfda":
         payload = args.input.read_bytes() if args.input else None

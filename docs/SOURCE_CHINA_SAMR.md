@@ -8,13 +8,13 @@ announcement index is machine-readable, individual notices link to XLSX files
 or ZIP archives of XLSX files, and the workbooks expose product-level sampling
 identifiers and noncompliance evidence.
 
-The source is not yet a `prototype`. Reuse rights for publishing normalized
-derivatives need a documented decision, and product-row normalization has not
-yet passed candidate review.
+The source is not yet a `prototype`. Product-row normalization has passed a
+conditional local review, but broader human sampling, correction semantics and
+reuse rights for publishing normalized derivatives still need decisions.
 
 This source has a different scope from the project's overseas sources. It
-describes national sampling in the Chinese domestic market and must carry a
-`domestic_regulatory_scope` label in future records and user-facing statistics.
+describes national sampling in the Chinese domestic market. Candidate records
+carry `regulatory_scope: domestic_market` and `market_country: CN`.
 It must not be mixed silently with overseas import refusals or recalls involving
 China-origin products.
 
@@ -68,10 +68,9 @@ XLSX workbooks. All 21 contained the probe's eight core fields:
 - sampling number (`抽样编号`).
 
 Across those workbooks, 73 physical worksheet rows represented 46 unique
-sampling numbers. Some samples occupy multiple rows because separate failed
-tests are listed on continuation rows. A future normalizer must group or
-forward-fill continuation rows by sampling number; it must not publish each
-physical row as a separate food event.
+sampling numbers. The candidate parser now groups repeated/blank sequence and
+sampling-number cells into one event and retains all failed tests. It does not
+treat each physical row as a separate food event.
 
 Observed workbooks had 16–19 columns. Additional useful fields include producer
 and sampled-business addresses, specification, trademark, production date,
@@ -79,9 +78,9 @@ shelf life, inspection institution, label requirements and remarks. Remarks can
 record authenticity disputes or findings that a named producer was impersonated
 and therefore must be preserved as evidence during candidate review.
 
-Excel serial dates must be normalized explicitly. The native sampling number is
-the preferred source record ID; category and notice identity should be retained
-to guard against unexpected reuse or corrections.
+Excel serial dates, ordinary text dates and prefixed purchase-date text are
+normalized explicitly. The native sampling number is the source record ID;
+notice identity remains attached through `source_url`.
 
 ## Probe command and automation
 
@@ -98,7 +97,8 @@ are checked.
 `.github/workflows/probe-china-samr.yml` runs the probe manually and weekly with
 `contents: read`. It runs the complete unit-test suite, uploads only
 structural diagnostic reports, and never commits candidate or processed data.
-The initial probe workflow passed on GitHub Actions on 2026-06-30.
+The initial probe workflow and the expanded probe-plus-inventory workflow both
+passed on GitHub Actions on 2026-06-30.
 
 The same workflow now runs the complete inventory after the probe:
 
@@ -111,6 +111,29 @@ scan: 259 indexed items, 78 matching batch notices, zero duplicate notice URLs.
 It is stored at `data/state/china_samr_notice_urls.json`. A partial scan may be
 used for diagnostics, but `--accept-current` refuses to replace the baseline
 unless the scan is complete.
+
+## Local candidate review
+
+`candidate-china-samr` accepts one official notice and either downloads its
+attachments or reads local XLSX/ZIP files. It groups continuation rows by
+sequence and sampling number, normalizes production dates, preserves failure
+values/standards/remarks, assigns deterministic project categories and risk
+labels, and validates the grouped records against the shared schema.
+
+```powershell
+python -m food_safety_watch candidate-china-samr --url OFFICIAL_NOTICE_URL --notice-html LOCAL_NOTICE.html --attachment LOCAL_ATTACHMENT.zip --output data/candidates/china_samr_market.jsonl --report reports/china_samr_candidates.json
+```
+
+SAMR is a domestic-market source, not an origin dataset. Producer addresses can
+refer to importers or agents and cannot establish product origin. Candidate
+records therefore set `market_country` to `CN`, `regulatory_scope` to
+`domestic_market`, and `origin_country` to `unknown`. A mainland location token
+is counted only as a diagnostic and is never promoted to origin evidence.
+
+The first local review covered one direct alcohol XLSX and one complete ZIP of
+21 workbooks. The ZIP produced 46 grouped candidates from 73 rows with zero
+sampling-number duplicates or schema errors. Details are recorded in
+[`reviews/CHINA_SAMR_INITIAL_CANDIDATE_REVIEW.md`](reviews/CHINA_SAMR_INITIAL_CANDIDATE_REVIEW.md).
 
 ## Reuse and publication boundary
 
@@ -131,14 +154,10 @@ Until a defensible reuse basis or permission is recorded:
 
 ## Gates before prototype
 
-- Pass the expanded probe plus inventory workflow on GitHub Actions.
-- Parse at least two notices covering both direct-XLSX and ZIP packaging.
-- Implement sampling-number grouping, continuation-row handling and Excel date
-  conversion with regression fixtures.
 - Define correction semantics for repeated or amended sampling numbers.
-- Review the domestic-scope record model and prevent mixed overseas statistics.
-- Complete a field-by-field candidate review without publicly redistributing the
+- Complete broader human field review without publicly redistributing the
   candidate artifact while reuse rights remain unclear.
+- Expand deterministic category and risk mappings against historical notices.
 - Record a reuse/attribution decision for normalized facts and short reason text.
 
 Only then should SAMR move from `candidate` to `prototype`. Production

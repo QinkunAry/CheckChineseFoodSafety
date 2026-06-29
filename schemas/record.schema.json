@@ -20,6 +20,10 @@
     },
     "event_date": { "type": "string", "format": "date" },
     "origin_country": { "type": "string" },
+    "market_country": { "type": "string" },
+    "regulatory_scope": {
+      "enum": ["origin_based", "domestic_market"]
+    },
     "producer_name": { "type": "string" },
     "producer_location": { "type": "string" },
     "product_code": { "type": "string" },

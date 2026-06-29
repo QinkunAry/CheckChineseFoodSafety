@@ -260,26 +260,48 @@ def _xlsx_rows(payload: bytes) -> list[list[str]]:
                         value = shared[int(raw)]
                     else:
                         value = raw
-                values[index] = re.sub(r"\s+", "", value).strip()
+                values[index] = re.sub(r"\s+", " ", value).strip()
             if values:
                 width = max(values) + 1
                 rows.append([values.get(index, "") for index in range(width)])
         return rows
 
 
-def inspect_xlsx(payload: bytes, *, filename: str) -> dict[str, Any]:
+def _normalize_header(value: str) -> str:
+    return re.sub(r"\s+", "", value).strip()
+
+
+def read_xlsx_table(payload: bytes, *, filename: str) -> dict[str, Any]:
     rows = _xlsx_rows(payload)
     header_index = None
     headers: list[str] = []
     for index, row in enumerate(rows[:12]):
-        if len(CORE_HEADERS.intersection(row)) >= 4:
+        normalized = [_normalize_header(value) for value in row]
+        if len(CORE_HEADERS.intersection(normalized)) >= 4:
             header_index = index
-            headers = row
+            headers = normalized
             break
     if header_index is None:
         raise ValueError(f"{filename} does not contain a recognizable SAMR header row")
+    title = ""
+    for row in reversed(rows[:header_index]):
+        if row and row[0].strip():
+            title = row[0].strip()
+            break
+    return {
+        "filename": filename,
+        "title": title,
+        "header_row": header_index + 1,
+        "headers": headers,
+        "rows": [row for row in rows[header_index + 1 :] if any(row)],
+    }
+
+
+def inspect_xlsx(payload: bytes, *, filename: str) -> dict[str, Any]:
+    table = read_xlsx_table(payload, filename=filename)
+    headers = table["headers"]
     missing = sorted(CORE_HEADERS - set(headers))
-    data_rows = [row for row in rows[header_index + 1 :] if any(row)]
+    data_rows = table["rows"]
     sample_id_index = headers.index("抽样编号") if "抽样编号" in headers else None
     sample_ids = {
         row[sample_id_index]
@@ -291,7 +313,7 @@ def inspect_xlsx(payload: bytes, *, filename: str) -> dict[str, Any]:
     return {
         "filename": filename,
         "status": "passed" if not missing else "failed",
-        "header_row": header_index + 1,
+        "header_row": table["header_row"],
         "column_count": len(headers),
         "headers": headers,
         "missing_core_headers": missing,
