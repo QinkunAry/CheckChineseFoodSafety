@@ -17,6 +17,74 @@
 
 ---
 
+## 2026-07-01 · Round 46 · EU RASFF official detail enrichment
+
+### 本轮目标
+
+解决首次候选复核发现的核心字段缺口：公共 search `subject` 不是可靠产品名，并且 search 不暴露 hazard detail 与最终 notification status。
+
+### 官方 detail endpoint
+
+使用无头浏览器打开 RASFF Window 官方 notification 页面并记录页面自身网络请求，确认公开 endpoint：
+
+`GET /rasff-window/backend/public/notification/view/id/{notification_id}/en/`
+
+该 endpoint 无需登录，与 search 使用同一 `webgate.ec.europa.eu/rasff-window/backend/public/` 边界。真实 JSON 提供：
+
+- 独立 `product.description` 与 product category/type；
+- hazard name、hazard category、检测值、单位、抽样日期和最大允许值；
+- notification basis、classification、risk decision 和 status；
+- distribution status、measures 和 last update；
+- 通过 organization flag 明确区分 ORIGIN、NOTIFYING、DISTRIBUTION 和 OPERATOR；
+- follow-up/corrigendum/withdrawal 信息。
+
+### 真实字段验证
+
+- `2026.5752` / ID `854651`：search subject 只有“可能需要兽医检查”，detail 产品名为 `Vermicelli`，status `ec_validated`，无 hazard，basis 为 released border control；
+- `2026.5192` / ID `850740`：产品 `Groundnut kernels`，hazard `Aflatoxin B1 - mycotoxins`，status `ec_validated`；
+- `2026.5711` / ID `827209`：产品 `Rice`，ORIGIN 为 `IN`，作为非中国对照不生成中国候选；
+- `2026.5575` / ID `852931`：产品 `Pepper Powder`，hazard `anthraquinone - pesticide residues`，检测 `0,078 mg/kg`、限值 `0,02 mg/kg`，但 detail status 已是 `ec_withdrawn`，follow-up 包含 withdrawal of original notification。
+
+最后一条揭示了新的生产风险：search inventory 没有暴露 withdrawn status，因此仅比较 search fingerprint 不能保证捕获既有通知的撤回。
+
+### 实现内容
+
+- 新增 `rasff_detail.py`，限制使用官方 public detail URL；
+- 校验 detail ID/reference、日期、产品、类别、类型、risk、status、origin flags、hazards、measures 与 distribution；
+- detail ORIGIN 必须显式包含 `CN` 且 product type 必须是 `food` 才能标准化；
+- `product.description` 替代 search subject 成为正式候选 `product_name`；
+- 有 hazard 时以官方 hazard name 作为 reasons，并用确定性规则生成检索标签；无 hazard 时保留 subject 作为监管原因摘要；
+- 扩展统一 schema，新增 official classification、risk、basis、status、distribution、last update、结构化 hazards 与 measures；
+- `candidate-rasff` 现在逐条抓取并校验 detail，search 与 detail ID/reference 不一致即失败关闭；
+- 候选报告增加 detail enriched count 和 withdrawn count；
+- 新增 `smoke-rasff-detail`，固定两条 active China 样本和一条 India control；
+- 扩展 RASFF Action，在 probe 与 inventory 后运行 detail smoke 并上传诊断报告；
+- 更新首次候选复核状态为 `detail_enriched_pipeline_passed_production_blocked`。
+
+### 真实运行结果
+
+- 最终固定 detail smoke：2 China details、1 India control、1 hazard、0 control emission、0 withdrawn active sample、0 Schema 错误、0 duplicate ID；
+- detail-enriched 默认增量仍只选中 `2026.5752`；
+- 候选产品名由错误的流程 subject 修正为 `Vermicelli`；
+- 候选保留官方 classification、risk、basis、status、distribution、measures 与 detail last update；
+- 本地 candidate JSONL 和报告继续被 Git 忽略，不上传 artifact。
+
+### 验证与状态
+
+- 新增 7 项 detail parser/normalizer 测试，包括 official mycotoxin category 到 chemical 检索标签的映射；
+- 新增 4 项 detail smoke 测试；
+- detail、detail smoke 与 candidate 共 19 项专项测试通过；
+- 全套 174 项单元测试通过；
+- 真实 detail smoke 与真实 detail-enriched candidate 均通过；
+- RASFF 继续保持 `prototype`，等待 hosted detail smoke 验收；
+- 即使 hosted smoke 通过，withdrawal/corrigendum 与已发布记录 status 重查策略仍是正式发布阻塞项。
+
+### 下一步
+
+提交并手动运行扩展后的 `Probe EU RASFF source`。通过后设计 withdrawal/corrigendum 状态机：明确 active、withdrawn、corrigendum 的数据表示，决定撤回记录是保留带状态、生成 tombstone 还是从当前视图排除，并确保已发布 reference 会周期性重查 detail status。随后扩大 detail-enriched 人工复核，最后完成 CC BY 4.0 署名和生产发布门禁。
+
+---
+
 ## 2026-07-01 · Round 45 · EU RASFF incremental candidates and field review
 
 ### 触发结果

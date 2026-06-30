@@ -11,6 +11,8 @@ from food_safety_watch.rasff_candidates import (
     select_candidate_notifications,
 )
 from food_safety_watch.rasff_inventory import state_entry
+from food_safety_watch.rasff_detail import detail_api_url
+from tests.test_rasff_detail import detail_payload
 from food_safety_watch.rasff_probe import (
     COUNTRY_URL,
     PRODUCT_TYPE_URL,
@@ -82,6 +84,13 @@ def catalog_fetcher(records: list[dict[str, object]]):
                     "totalPages": 1,
                 }
             ).encode()
+        for item in records:
+            if url == detail_api_url(item["notifId"]):
+                return detail_payload(
+                    notification_id=item["notifId"],
+                    reference=item["reference"],
+                    product_name=f"Tea sample {item['notifId']}",
+                )
         raise AssertionError((url, payload))
 
     return fetch
@@ -211,8 +220,10 @@ class RasffCandidateTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["scope"], "explicit_review")
+        self.assertEqual(report["detail_enriched_count"], 1)
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["source_record_id"], "2026.0002")
+        self.assertEqual(candidates[0]["product_name"], "Tea sample 800002")
 
 
 if __name__ == "__main__":

@@ -2,10 +2,11 @@
 
 ## Review status
 
-`pipeline_passed_publication_blocked` — candidate selection, origin/product-type
-scope, normalization and Schema validation work, but the consolidated search
-payload does not provide a reliable standalone product name. These records must
-not be published under `data/processed/` with the current mapping.
+`detail_enriched_pipeline_passed_production_blocked` — candidate selection,
+origin/product-type scope, detail enrichment and Schema validation work. The
+official detail endpoint resolves the product-name and hazard-field blockers,
+but production still requires withdrawal/correction policy, broader detail
+coverage, final attribution and publishing gates.
 
 ## Reviewed snapshot
 
@@ -56,6 +57,21 @@ current JSON Schema but does not satisfy the product's evidence standard.
 Decision: keep the current mapping only as a diagnostic prototype. Do not
 publish it as a product name.
 
+### Detail follow-up resolution
+
+RASFF Window was subsequently observed requesting the official endpoint:
+
+`GET /rasff-window/backend/public/notification/view/id/{id}/en/`
+
+For `2026.5752`, detail JSON identifies the product as `Vermicelli` while
+preserving the procedural subject separately. The candidate parser now requires
+detail identity to match the selected search ID/reference and maps
+`product.description` to `product_name`.
+
+This resolves the standalone product-name blocker for detail-enriched
+candidates. Search-only normalization remains diagnostic and must not be used
+for publication.
+
 ### 2. Search-level category can look inconsistent
 
 Reference `2026.5575` describes pepper powder while the official search payload
@@ -73,12 +89,30 @@ shared record schema currently has only the broad project action type
 report. A production mapping needs dedicated optional fields or documented
 source metadata; they should not be folded into `reasons`.
 
+Detail follow-up: the shared schema and candidate records now preserve
+`official_notification_classification`, `official_risk_decision`,
+`official_notification_basis`, `official_notification_status`,
+`official_distribution_status`, `official_last_update`, hazards and measures.
+
 ### 4. Generic hazard tags are insufficient
 
 The reviewed subjects mostly normalize to `other_or_unclassified`, including
 anthraquinone. RASFF-specific hazard category/detail evidence should be used if
 the official detail endpoint exposes it. Guessing hazards from product or free
 text is not acceptable.
+
+Detail follow-up: `2026.5575` exposes `anthraquinone - pesticide residues`,
+analytical result `0,078 mg/kg`, maximum `0,02 mg/kg` and official hazard
+category `pesticide residues`; deterministic normalization now labels it
+`chemical`. Records with no official hazards retain an empty hazard-detail list.
+
+### 5. Withdrawal and correction semantics remain unresolved
+
+The detail endpoint reports `2026.5575` as `ec_withdrawn` and exposes follow-up
+type `withdrawal of original notification`. The search inventory did not expose
+this status. Production must define whether withdrawn records are excluded,
+retained with status, or represented as tombstones, and must recheck detail
+status for already published records. This is now the central semantic blocker.
 
 ## Candidate pipeline decision
 
@@ -91,6 +125,8 @@ The local-only `candidate-rasff` command is accepted as a prototype review tool:
 - `--max-candidates` prevents an unexpectedly large batch from being partially
   emitted;
 - a complete consistent inventory is required before selection;
+- every selected search result must resolve to a matching official detail ID and
+  reference before normalization;
 - parse or Schema failures block the batch.
 
 The command is intentionally not added to the scheduled Action and its JSONL is
@@ -98,13 +134,11 @@ not uploaded while reuse wording and field semantics remain unresolved.
 
 ## Required follow-up
 
-1. Identify and verify the official public notification-detail JSON request used
-   by RASFF Window.
-2. Determine whether detail data provides a product name, hazard category,
-   hazard detail, action, distribution and useful dates.
-3. Add explicit optional schema fields for official RASFF classification and
-   risk decision, or document a source-metadata alternative.
-4. Re-run this review with at least two detail-enriched China records and one
-   non-China control.
-5. Finalize CC BY 4.0 attribution and API-use wording before candidate artifacts
+1. Run the new detail smoke on GitHub Actions with two active China records and
+   one India control.
+2. Define withdrawn/corrigendum semantics and how previously published records
+   are rechecked for status changes.
+3. Review a broader detail-enriched candidate batch across hazard, no-hazard,
+   alert, border-rejection and information classifications.
+4. Finalize CC BY 4.0 attribution and API-use wording before candidate artifacts
    or processed records are published.

@@ -121,7 +121,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 欧盟 RASFF 已升级为只读 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页并建立 1,211 条 notification baseline，只保存官方 ID、reference 和选定字段指纹；首次回读为 0 new、0 removed、0 changed。Action 只上传诊断报告，不提交或发布监管记录。详见 `docs/SOURCE_RASFF.md`。
 
-本地 `candidate-rasff` 默认只选择 baseline 后新增或指纹变化的 reference，也可用 `--reference` 生成小规模显式复核批次。首次运行正确发现新增 `2026.5752`；但人工复核确认公开搜索的 `subject` 不能可靠充当产品名——该新增记录甚至只写了“货物可能需要兽医检查”，没有产品名称。因此候选管线可用于诊断，RASFF 正式发布仍被 detail 字段映射、官方 classification/risk 保留、风险分类和 CC BY 4.0 署名阻塞。详见 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`。
+本地 `candidate-rasff` 默认只选择 baseline 后新增或指纹变化的 reference，也可用 `--reference` 生成小规模显式复核批次。官方 detail endpoint 已解决 search `subject` 不是产品名的问题：新增 `2026.5752` 的真实产品是 `Vermicelli`，候选还会保留 classification、risk、basis、status、distribution、measures 和结构化 hazard。`smoke-rasff-detail` 使用两条有效中国样本与一条印度对照验证 detail 漂移。另一个样本 `2026.5575` 已被官方标记为 withdrawn，证明正式发布前还必须定义撤回/更正及已发布记录的 detail-status 重查规则。详见 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`。
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
@@ -154,6 +154,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 打通欧盟 RASFF 官方公开 JSON 探针与 China+food 双过滤
 - [x] 为欧盟 RASFF 建立完整分页与 1,211 条指纹 baseline
 - [x] 为欧盟 RASFF 增加本地增量候选与首次字段复核
+- [x] 接入欧盟 RASFF 官方 detail 产品、hazard 与监管状态
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill

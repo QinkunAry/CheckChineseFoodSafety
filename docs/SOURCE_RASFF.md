@@ -196,6 +196,41 @@ human-food scope, stable-ID and Schema checks. Publication remains blocked:
 See the full review:
 [`RASFF_INITIAL_CANDIDATE_REVIEW.md`](reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md).
 
+## Official notification detail
+
+RASFF Window loads public notification details from:
+
+`GET https://webgate.ec.europa.eu/rasff-window/backend/public/notification/view/id/{notification_id}/en/`
+
+Live checks on 2026-07-01 confirmed that detail JSON supplies:
+
+- an independent `product.description` suitable for `product_name`;
+- product category and product type;
+- hazards with name, official category, analytical result, unit, sampling date
+  and maximum permitted level where available;
+- notification basis, classification, risk decision and status;
+- distribution status, measures and last-update timestamp;
+- organization flags that distinguish origin, notifying, distribution and
+  operator countries;
+- follow-ups including corrigenda and withdrawal actions.
+
+The detail-enriched incremental candidate for `2026.5752` now correctly uses
+`Vermicelli` as its product name while retaining the original procedural subject
+as the reason because no hazard is listed. A China hazard sample exposes
+`Aflatoxin B1 - mycotoxins`; an India rice/pesticide detail is excluded by its
+official `IN` origin flag.
+
+The new `smoke-rasff-detail` command fixes two active China details—one no-hazard
+sample and one hazard sample—plus one India control. It validates normalized
+China records against the shared schema. The scheduled RASFF Action now runs
+this detail smoke after the public search probe and complete inventory.
+
+One separately reviewed China detail, `2026.5575`, is `ec_withdrawn` even though
+the consolidated search result did not expose that status. Therefore search
+inventory alone is insufficient for production correction handling. RASFF stays
+`prototype` until the project defines detail-status rechecks, withdrawal and
+corrigendum semantics.
+
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
 before any records are published under `data/processed/`.

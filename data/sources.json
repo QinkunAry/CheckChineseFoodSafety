@@ -99,7 +99,7 @@
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
     "status": "prototype",
-    "notes": "The official public JSON probe and complete inventory passed on GitHub Actions. A 1,211-record minimal fingerprint baseline supports new/removed/changed detection. A local candidate pipeline correctly selected the first real increment, reference 2026.5752, but initial review blocks publication because the search subject is not a reliable product name and official classification/risk/detail fields need a production mapping."
+    "notes": "The public search probe and complete inventory passed on GitHub Actions. The official public detail endpoint now enriches incremental candidates with real product names, hazards, classification, risk, basis, status, distribution and measures; reference 2026.5752 resolves to Vermicelli. A detail smoke is pending hosted acceptance. Production remains blocked on withdrawal/corrigendum semantics, status rechecks, attribution and publishing gates."
   },
   {
     "id": "au_fsanz_recalls",

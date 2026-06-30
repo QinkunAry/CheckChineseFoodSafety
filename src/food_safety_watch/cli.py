@@ -34,6 +34,7 @@ from .quality import (
 from .rasff_probe import build_rasff_probe_report
 from .rasff_inventory import inventory_rasff, write_inventory_state
 from .rasff_candidates import candidate_rasff
+from .rasff_detail_smoke import build_detail_smoke_report
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
@@ -521,6 +522,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rasff_candidate.add_argument("--max-candidates", type=int, default=100)
     rasff_candidate.add_argument("--page-size", type=int, default=100)
+
+    rasff_detail_smoke = subparsers.add_parser(
+        "smoke-rasff-detail",
+        help="Validate official public RASFF notification-detail fields",
+    )
+    rasff_detail_smoke.add_argument(
+        "--china-id", action="append", type=int, required=True, dest="china_ids"
+    )
+    rasff_detail_smoke.add_argument(
+        "--control-id", action="append", type=int, required=True, dest="control_ids"
+    )
+    rasff_detail_smoke.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    rasff_detail_smoke.add_argument(
+        "--report", type=Path, default=Path("reports/rasff_detail_smoke.json")
+    )
     return parser
 
 
@@ -957,6 +975,22 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('changed_record_count', 0)} changed; "
             f"{report.get('candidate_record_count', 0)} candidates; "
             f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "smoke-rasff-detail":
+        report = build_detail_smoke_report(
+            china_ids=args.china_ids,
+            control_ids=args.control_ids,
+            schema=load_schema(args.schema),
+        )
+        write_json_file(report, args.report)
+        print(
+            f"RASFF detail smoke {report['status']}: "
+            f"{report['china_detail_count']} China details; "
+            f"{report['control_detail_count']} controls; "
+            f"{report['hazard_detail_count']} hazards; "
+            f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
 

@@ -47,6 +47,15 @@ jobs:
           --report reports/rasff_inventory.json
           --page-size 100
 
+      - name: Smoke test official RASFF notification details
+        run: >-
+          python -m food_safety_watch smoke-rasff-detail
+          --china-id 854651
+          --china-id 850740
+          --control-id 827209
+          --schema schemas/record.schema.json
+          --report reports/rasff_detail_smoke.json
+
       - name: Publish diagnostic summary
         if: always()
         shell: bash
@@ -67,6 +76,14 @@ jobs:
           else
             echo 'RASFF inventory report was not generated.' >> "$GITHUB_STEP_SUMMARY"
           fi
+          echo '## EU RASFF notification detail smoke' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/rasff_detail_smoke.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/rasff_detail_smoke.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'RASFF detail smoke report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload diagnostic reports
         if: always()
@@ -76,5 +93,6 @@ jobs:
           path: |
             reports/rasff_probe.json
             reports/rasff_inventory.json
+            reports/rasff_detail_smoke.json
           if-no-files-found: warn
           retention-days: 30

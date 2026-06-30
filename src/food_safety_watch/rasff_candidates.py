@@ -18,6 +18,7 @@ from .rasff_probe import (
     fetch_public_json,
     normalize_notification,
 )
+from .rasff_detail import detail_api_url, normalize_detail, parse_detail
 
 
 REFERENCE_RE = re.compile(r"\d{4}\.\d+")
@@ -89,6 +90,26 @@ def _evidence_sample(notification: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _detail_evidence_sample(detail: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "notification_id": detail["notification_id"],
+        "reference": detail["reference"],
+        "subject": detail["subject"],
+        "product_name": detail["product_name"],
+        "product_category": detail["product_category"],
+        "product_type": detail["product_type"],
+        "classification": detail["classification"],
+        "notification_basis": detail["notification_basis"],
+        "risk_decision": detail["risk_decision"],
+        "notification_status": detail["notification_status"],
+        "distribution_status": detail["distribution_status"],
+        "origin_codes": detail["origin_codes"],
+        "hazards": detail["hazards"],
+        "measures": detail["measures"],
+        "followup_types": detail["followup_types"],
+    }
+
+
 def build_candidate_report(
     *,
     selected: list[dict[str, Any]],
@@ -96,6 +117,7 @@ def build_candidate_report(
     schema: dict[str, Any],
     baseline_count: int,
     current_count: int,
+    details: list[dict[str, Any]] | None = None,
     generated_at: str | None = None,
     max_candidates: int = 100,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -112,11 +134,17 @@ def build_candidate_report(
             "review and raise the limit explicitly"
         )
     else:
-        for notification in selected:
+        if details is not None and len(details) != len(selected):
+            blocking_errors.append(
+                "detail record count does not match selected search records"
+            )
+        records_to_normalize = details if details is not None else selected
+        for notification in records_to_normalize:
             try:
-                candidate = normalize_notification(
-                    notification,
-                    retrieved_at=timestamp,
+                candidate = (
+                    normalize_detail(notification, retrieved_at=timestamp)
+                    if details is not None
+                    else normalize_notification(notification, retrieved_at=timestamp)
                 )
                 if candidate is None:
                     raise ValueError("notification is outside China human-food scope")
@@ -158,7 +186,16 @@ def build_candidate_report(
             "selected_record_count": len(selected),
             "candidate_record_count": len(candidates),
             "maximum_candidates": max_candidates,
-            "evidence_samples": [_evidence_sample(item) for item in selected[:20]],
+            "detail_enriched_count": len(details) if details is not None else 0,
+            "withdrawn_record_count": sum(
+                detail.get("notification_status") == "ec_withdrawn"
+                for detail in details or []
+            ),
+            "evidence_samples": (
+                [_detail_evidence_sample(item) for item in details[:20]]
+                if details is not None
+                else [_evidence_sample(item) for item in selected[:20]]
+            ),
             "candidate_samples": candidates[:10],
             "parse_error_count": parse_error_count,
             "parse_error_samples": parse_error_samples,
@@ -182,6 +219,7 @@ def candidate_rasff(
     review_references: list[str] | None = None,
     max_candidates: int = 100,
     fetcher: JsonFetcher = fetch_public_json,
+    detail_fetcher: JsonFetcher | None = None,
     page_size: int = DEFAULT_PAGE_SIZE,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     generated_at = datetime.now(timezone.utc).isoformat()
@@ -198,8 +236,18 @@ def candidate_rasff(
             baseline=baseline,
             review_references=review_references,
         )
+        read_detail = detail_fetcher or fetcher
+        details = [
+            parse_detail(
+                read_detail(detail_api_url(notification["notifId"]), None),
+                expected_id=notification["notifId"],
+                expected_reference=str(notification["reference"]).strip(),
+            )
+            for notification in selected
+        ]
         return build_candidate_report(
             selected=selected,
+            details=details,
             selection=selection,
             schema=schema,
             baseline_count=len(baseline),

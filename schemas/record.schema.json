@@ -32,7 +32,31 @@
     "reasons": { "type": "array", "items": { "type": "string" } },
     "hazard_tags": { "type": "array", "items": { "type": "string" } },
     "source_url": { "type": "string", "format": "uri" },
-    "retrieved_at": { "type": "string", "format": "date-time" }
+    "retrieved_at": { "type": "string", "format": "date-time" },
+    "official_notification_classification": { "type": "string" },
+    "official_risk_decision": { "type": "string" },
+    "official_notification_basis": { "type": "string" },
+    "official_notification_status": { "type": "string" },
+    "official_distribution_status": { "type": "string" },
+    "official_last_update": { "type": "string" },
+    "official_hazards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "category", "analytical_result", "unit", "maximum_permitted", "sampling_date"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "category": { "type": "string" },
+          "analytical_result": { "type": "string" },
+          "unit": { "type": "string" },
+          "maximum_permitted": { "type": "string" },
+          "sampling_date": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "official_measures": { "type": "array", "items": { "type": "string" } },
+    "official_followup_types": { "type": "array", "items": { "type": "string" } }
   },
   "additionalProperties": false
 }
