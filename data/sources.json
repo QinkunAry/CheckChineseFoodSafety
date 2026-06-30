@@ -99,7 +99,7 @@
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
     "status": "prototype",
-    "notes": "The official unauthenticated public JSON probe passed on GitHub Actions. A complete 13-page inventory established a 1,211-record China-origin human-food baseline using only official IDs, references and selected-field fingerprints; immediate full rescan was unchanged. Publication still requires reviewed candidates, final attribution wording, subject/product-field review and production gates."
+    "notes": "The official public JSON probe and complete inventory passed on GitHub Actions. A 1,211-record minimal fingerprint baseline supports new/removed/changed detection. A local candidate pipeline correctly selected the first real increment, reference 2026.5752, but initial review blocks publication because the search subject is not a reliable product name and official classification/risk/detail fields need a production mapping."
   },
   {
     "id": "au_fsanz_recalls",

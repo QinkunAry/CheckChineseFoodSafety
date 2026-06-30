@@ -129,4 +129,4 @@ operationally stable, and reviewable by a human maintainer.
 | Korea Food Safety Korea | `candidate` | Second explicit China-origin live sample and raising the workflow gate to two, production access decision (registered `I0490` API vs portal endpoint), inventory design. |
 | Taiwan TFDA Border Noncompliance | `implemented` | First production Action and automated data commit `21e8d22` reviewed. |
 | China SAMR National Sampling | `candidate` | Broader human candidate review, amended-notice correction semantics, historical category/risk coverage, reuse-rights decision. |
-| EU RASFF | `prototype` | Reviewed candidate batch, subject/product-field decision, final CC BY 4.0 attribution, production quality/publishing gates. |
+| EU RASFF | `prototype` | Detail-level product/hazard mapping, dedicated official classification/risk fields, final CC BY 4.0 attribution, production quality/publishing gates. |

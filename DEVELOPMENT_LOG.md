@@ -17,6 +17,62 @@
 
 ---
 
+## 2026-07-01 · Round 45 · EU RASFF incremental candidates and field review
+
+### 触发结果
+
+维护者确认加入完整 13 页 inventory 后的 `Probe EU RASFF source` GitHub Action 运行通过。RASFF 的 probe 与完整 pagination/baseline 现均已在 hosted runner 验收，`prototype` 状态成立。
+
+### 本轮目标
+
+实现只处理新增/修订 reference 的本地候选管线，并用真实样本判断 RASFF 公共搜索字段是否已经足以进入正式发布。
+
+### 实现内容
+
+- 新增 `rasff_candidates.py` 与 `candidate-rasff`；
+- 默认完整扫描后仅选择 baseline 中不存在或字段指纹变化的 reference；
+- repeated `--reference` 支持维护者明确选择小规模当前记录做人工复核；
+- 明确 reference 必须符合 RASFF 格式且存在于当前 China+food 完整 inventory，否则失败关闭；
+- `--max-candidates` 在意外大批量时不输出部分 JSONL，要求维护者显式提高上限；
+- 每批候选统一使用同一 retrieved timestamp，执行 Schema、重复 ID、日期、类别和风险标签质量检查；
+- 诊断报告单独保留官方 notification ID、reference、原始日期、subject、通知国、产品类别/类型、classification、risk 和 origins；
+- candidate JSONL 与报告均由 Git 忽略，不加入 scheduled Action，不上传 artifact。
+
+### 真实候选结果
+
+显式复核批次包含 `2026.5655`、`2026.5625`、`2026.5575`、`2026.5514`、`2026.5506`：
+
+- 5 条均为官方 product type `food`；
+- 5 条均有 explicit `CN` origin；
+- 5 条候选 Schema 错误 0、重复 ID 0；
+- 日期范围 2026-06-22 至 2026-06-26；
+- baseline 建立后官方总数从 1,211 增至 1,212，默认增量模式准确选中唯一新增 reference `2026.5752`；
+- 新增候选 Schema 错误 0，未重新生成其余 1,211 条 baseline 记录。
+
+### 人工复核发现
+
+- 公共 search payload 只有 `subject`，不是独立产品名；
+- 多数 subject 混合产品、违规原因和流程描述；
+- 新增 `2026.5752` 的 subject 为 `Consignment possibly subject to veterinary checks`，完全没有可识别产品，证明当前 `product_name=subject` 不能用于正式发布；
+- `2026.5575` 的 subject 是 pepper powder，但官方 search category 是 nuts/seeds；项目必须保留并标注官方类别，不能根据文字擅自纠正；
+- official notification classification 与 risk decision 目前只在诊断证据中，正式 schema 需要专用字段或来源 metadata；
+- 通用 hazard 规则使多数样本落入 `other_or_unclassified`，需要 detail-level hazard evidence。
+
+### 验证与状态
+
+- 新增 8 项 candidate 测试，覆盖 new/changed/removed 选择、显式复核、非法/缺失 reference、Schema/evidence、候选上限、空增量、网络失败和完整 pipeline；
+- RASFF candidate 专项测试 8 项通过；
+- 全套 163 项单元测试通过；
+- 真实显式批次和真实默认增量批次均通过技术门禁；
+- 新增 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`，状态为 `pipeline_passed_publication_blocked`；
+- RASFF 保持 `prototype`，不得把当前 subject 映射作为正式产品名发布。
+
+### 下一步
+
+定位并验证 RASFF Window 使用的官方 public notification-detail JSON 请求，确认是否提供独立产品名、hazard category/detail、action、distribution 与更多日期。取得 detail evidence 后扩展 schema 中的 official classification/risk 字段，并用至少两条中国记录和一条非中国对照重新复核；最后再处理 CC BY 4.0 署名和生产门禁。
+
+---
+
 ## 2026-06-30 · Round 44 · EU RASFF prototype acceptance and full inventory
 
 ### 触发结果

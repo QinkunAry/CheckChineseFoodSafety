@@ -33,6 +33,7 @@ from .quality import (
 )
 from .rasff_probe import build_rasff_probe_report
 from .rasff_inventory import inventory_rasff, write_inventory_state
+from .rasff_candidates import candidate_rasff
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
@@ -493,6 +494,33 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Replace the baseline after a complete consistent scan",
     )
+
+    rasff_candidate = subparsers.add_parser(
+        "candidate-rasff",
+        help="Build local-only RASFF candidates from new, changed or explicit references",
+    )
+    rasff_candidate.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/rasff_notification_ids.json"),
+    )
+    rasff_candidate.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    rasff_candidate.add_argument(
+        "--output", type=Path, default=Path("data/candidates/rasff_cn.jsonl")
+    )
+    rasff_candidate.add_argument(
+        "--report", type=Path, default=Path("reports/rasff_candidates.json")
+    )
+    rasff_candidate.add_argument(
+        "--reference",
+        action="append",
+        dest="references",
+        help="Explicit current RASFF reference for a small manual review batch",
+    )
+    rasff_candidate.add_argument("--max-candidates", type=int, default=100)
+    rasff_candidate.add_argument("--page-size", type=int, default=100)
     return parser
 
 
@@ -912,5 +940,24 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 1 if report["status"] == "failed" else 0
+
+    if args.command == "candidate-rasff":
+        report, records = candidate_rasff(
+            state_path=args.state,
+            schema=load_schema(args.schema),
+            review_references=args.references,
+            max_candidates=args.max_candidates,
+            page_size=args.page_size,
+        )
+        write_jsonl_file(records, args.output)
+        write_json_file(report, args.report)
+        print(
+            f"RASFF candidates {report['status']}: "
+            f"{report.get('new_record_count', 0)} new; "
+            f"{report.get('changed_record_count', 0)} changed; "
+            f"{report.get('candidate_record_count', 0)} candidates; "
+            f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     return 2

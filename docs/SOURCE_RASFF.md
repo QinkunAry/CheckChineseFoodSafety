@@ -168,6 +168,34 @@ candidate batch, final CC BY 4.0 attribution, a decision about the combined
 subject/product field, publication count-drop and atomic-write gates, explicit
 correction/removal handling, maintainer notification and rollback documentation.
 
+## Local candidate pipeline and initial review
+
+`candidate-rasff` performs a complete inventory and then selects only references
+that are new or whose selected-field fingerprint changed since the baseline.
+For a bounded manual review, repeated `--reference` arguments select explicit
+current records. `--max-candidates` fails the batch before writing partial output
+when an unexpected number of records is selected.
+
+Candidate JSONL and reports are ignored local artifacts. They are not part of
+the scheduled workflow because publication rights and field semantics are still
+under review.
+
+The first review covered five recent explicit references and the first real
+post-baseline increment, `2026.5752`. All six passed explicit China origin,
+human-food scope, stable-ID and Schema checks. Publication remains blocked:
+
+- the public search `subject` combines product, finding and regulatory action;
+- `2026.5752` has subject `Consignment possibly subject to veterinary checks`,
+  which contains no identifiable product;
+- notification classification and risk decision need dedicated production
+  fields rather than being hidden in diagnostic output;
+- generic project hazard rules leave most reviewed RASFF subjects unclassified;
+- one pepper-powder subject has an official search category of nuts/seeds and
+  requires detail-level verification rather than heuristic correction.
+
+See the full review:
+[`RASFF_INITIAL_CANDIDATE_REVIEW.md`](reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md).
+
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
 before any records are published under `data/processed/`.
