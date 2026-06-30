@@ -16,7 +16,7 @@
     "authority": { "type": "string" },
     "authority_region": { "type": "string" },
     "action_type": {
-      "enum": ["import_refusal", "recall", "safety_alert", "inspection_failure"]
+      "enum": ["import_refusal", "recall", "safety_alert", "inspection_failure", "rasff_notification"]
     },
     "event_date": { "type": "string", "format": "date" },
     "origin_country": { "type": "string" },

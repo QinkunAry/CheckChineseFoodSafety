@@ -90,15 +90,16 @@
   },
   {
     "id": "eu_rasff",
-    "authority": "European Commission RASFF",
+    "authority": "European Commission / DG SANTE / RASFF",
     "authority_region": "EU",
-    "action_type": "mixed_alerts",
+    "action_type": "rasff_notification",
     "homepage": "https://webgate.ec.europa.eu/rasff-window/screen/search",
     "dataset_url": "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en",
     "metadata_url": "https://data.europa.eu/api/hub/repo/datasets/restored_rasff",
-    "access_method": "data_europa_api_research",
+    "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
+    "access_method": "official_public_json_post_probe",
     "status": "candidate",
-    "notes": "Official data.europa metadata exposes a CC BY 4.0 RASFF JSON distribution for 2020 onward, but the API guide download returned 404 on 2026-06-24; live endpoint and auth requirements still need confirmation. Deferred until after Canada, Japan, Korea, and Taiwan spikes."
+    "notes": "The official unauthenticated public JSON endpoint and runtime catalogs are verified. A 2026-06-30 local live probe found 1,211 China-origin human-food notifications, normalized 10 samples with zero Schema errors, and excluded two India controls. Candidate remains pending the first hosted Action pass; publication also requires incremental coverage, candidate review, attribution wording and production gates."
   },
   {
     "id": "au_fsanz_recalls",

@@ -1,0 +1,63 @@
+name: Probe EU RASFF source
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 7 * * 4"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-eu-rasff-source
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Probe official public RASFF API
+        run: >-
+          python -m food_safety_watch probe-rasff
+          --schema schemas/record.schema.json
+          --report reports/rasff_probe.json
+          --min-china-food-records 1000
+          --sample-size 10
+
+      - name: Publish diagnostic summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## EU RASFF public API probe' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/rasff_probe.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/rasff_probe.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'RASFF probe report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: eu-rasff-probe-report
+          path: reports/rasff_probe.json
+          if-no-files-found: warn
+          retention-days: 30

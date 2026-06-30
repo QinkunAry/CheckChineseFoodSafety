@@ -3,12 +3,13 @@
 ## Decision
 
 The European Commission Rapid Alert System for Food and Feed (RASFF) is a
-high-value candidate source, but it is **not yet a prototype** in this project.
+technically viable `candidate` source. A local live probe passed on 2026-06-30,
+but the source will remain `candidate` until the new read-only GitHub Action
+passes on a hosted runner.
 
-The preferred path is the official data.europa / DG SANTE DataLake dataset and
-API metadata, not scraping the RASFF Window Angular application. RASFF should
-move to `prototype` only after a live sample payload confirms the endpoint,
-authorization model, fields, and rate limits.
+The probe uses the same official public JSON endpoints as RASFF Window. It does
+not scrape rendered HTML, require an account, bypass access controls, publish a
+historical snapshot, or write records under `data/processed/`.
 
 ## Official endpoints
 
@@ -18,6 +19,12 @@ authorization model, fields, and rate limits.
   <https://webgate.ec.europa.eu/rasff-window/screen/search>
 - RASFF Window public configuration:
   <https://webgate.ec.europa.eu/rasff-window/backend/public/configuration/>
+- RASFF Window country catalog:
+  <https://webgate.ec.europa.eu/rasff-window/backend/public/country/list/>
+- RASFF Window product-type catalog:
+  <https://webgate.ec.europa.eu/rasff-window/backend/public/productType/list/en/>
+- RASFF Window consolidated public search endpoint:
+  <https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/>
 - data.europa dataset page:
   <https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en>
 - data.europa dataset metadata API:
@@ -25,43 +32,46 @@ authorization model, fields, and rate limits.
 - DG SANTE developer portal entry:
   <https://developer.datalake.sante.service.ec.europa.eu/api-details#api=c5ad39eb-712e-4cb4-a7f6-764de863ae7e&operation=cc6aab62-bd15-4904-b20d-54551ccb9468>
 
-## Availability findings (2026-06-24)
+## Live API findings (2026-06-30)
 
-- The European Commission RASFF page describes RASFF Window as the public
-  searchable database for summary notification information. It also states that
-  public search is currently limited to notifications from 2020 onward.
-- RASFF Window public configuration exposes an `openPortalLink` that points to
-  the data.europa dataset `restored_rasff`.
-- The data.europa metadata API returns JSON-LD for dataset `restored_rasff`.
-- The dataset metadata lists a JSON distribution named `Food and Feed Alert
-  Notifications`, modified on 2025-03-07, licensed as
-  `CC_BY_4_0`.
-- The dataset metadata says the API data corresponds to the public RASFF Window
-  information and is currently restricted to notifications from 2020 onward.
-- The metadata also lists a pre-2021 XLSX resource for historical public
-  information.
-- The metadata lists an `APIs User Guide - Download` PDF URL, but on
-  2026-06-24 that URL returned:
-  `{ "statusCode": 404, "message": "Resource not found" }`.
-- The DG SANTE developer portal API list is rendered through a custom widget
-  that asks the parent portal for `managementApiUrl`, `apiVersion`, and optional
-  token at runtime. Direct HTML fetches do not expose the API catalog.
-- Common unauthenticated APIM catalog guesses under `/developer/apis` returned
-  404 or 500 on 2026-06-24, so they are not usable as documented endpoints.
+- RASFF Window itself sends an unauthenticated JSON `POST` request to the
+  consolidated public search endpoint.
+- Public configuration points `openPortalLink` to the official
+  `restored_rasff` dataset on data.europa.
+- The country catalog identifies China as ID `5075`, ISO `CN`, and India as ID
+  `5118`, ISO `IN`. The probe discovers these IDs at runtime instead of assuming
+  the numeric values will never change.
+- The product-type catalog identifies human food as ID `283`. Feed, animals,
+  food-contact materials and other products are excluded.
+- The China-plus-food query returned 1,211 records. The India-plus-food control
+  returned 2,083 records.
+- Ten requested China samples were all type `food` and contained explicit `CN`
+  entries in `originCountries`. Two India controls contained only `IN` evidence
+  and emitted no normalized China record.
+- The response exposes `notifId`, `reference`, `ecValidationDate`, `subject`,
+  notifying country, product category, product type, classification, risk
+  decision and origin countries.
+- The response has no separate clean product-name field. The probe preserves the
+  official notification subject as both `product_name` and `reasons` rather than
+  heuristically deleting hazard wording.
+
+These counts are dated diagnostics, not permanent dataset guarantees.
 
 ## Evidence and filtering rules
 
-RASFF contains both food and feed notifications. This project is consumer food
-focused, so the first implementation should:
+RASFF contains both food and feed notifications. The probe:
 
-- include only human-food records unless a deliberate feed scope is approved;
-- include a record only when an explicit official origin field identifies China
-  or the People's Republic of China;
-- never infer origin from cuisine, brand, product wording, exporter, importer,
-  or free-text narrative alone;
-- preserve direct links to the official dataset or notification where available;
-- keep RASFF notification type distinct from FDA import refusals, FSANZ recalls,
-  and CFS safety alerts.
+- includes only records whose official `originCountries` contains ISO `CN`;
+- includes only records whose official product type is exactly `food`;
+- never infers origin from cuisine, brand, product wording, exporter, importer,
+  notifying country or free-text narrative alone;
+- preserves the official RASFF reference as `source_record_id` and links to the
+  official notification route;
+- maps the event date from `ecValidationDate` and preserves the official product
+  category description;
+- uses the distinct `rasff_notification` action type because results may be
+  alerts, border rejections or information notifications;
+- treats project hazard tags as search aids, not official classifications.
 
 ## Reuse review
 
@@ -71,37 +81,53 @@ distribution, JSON API distribution, and pre-2021 XLSX resource as
 
 Project decision:
 
-- RASFF remains `candidate`;
+- RASFF remains `candidate` until the hosted probe is accepted;
 - any future publication must include attribution to the European Commission /
   DG SANTE / RASFF and direct source links;
-- before publishing normalized RASFF records, the exact attribution wording,
-  endpoint terms, and API usage limits must be confirmed from the developer
-  portal or API guide;
+- before publishing normalized records, exact attribution wording and any
+  endpoint usage limits must be recorded;
 - do not commit scraped RASFF Window HTML or JavaScript as project data.
 
-## Known blockers before prototype
+The API guide download still returns 404. This is a documentation concern but no
+longer blocks a minimal health probe because the official public endpoint,
+catalogs, request shape and live fields have now been verified. The probe stores
+only minimal diagnostics and samples, not full HTML, JavaScript or API snapshots.
 
-- The official API user guide download currently returns 404.
-- A live API sample payload has not been retrieved.
-- The endpoint's authentication or subscription requirements are not confirmed.
-- The developer portal appears to provide API catalog details through runtime
-  portal secrets rather than static HTML.
-- Field names for product category, country of origin, notification type, date,
-  risk, and reference ID are not yet mapped to `record.schema.json`.
-- The food/feed exclusion rule must be validated against real API fields.
+## Probe and quality gate
+
+Run locally with:
+
+```powershell
+python -m food_safety_watch probe-rasff `
+  --schema schemas/record.schema.json `
+  --report reports/rasff_probe.json `
+  --min-china-food-records 1000 `
+  --sample-size 10
+```
+
+The command dynamically resolves the country and product-type IDs, runs a China
+human-food query and an India human-food control, normalizes the China samples,
+and validates them against `record.schema.json`. It fails closed on catalog or
+field drift, out-of-scope product types, missing China origin, control leakage,
+count-floor failure, duplicates or Schema errors.
+
+The 2026-06-30 local live run passed with 1,211 China human-food records reported
+by the API, ten normalized samples, two India controls, zero false China
+emissions, zero Schema errors and zero duplicate IDs. Sample event dates ranged
+from 2026-06-19 through 2026-06-26.
 
 ## Prototype gate
 
-Before RASFF can move from `candidate` to `prototype`, the project needs:
+Before RASFF can move from `candidate` to `prototype`, the new
+`Probe EU RASFF source` workflow must pass on GitHub Actions with at least two
+valid China food samples, a non-China control, zero Schema errors and zero
+out-of-scope records.
 
-- a documented official API or export URL that returns live records;
-- a minimal `smoke-rasff` command using a tiny date range or fixed reference
-  sample;
-- at least two explicit China-origin human-food records and one non-China record
-  verified against live official data;
-- schema validation for normalized records;
-- tests for URL/host validation, China-origin filtering, non-China exclusion,
-  missing critical fields, and API failure reporting.
+Before moving from `prototype` to `implemented`, the project must add stable
+incremental inventory or pagination, a reviewed candidate batch, final CC BY
+4.0 attribution, a decision about the combined subject/product field, count-drop
+and pagination gates, atomic publication, correction/removal handling and
+rollback documentation.
 
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)

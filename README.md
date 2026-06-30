@@ -7,6 +7,7 @@
 [![Probe Taiwan TFDA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml)
 [![Update Taiwan TFDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml)
 [![Probe China SAMR source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml)
+[![Probe EU RASFF source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-rasff.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-rasff.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，也研究中国境内官方抽检不合格信息；所有范围保留原始出处并转换为可区分监管语境的统一记录。
 
@@ -118,7 +119,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
 
-台湾正式发布后，来源优先级调整为：中国大陆国家级抽检，随后回到欧盟 RASFF。欧盟 RASFF 当前保持 `candidate`。官方 RASFF Window 指向 data.europa 的 `restored_rasff` 数据集，metadata 显示有 CC BY 4.0 的 JSON API 分发并覆盖 2020 年以来通知；但 API 用户指南下载在 2026-06-24 返回 404，实际 endpoint、授权要求和字段映射尚未确认。详见 `docs/SOURCE_RASFF.md`。
+欧盟 RASFF 当前保持 `candidate`，但技术入口已经打通。`probe-rasff` 从 RASFF Window 官方公开目录动态取得国家和产品类型 ID，再以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。2026-06-30 本地真实探针报告 1,211 条中国来源人类食品通知，10 条样本全部通过 Schema，两个印度对照均未产生中国记录。新 Action 只上传诊断报告，不提交或发布数据；首次 GitHub Runner 验收通过后才评估升级 `prototype`。详见 `docs/SOURCE_RASFF.md`。
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
@@ -148,6 +149,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 完成中国大陆 SAMR 公告与 XLSX/ZIP 只读 source probe
 - [x] 为中国大陆 SAMR 建立完整分页与 78 条公告 URL baseline
 - [x] 为中国大陆 SAMR 实现抽样编号聚合和本地候选复核
+- [x] 打通欧盟 RASFF 官方公开 JSON 探针与 China+food 双过滤
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill

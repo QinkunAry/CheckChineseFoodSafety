@@ -31,6 +31,7 @@ from .quality import (
     write_json_file,
     write_jsonl_file,
 )
+from .rasff_probe import build_rasff_probe_report
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
@@ -458,6 +459,19 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("reports/japan_caa_candidates.json"),
     )
+
+    rasff_probe = subparsers.add_parser(
+        "probe-rasff",
+        help="Probe the official public RASFF API for China-origin human food",
+    )
+    rasff_probe.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    rasff_probe.add_argument(
+        "--report", type=Path, default=Path("reports/rasff_probe.json")
+    )
+    rasff_probe.add_argument("--min-china-food-records", type=int, default=1_000)
+    rasff_probe.add_argument("--sample-size", type=int, default=10)
     return parser
 
 
@@ -838,6 +852,21 @@ def main(argv: list[str] | None = None) -> int:
             f"{report['candidate_url_count']} new URLs; "
             f"{report['china_record_count']} China records; "
             f"output={args.output}; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
+
+    if args.command == "probe-rasff":
+        report = build_rasff_probe_report(
+            schema=load_schema(args.schema),
+            min_china_food_records=args.min_china_food_records,
+            sample_size=args.sample_size,
+        )
+        write_json_file(report, args.report)
+        print(
+            f"RASFF probe {report['status']}: "
+            f"{report.get('china_food_total', 0)} China-origin food notifications; "
+            f"{report.get('normalized_sample_count', 0)} normalized samples; "
+            f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
 

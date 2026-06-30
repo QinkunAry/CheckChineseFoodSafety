@@ -17,6 +17,67 @@
 
 ---
 
+## 2026-06-30 · Round 43 · EU RASFF official public API probe
+
+### 触发结果
+
+维护者确认 `feat: add grouped SAMR local candidates` 对应验证通过。SAMR 分组候选实现至此完成本轮验收，但按既定发布门禁继续保持 `candidate`，不把本地候选误当正式数据。
+
+### 本轮目标
+
+回到欧盟 RASFF，解决此前“API endpoint、认证模式和真实字段未知”的阻塞，建立一个最小、只读、可重复且失败关闭的官方来源探针。
+
+### 官方接口与范围验证
+
+- 确认 RASFF Window 的官方公开页面调用 `backend/public/notification/search/consolidated/en/` JSON POST endpoint；
+- 公开配置的 `openPortalLink` 指向 data.europa 的 `restored_rasff` 数据集；
+- 从官方 country catalog 动态读取 China `5075` / `CN` 与 India `5118` / `IN`，不在生产逻辑中把数字 ID 当成永久常量；
+- 从官方 product-type catalog 动态读取 human food `283`；
+- 使用 `originCountry=[China]` 与 `notificationType=[food]` 双过滤，排除 feed、food contact material、animals 和 other；
+- 使用 India+food 作为非中国对照，避免仅凭主题文字或通知国家误判来源；
+- API 用户指南下载仍为 404，但官方公开端点、请求体、目录和字段均已由真实响应确认，因此不再阻塞最小健康探针。
+
+### 实现内容
+
+- 新增 `rasff_probe.py` 与 `probe-rasff` CLI；
+- 限制网络请求为 `webgate.ec.europa.eu` 的 HTTPS public API 路径；
+- 使用 curl IPv4、HTTP/1.1、重试、连接/总超时和 JSON stdin POST；
+- 验证 `notifId`、reference、validation date、subject、product category/type、classification、risk decision 和 explicit origin countries；
+- 只将 product type 为 `food` 且 `originCountries` 含 `CN` 的结果标准化；
+- 新增 `rasff_notification` action type，避免把 alert、border rejection 和 information notification 错归为单一 recall；
+- 公共搜索没有独立产品名字段，当前保留官方 notification subject 作为 `product_name` 与 reason，不做脆弱的文本裁剪；
+- 新增每周及手动 `Probe EU RASFF source` Action，只上传 30 天诊断 artifact，不提交候选或正式数据；
+- 更新 README、来源登记、来源评估、发布前 checklist 和忽略规则。
+
+### 真实探针结果
+
+2026-06-30 本地 live probe：
+
+- 中国来源人类食品总数：1,211；
+- 返回并标准化样本：10；
+- 印度来源人类食品总数：2,083；
+- 非中国对照样本：2，错误生成中国记录：0；
+- Schema 错误：0；
+- 重复稳定 ID：0；
+- 样本日期范围：2026-06-19 至 2026-06-26；
+- 10 条样本覆盖 7 个官方产品类别。
+
+以上数量是当日 API 诊断结果，会随监管数据更新而变化，不作为固定数据承诺。
+
+### 验证与状态
+
+- 新增 10 项 RASFF 回归测试，覆盖官方 URL、JSON POST、动态目录、双过滤、关键字段、非中国排除、Schema、网络失败、filter drift 和日期标准化漂移失败关闭；
+- 全套 147 项单元测试通过；
+- 本地真实 `probe-rasff` 通过；
+- RASFF 继续保持 `candidate`，等待新 workflow 提交后首次 GitHub Runner 验收；
+- 不发布历史快照，不写入 `data/processed/`。
+
+### 下一步
+
+提交本轮改动并手动运行 `Probe EU RASFF source`。若 hosted Action 通过，可把 RASFF 升为只读 `prototype`；随后设计稳定分页/增量 inventory、候选批次和人工复核，再处理 CC BY 4.0 署名、subject/product 字段决策及生产发布门禁。
+
+---
+
 ## 2026-06-30 · Round 42 · China SAMR grouped local candidates
 
 ### 触发结果
