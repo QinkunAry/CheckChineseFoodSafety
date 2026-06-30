@@ -32,6 +32,7 @@ from .quality import (
     write_jsonl_file,
 )
 from .rasff_probe import build_rasff_probe_report
+from .rasff_inventory import inventory_rasff, write_inventory_state
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
@@ -472,6 +473,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rasff_probe.add_argument("--min-china-food-records", type=int, default=1_000)
     rasff_probe.add_argument("--sample-size", type=int, default=10)
+
+    rasff_inventory = subparsers.add_parser(
+        "inventory-rasff",
+        help="Compare all China-origin RASFF food notifications with a baseline",
+    )
+    rasff_inventory.add_argument(
+        "--state",
+        type=Path,
+        default=Path("data/state/rasff_notification_ids.json"),
+    )
+    rasff_inventory.add_argument(
+        "--report", type=Path, default=Path("reports/rasff_inventory.json")
+    )
+    rasff_inventory.add_argument("--page-size", type=int, default=100)
+    rasff_inventory.add_argument("--max-pages", type=int)
+    rasff_inventory.add_argument(
+        "--accept-current",
+        action="store_true",
+        help="Replace the baseline after a complete consistent scan",
+    )
     return parser
 
 
@@ -869,5 +890,27 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "inventory-rasff":
+        report, entries = inventory_rasff(
+            state_path=args.state,
+            page_size=args.page_size,
+            max_pages=args.max_pages,
+        )
+        write_json_file(report, args.report)
+        if args.accept_current:
+            if report["status"] == "failed" or not report.get("complete_scan"):
+                print("Refusing to replace the RASFF baseline from a failed/partial scan")
+                return 1
+            write_inventory_state(entries, args.state)
+        print(
+            f"RASFF inventory {report['status']}: "
+            f"{report.get('current_count', 0)} current; "
+            f"{report.get('new_record_count', 0)} new; "
+            f"{report.get('removed_record_count', 0)} removed; "
+            f"{report.get('changed_record_count', 0)} changed; "
+            f"report={args.report}"
+        )
+        return 1 if report["status"] == "failed" else 0
 
     return 2

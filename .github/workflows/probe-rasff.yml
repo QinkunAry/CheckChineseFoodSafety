@@ -40,6 +40,13 @@ jobs:
           --min-china-food-records 1000
           --sample-size 10
 
+      - name: Compare complete RASFF inventory with baseline
+        run: >-
+          python -m food_safety_watch inventory-rasff
+          --state data/state/rasff_notification_ids.json
+          --report reports/rasff_inventory.json
+          --page-size 100
+
       - name: Publish diagnostic summary
         if: always()
         shell: bash
@@ -52,12 +59,22 @@ jobs:
           else
             echo 'RASFF probe report was not generated.' >> "$GITHUB_STEP_SUMMARY"
           fi
+          echo '## EU RASFF complete inventory' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f reports/rasff_inventory.json ]]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat reports/rasff_inventory.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'RASFF inventory report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-      - name: Upload diagnostic report
+      - name: Upload diagnostic reports
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: eu-rasff-probe-report
-          path: reports/rasff_probe.json
+          path: |
+            reports/rasff_probe.json
+            reports/rasff_inventory.json
           if-no-files-found: warn
           retention-days: 30

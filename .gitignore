@@ -36,6 +36,7 @@ reports/china_samr_probe.json
 reports/china_samr_inventory.json
 reports/china_samr*_candidates.json
 reports/rasff_probe.json
+reports/rasff_inventory.json
 .tmp-china/
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json

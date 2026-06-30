@@ -98,8 +98,8 @@
     "metadata_url": "https://data.europa.eu/api/hub/repo/datasets/restored_rasff",
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
-    "status": "candidate",
-    "notes": "The official unauthenticated public JSON endpoint and runtime catalogs are verified. A 2026-06-30 local live probe found 1,211 China-origin human-food notifications, normalized 10 samples with zero Schema errors, and excluded two India controls. Candidate remains pending the first hosted Action pass; publication also requires incremental coverage, candidate review, attribution wording and production gates."
+    "status": "prototype",
+    "notes": "The official unauthenticated public JSON probe passed on GitHub Actions. A complete 13-page inventory established a 1,211-record China-origin human-food baseline using only official IDs, references and selected-field fingerprints; immediate full rescan was unchanged. Publication still requires reviewed candidates, final attribution wording, subject/product-field review and production gates."
   },
   {
     "id": "au_fsanz_recalls",

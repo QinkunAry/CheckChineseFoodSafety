@@ -119,7 +119,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
 
-欧盟 RASFF 当前保持 `candidate`，但技术入口已经打通。`probe-rasff` 从 RASFF Window 官方公开目录动态取得国家和产品类型 ID，再以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。2026-06-30 本地真实探针报告 1,211 条中国来源人类食品通知，10 条样本全部通过 Schema，两个印度对照均未产生中国记录。新 Action 只上传诊断报告，不提交或发布数据；首次 GitHub Runner 验收通过后才评估升级 `prototype`。详见 `docs/SOURCE_RASFF.md`。
+欧盟 RASFF 已升级为只读 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页并建立 1,211 条 notification baseline，只保存官方 ID、reference 和选定字段指纹；首次回读为 0 new、0 removed、0 changed。Action 只上传诊断报告，不提交或发布监管记录。详见 `docs/SOURCE_RASFF.md`。
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
@@ -150,6 +150,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 - [x] 为中国大陆 SAMR 建立完整分页与 78 条公告 URL baseline
 - [x] 为中国大陆 SAMR 实现抽样编号聚合和本地候选复核
 - [x] 打通欧盟 RASFF 官方公开 JSON 探针与 China+food 双过滤
+- [x] 为欧盟 RASFF 建立完整分页与 1,211 条指纹 baseline
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill

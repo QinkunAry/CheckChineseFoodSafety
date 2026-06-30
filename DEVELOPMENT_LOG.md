@@ -17,6 +17,60 @@
 
 ---
 
+## 2026-06-30 · Round 44 · EU RASFF prototype acceptance and full inventory
+
+### 触发结果
+
+维护者确认 `Probe EU RASFF source` GitHub Action 首次运行通过。官方公开配置、目录、China+food 双过滤、印度对照、Schema 标准化和失败关闭逻辑已在 hosted runner 完成验收，RASFF 达到只读 `prototype` 门槛。
+
+### 本轮目标
+
+把单页健康 probe 扩展为完整、可重复的增量 inventory，并在不提交完整监管文本的前提下识别新增、撤下和字段修订。
+
+### 实现内容
+
+- `build_search_payload` 支持显式页码，新增保留 `totalPages` 的页面解析接口；
+- 新增 `inventory-rasff` 与 `rasff_inventory.py`；
+- 每次从官方目录动态解析 China 与 human-food ID；
+- 以 100 条/页完整扫描，逐页要求 `totalElements` 和 `totalPages` 一致；
+- 校验报告页数与总数、每页预期条数、最终总数、China+food scope、notification ID 和 reference 唯一性；
+- 扫描期间总数/页数变化、重复、缺页、越界类型或网络错误均失败关闭并生成诊断报告；
+- baseline 仅保存官方 notification ID、reference 和选定公开字段 SHA-256，不保存 subject 或完整 API 记录；
+- 指纹覆盖日期、subject、通知国、产品类别/类型、classification、risk、published 和 origins，可区分 new、removed 与 changed；
+- `--accept-current` 仅接受完整成功扫描，失败或 `--max-pages` 部分扫描禁止替换 baseline；
+- 扩展 RASFF Action，在 probe 后运行完整 inventory，并上传两份诊断报告；
+- 将来源登记与 checklist 从 `candidate` 升级为 `prototype`。
+
+### 真实 inventory 结果
+
+- China-origin human-food：1,211；
+- 每页上限：100；
+- 官方报告页数：13；
+- 完整扫描页数：13；
+- 扫描记录数：1,211；
+- 重复 notification ID：0；
+- 重复 reference：0；
+- 越界来源/产品类型：0；
+- baseline 文件约 197 KiB，只含最小 ID/reference/fingerprint 状态；
+- 建立 baseline 后立即完整回读：`unchanged`，0 new、0 removed、0 changed。
+- reference 年份覆盖 2018–2026，其中 2018 年 4 条、2019 年 12 条；鉴于公开说明通常描述 2020 年起可检索，项目只记录实际 API 返回，不宣称 2020 年前完整覆盖。
+
+以上数量是 2026-06-30 的官方 API 快照诊断，会随新通知和修订变化。
+
+### 验证与状态
+
+- 新增 8 项 inventory 测试，覆盖多页收集、扫描中总数变化、重复 reference、scope 漂移、new/removed/changed、最小状态回读、网络失败报告和指纹变化；
+- RASFF probe 与 inventory 共 18 项专项测试通过；
+- 全套 155 项单元测试通过；
+- 首次完整真实扫描及 baseline 回读通过；
+- RASFF 现为 `prototype`，仍不生成 candidate artifact 或写入 `data/processed/`。
+
+### 下一步
+
+提交并再次手动运行扩展后的 `Probe EU RASFF source`，验证 GitHub Runner 能稳定完成 13 页 inventory。通过后实现 `candidate-rasff`：只处理 baseline 之后的新增/修订 reference，先生成 ignored JSONL 与人工复核报告，再决定 notification subject 是否可作为正式产品名，并完成 CC BY 4.0 署名文案。
+
+---
+
 ## 2026-06-30 · Round 43 · EU RASFF official public API probe
 
 ### 触发结果

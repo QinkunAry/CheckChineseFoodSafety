@@ -3,9 +3,9 @@
 ## Decision
 
 The European Commission Rapid Alert System for Food and Feed (RASFF) is a
-technically viable `candidate` source. A local live probe passed on 2026-06-30,
-but the source will remain `candidate` until the new read-only GitHub Action
-passes on a hosted runner.
+read-only `prototype` source. The live probe passed locally and on GitHub
+Actions on 2026-06-30. A complete inventory and minimal fingerprint baseline
+now provide incremental change detection without publishing a full API snapshot.
 
 The probe uses the same official public JSON endpoints as RASFF Window. It does
 not scrape rendered HTML, require an account, bypass access controls, publish a
@@ -81,7 +81,7 @@ distribution, JSON API distribution, and pre-2021 XLSX resource as
 
 Project decision:
 
-- RASFF remains `candidate` until the hosted probe is accepted;
+- RASFF is a read-only `prototype`; no processed records are published;
 - any future publication must include attribution to the European Commission /
   DG SANTE / RASFF and direct source links;
 - before publishing normalized records, exact attribution wording and any
@@ -116,18 +116,57 @@ by the API, ten normalized samples, two India controls, zero false China
 emissions, zero Schema errors and zero duplicate IDs. Sample event dates ranged
 from 2026-06-19 through 2026-06-26.
 
-## Prototype gate
+The same probe subsequently passed on GitHub Actions, satisfying the hosted
+runner acceptance gate.
 
-Before RASFF can move from `candidate` to `prototype`, the new
-`Probe EU RASFF source` workflow must pass on GitHub Actions with at least two
-valid China food samples, a non-China control, zero Schema errors and zero
-out-of-scope records.
+## Complete inventory and baseline
 
-Before moving from `prototype` to `implemented`, the project must add stable
-incremental inventory or pagination, a reviewed candidate batch, final CC BY
-4.0 attribution, a decision about the combined subject/product field, count-drop
-and pagination gates, atomic publication, correction/removal handling and
-rollback documentation.
+`inventory-rasff` uses the same runtime-discovered China and food IDs and reads
+all result pages with a maximum page size of 100. It fails closed when:
+
+- `totalElements` or `totalPages` changes during a scan;
+- reported pages do not match the total and requested page size;
+- a full page has an unexpected record count;
+- any page contains a non-China or non-food record;
+- notification IDs or official references are duplicated;
+- the final unique record count does not equal the reported total.
+
+The baseline under `data/state/rasff_notification_ids.json` does not contain
+subjects or full records. Each entry stores only the official numeric
+notification ID, official reference and a SHA-256 fingerprint of selected
+public fields. This supports three diagnostics:
+
+- a new reference is a newly observed notification;
+- a missing reference is a removed or no-longer-returned notification;
+- a changed fingerprint means selected public fields changed and requires human
+  review; it does not automatically define the legal correction semantics.
+
+The initial 2026-06-30 complete scan covered 13 of 13 pages and 1,211 of 1,211
+China-origin human-food notifications. An immediate second complete scan against
+the new baseline returned `unchanged`: zero new, zero removed and zero changed.
+Observed references span 2018 through 2026 (4 from 2018 and 12 from 2019), even
+though the public documentation describes the normal public-search scope as 2020
+onward. The project therefore records the live API result but does not claim
+complete pre-2020 historical coverage.
+
+Run the inventory with:
+
+```powershell
+python -m food_safety_watch inventory-rasff `
+  --state data/state/rasff_notification_ids.json `
+  --report reports/rasff_inventory.json `
+  --page-size 100
+```
+
+`--accept-current` may replace the baseline only after a complete successful
+scan. A failed or `--max-pages` partial scan is refused.
+
+## Prototype to implemented gate
+
+Before moving from `prototype` to `implemented`, the project must add a reviewed
+candidate batch, final CC BY 4.0 attribution, a decision about the combined
+subject/product field, publication count-drop and atomic-write gates, explicit
+correction/removal handling, maintainer notification and rollback documentation.
 
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)

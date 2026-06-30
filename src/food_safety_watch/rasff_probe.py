@@ -176,13 +176,19 @@ def build_search_payload(
     origin_country_id: int,
     food_type_id: int,
     items_per_page: int = 10,
+    page_number: int = 1,
 ) -> dict[str, Any]:
     if origin_country_id < 1 or food_type_id < 1:
         raise ValueError("RASFF filter IDs must be positive integers")
     if not 1 <= items_per_page <= 100:
         raise ValueError("RASFF items_per_page must be between 1 and 100")
+    if page_number < 1:
+        raise ValueError("RASFF page_number must be at least 1")
     return {
-        "parameters": {"pageNumber": 1, "itemsPerPage": items_per_page},
+        "parameters": {
+            "pageNumber": page_number,
+            "itemsPerPage": items_per_page,
+        },
         "notificationReference": None,
         "subject": None,
         "notifyingCountry": None,
@@ -208,7 +214,9 @@ def _required_mapping(
     return value
 
 
-def parse_search_response(payload: bytes | str) -> tuple[int, list[dict[str, Any]]]:
+def parse_search_page(
+    payload: bytes | str,
+) -> tuple[int, int, list[dict[str, Any]]]:
     value = _json_object(payload, "search")
     notifications = value.get("notifications")
     total = value.get("totalElements")
@@ -251,7 +259,12 @@ def parse_search_response(payload: bytes | str) -> tuple[int, list[dict[str, Any
         ):
             raise ValueError(f"RASFF notification {index} has invalid originCountries")
         parsed.append(notification)
-    return total, parsed
+    return total, total_pages, parsed
+
+
+def parse_search_response(payload: bytes | str) -> tuple[int, list[dict[str, Any]]]:
+    total, _, notifications = parse_search_page(payload)
+    return total, notifications
 
 
 def is_china_food_notification(notification: dict[str, Any]) -> bool:
