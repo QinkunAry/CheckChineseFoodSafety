@@ -260,6 +260,44 @@ Production still needs a periodic detail-status audit for every published RASFF
 reference. Search fingerprints cannot substitute for that audit because search
 does not expose final notification status.
 
+## Published-record status audit
+
+`audit-rasff-status` implements the audit path without inventing a production
+baseline before a RASFF release exists. It reads the published JSONL itself,
+extracts each official notification ID from the validated source URL, retrieves
+the current detail and compares all publication-relevant fields:
+
+- lifecycle status and official notification status;
+- official last update and follow-up types;
+- product name/category, reasons and deterministic hazard tags;
+- classification, risk, basis and distribution;
+- structured hazards and measures.
+
+Outcomes are distinct:
+
+- `passed`: every audited published record still matches official detail;
+- `action_required`: detail is valid but the published snapshot is stale, for
+  example active→withdrawn or a product/hazard correction;
+- `failed`: fetch, identity, origin/scope or input validation failed.
+
+`action_required` is a non-zero CLI result so a future production workflow can
+open a maintainer issue and rebuild the full release atomically. The audit never
+edits a published row in place.
+
+The command defaults to at most 100 records to avoid silently issuing a large
+number of detail requests before an approved batching/rate-limit plan exists:
+
+```powershell
+python -m food_safety_watch audit-rasff-status `
+  --input data/processed/rasff_cn.jsonl `
+  --report reports/rasff_status_audit.json `
+  --max-records 100
+```
+
+No scheduled audit is enabled yet because `data/processed/rasff_cn.jsonl` does
+not exist. After the first reviewed production release, the audit must be wired
+to that release and its failure-notification path.
+
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
 before any records are published under `data/processed/`.

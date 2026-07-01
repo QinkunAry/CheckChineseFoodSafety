@@ -125,6 +125,8 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 RASFF lifecycle 现采用明确状态机：`ec_validated` 映射为 `active`，`ec_withdrawn` 映射为 `withdrawn`，未知或矛盾组合映射为 `review_required`；corrigendum 本身不会撤回仍有效的通知。候选技术状态与 `lifecycle_gate_status` 分离，withdrawn 记录保留审计证据但不能通过 active 发布门禁。正式发布前仍需实现对所有已发布 reference 的周期性 detail-status 重查。
 
+`audit-rasff-status` 已实现发布后重查框架：它以未来的正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。目前没有 RASFF processed release，因此该命令尚不进入定时 Action，也不会伪造一个“已发布记录”状态文件。
+
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
@@ -157,6 +159,7 @@ RASFF lifecycle 现采用明确状态机：`ec_validated` 映射为 `active`，`
 - [x] 为欧盟 RASFF 建立完整分页与 1,211 条指纹 baseline
 - [x] 为欧盟 RASFF 增加本地增量候选与首次字段复核
 - [x] 接入欧盟 RASFF 官方 detail 产品、hazard 与监管状态
+- [x] 实现欧盟 RASFF 已发布记录 detail-status 审计框架
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill

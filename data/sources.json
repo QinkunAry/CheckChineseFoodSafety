@@ -99,7 +99,7 @@
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
     "status": "prototype",
-    "notes": "Search, complete inventory and public-detail smoke all passed on GitHub Actions. Detail-enriched candidates preserve product, hazard, classification, risk, basis, status, distribution, measures and follow-ups. Lifecycle maps validated to active, withdrawn to withdrawn, and unknown/contradictory combinations to review_required. Production remains blocked on periodic status rechecks for published references, broader review, attribution and publishing gates."
+    "notes": "Search, complete inventory and public-detail smoke all passed on GitHub Actions. Detail-enriched candidates and an explicit active/withdrawn/review_required lifecycle gate are operational. audit-rasff-status can compare a future published JSONL against current official details and return action_required on status or field changes; it will be scheduled only after a real release exists. Remaining blockers are broader review, attribution and production publishing gates."
   },
   {
     "id": "au_fsanz_recalls",

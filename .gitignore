@@ -39,6 +39,7 @@ reports/rasff_probe.json
 reports/rasff_inventory.json
 reports/rasff_candidates.json
 reports/rasff_detail_smoke.json
+reports/rasff_status_audit.json
 .tmp-china/
 reports/fsanz_smoke.json
 reports/fsanz_candidates.json

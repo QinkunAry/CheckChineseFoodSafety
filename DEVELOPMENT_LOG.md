@@ -17,6 +17,59 @@
 
 ---
 
+## 2026-07-01 · Round 48 · EU RASFF published-record status audit framework
+
+### 触发结果
+
+维护者确认加入 lifecycle gate 后的 `Probe EU RASFF source` 运行成功。GitHub Runner 现已验证 active detail 样本保持 active；detail status 漂移会让固定 smoke 失败而不是继续显示绿色。
+
+### 本轮目标
+
+实现未来 RASFF 正式发布后的逐条 detail 重查，弥补 search inventory 不包含最终 notification status 的结构缺陷；同时避免在尚无正式发布数据时伪造 production baseline。
+
+### 审计设计
+
+未来 `data/processed/rasff_cn.jsonl` 本身就是审计 baseline。每条记录必须：
+
+- `source_id` 为 `eu_rasff`；
+- source URL 是官方 `screen/notification/{numeric_id}`，无 query/fragment；
+- 具有有效 `record_status` 与 `official_last_update`；
+- official detail ID/reference 与已发布记录严格一致。
+
+重新标准化当前 detail 后，审计比较 event date、origin、record status、产品、类别、reasons、hazard tags、classification、risk、basis、official status、distribution、last update、structured hazards、measures 和 follow-up types。
+
+### 结果语义
+
+- `passed`：全部已发布字段仍与官方 detail 一致；
+- `action_required`：官方 detail 合法但发布快照已过期，例如 active→withdrawn、产品/危害修订或 last-update 变化；CLI 返回非零，未来应触发完整原子重建和维护者通知；
+- `failed`：网络、JSON、ID/reference、source URL、origin/scope 或输入验证失败；
+- audit 只报告，不原地修改 published JSONL；
+- 默认最多 100 条，超过上限失败并要求批准 batching/rate-limit 方案，避免尚无 API 使用说明时直接发出大规模 detail 请求。
+
+### 实现内容
+
+- 新增 `rasff_status_audit.py` 与 `audit-rasff-status`；
+- source URL 严格限制官方 HTTPS host 与 numeric notification path；
+- 支持逐字段 change sample、previous/current lifecycle、previous/current last update；
+- active→withdrawn 和普通产品/危害修订都返回 `action_required`；
+- fetch failure、重复 reference、空输入、错误来源和超上限均失败关闭；
+- 报告写入 ignored `reports/rasff_status_audit.json`；
+- 没有 `data/processed/rasff_cn.jsonl` 前不增加 scheduled audit Action。
+
+### 验证
+
+- 新增 7 项 status-audit 测试，覆盖 unchanged、active→withdrawn、产品/last-update 修订、错误来源/URL、网络失败、空/超限输入和 URL query 拒绝；
+- active→withdrawn fixture 返回 `action_required` 并明确列出 `record_status` 与 `official_notification_status`；
+- 使用已保存的真实官方 `2026.5192` detail 生成 baseline 后回读：`passed`、1 audited、0 changed；
+- 一次在线单条 audit 尝试在本地官方连接长时间无响应，已主动终止且没有生成成功报告；该次不计为 live pass；
+- 全套 183 项单元测试通过。
+
+### 下一步
+
+扩大 detail-enriched 人工复核，覆盖主要 classification、risk、hazard/no-hazard 和 lifecycle 组合；同时核对 CC BY 4.0 精确署名与修改声明。完成后设计首个小规模 reviewed production release、原子发布、失败 Issue、回滚和 status-audit Action，再决定是否升级 `implemented`。
+
+---
+
 ## 2026-07-01 · Round 47 · EU RASFF lifecycle gate
 
 ### 触发结果
