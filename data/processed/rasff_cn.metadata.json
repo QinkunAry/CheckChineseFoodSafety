@@ -1,5 +1,5 @@
 {
-  "approval_mode": "explicit_reference_allowlist",
+  "approval_mode": "explicit_batch_allowlist_and_explicit_removals",
   "approved_references": [
     "2026.5752",
     "2026.5760",
@@ -45,7 +45,14 @@
       "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/854865"
     }
   ],
+  "release_mode": "full_reviewed_input",
+  "release_references": [
+    "2026.5752",
+    "2026.5760",
+    "2026.5781"
+  ],
   "release_scope": "explicitly_reviewed_subset",
-  "snapshot_retrieved_at": "2026-07-01T13:37:20.082448+00:00",
+  "removed_references": [],
+  "snapshot_retrieved_at": "2026-07-01T13:53:26.843728+00:00",
   "source_id": "eu_rasff"
 }

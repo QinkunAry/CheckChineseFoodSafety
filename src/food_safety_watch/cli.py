@@ -549,9 +549,24 @@ def build_parser() -> argparse.ArgumentParser:
     rasff_publish.add_argument(
         "--approved-reference",
         action="append",
-        required=True,
         dest="approved_references",
         help="Human-reviewed reference; the list must exactly match the input JSONL",
+    )
+    rasff_publish.add_argument(
+        "--merge-current",
+        action="store_true",
+        help="Merge the reviewed input into the existing published release",
+    )
+    rasff_publish.add_argument(
+        "--remove-reference",
+        action="append",
+        dest="remove_references",
+        help="Explicitly remove an existing reference during an incremental merge",
+    )
+    rasff_publish.add_argument(
+        "--removal-only",
+        action="store_true",
+        help="Ignore the candidate input and perform only explicit removals",
     )
     rasff_publish.add_argument("--min-records", type=int, default=1)
     rasff_publish.add_argument("--max-records", type=int, default=100)
@@ -1033,6 +1048,9 @@ def main(argv: list[str] | None = None) -> int:
                 metadata_path=args.metadata,
                 schema_path=args.schema,
                 approved_references=args.approved_references,
+                merge_current=args.merge_current,
+                remove_references=args.remove_references,
+                removal_only=args.removal_only,
                 min_records=args.min_records,
                 max_records=args.max_records,
                 max_drop_fraction=args.max_drop_percent / 100,

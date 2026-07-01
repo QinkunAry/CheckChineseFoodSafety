@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 from typing import Any
 from urllib.parse import urlparse
 
@@ -38,6 +39,7 @@ REQUIRED_DETAIL_FIELDS = (
     "official_measures",
     "official_followup_types",
 )
+REFERENCE_RE = re.compile(r"\d{4}\.\d+")
 
 
 def _valid_source_url(value: Any) -> bool:
@@ -57,9 +59,11 @@ def _valid_source_url(value: Any) -> bool:
 
 
 def _validate_approved_references(
-    records: list[dict[str, Any]], approved_references: list[str]
+    records: list[dict[str, Any]], approved_references: list[str] | None
 ) -> list[str]:
-    approved = sorted(set(value.strip() for value in approved_references if value.strip()))
+    approved = sorted(
+        set(value.strip() for value in approved_references or [] if value.strip())
+    )
     actual = sorted(
         record["source_record_id"]
         for record in records
@@ -67,6 +71,9 @@ def _validate_approved_references(
     )
     if len(actual) != len(records) or len(set(actual)) != len(actual):
         raise ValueError("RASFF release requires one unique source_record_id per record")
+    invalid = [reference for reference in actual + approved if not REFERENCE_RE.fullmatch(reference)]
+    if invalid:
+        raise ValueError(f"invalid RASFF release references: {sorted(set(invalid))}")
     if approved != actual:
         missing = sorted(set(actual) - set(approved))
         extra = sorted(set(approved) - set(actual))
@@ -75,6 +82,48 @@ def _validate_approved_references(
             f"missing approvals={missing}; approvals without records={extra}"
         )
     return approved
+
+
+def merge_reviewed_release(
+    *,
+    baseline_records: list[dict[str, Any]],
+    reviewed_records: list[dict[str, Any]],
+    approved_references: list[str] | None,
+    remove_references: list[str] | None = None,
+) -> tuple[list[dict[str, Any]], list[str], list[str]]:
+    approved = _validate_approved_references(reviewed_records, approved_references)
+    baseline_references = [
+        record.get("source_record_id")
+        for record in baseline_records
+        if isinstance(record.get("source_record_id"), str)
+    ]
+    if len(baseline_references) != len(baseline_records) or len(set(baseline_references)) != len(
+        baseline_references
+    ):
+        raise ValueError("published RASFF baseline has missing or duplicate references")
+    removed = sorted(
+        set(value.strip() for value in remove_references or [] if value.strip())
+    )
+    invalid_removed = [value for value in removed if not REFERENCE_RE.fullmatch(value)]
+    if invalid_removed:
+        raise ValueError(f"invalid RASFF removal references: {invalid_removed}")
+    unknown_removed = sorted(set(removed) - set(baseline_references))
+    if unknown_removed:
+        raise ValueError(f"cannot remove unpublished RASFF references: {unknown_removed}")
+    overlap = sorted(set(removed) & set(approved))
+    if overlap:
+        raise ValueError(f"RASFF references cannot be approved and removed together: {overlap}")
+    if not reviewed_records and not removed:
+        raise ValueError("incremental RASFF release has no reviewed additions or removals")
+
+    merged = {
+        str(record["source_record_id"]): dict(record) for record in baseline_records
+    }
+    for reference in removed:
+        del merged[reference]
+    for record in reviewed_records:
+        merged[str(record["source_record_id"])] = dict(record)
+    return [merged[key] for key in sorted(merged)], approved, removed
 
 
 def build_release_metadata(
@@ -87,8 +136,11 @@ def build_release_metadata(
         "authority": AUTHORITY,
         "dataset_title": DATASET_TITLE,
         "release_scope": "explicitly_reviewed_subset",
-        "approval_mode": "explicit_reference_allowlist",
+        "release_mode": report.get("release_mode", "full_reviewed_input"),
+        "approval_mode": "explicit_batch_allowlist_and_explicit_removals",
         "approved_references": report["approved_references"],
+        "removed_references": report.get("removed_references", []),
+        "release_references": report.get("release_references", []),
         "snapshot_retrieved_at": generated_at,
         "record_count": report["record_count"],
         "dataset_url": DATASET_URL,
@@ -189,6 +241,9 @@ def build_rasff_release(
         "generated_at": timestamp,
         "release_scope": "explicitly_reviewed_subset",
         "approved_references": approved,
+        "release_references": approved,
+        "removed_references": [],
+        "release_mode": "full_reviewed_input",
         "maximum_records": max_records,
         "maximum_drop_fraction": max_drop_fraction,
         "active_record_count": sum(
@@ -254,22 +309,58 @@ def publish_rasff_reviewed(
     report_path: Path,
     metadata_path: Path,
     schema_path: Path,
-    approved_references: list[str],
+    approved_references: list[str] | None,
+    merge_current: bool = False,
+    remove_references: list[str] | None = None,
+    removal_only: bool = False,
     min_records: int = 1,
     max_records: int = 100,
     max_drop_fraction: float = 0.25,
 ) -> dict[str, Any]:
     baseline_records = read_jsonl(output) if output.exists() else None
     try:
+        if removal_only and not merge_current:
+            raise ValueError("--removal-only requires --merge-current")
+        if remove_references and not merge_current:
+            raise ValueError("--remove-reference requires --merge-current")
+        if removal_only and approved_references:
+            raise ValueError("--removal-only cannot include approved additions")
+        reviewed_records = [] if removal_only else read_jsonl(input_path)
+        release_input = reviewed_records
+        release_approvals = approved_references
+        batch_approved: list[str] | None = None
+        removed: list[str] = []
+        if merge_current:
+            if baseline_records is None:
+                raise ValueError("--merge-current requires an existing published RASFF release")
+            release_input, batch_approved, removed = merge_reviewed_release(
+                baseline_records=baseline_records,
+                reviewed_records=reviewed_records,
+                approved_references=approved_references,
+                remove_references=remove_references,
+            )
+            release_approvals = [
+                str(record["source_record_id"]) for record in release_input
+            ]
         report, records = build_rasff_release(
-            records=read_jsonl(input_path),
-            approved_references=approved_references,
+            records=release_input,
+            approved_references=release_approvals,
             schema=load_schema(schema_path),
             baseline_records=baseline_records,
             min_records=min_records,
             max_records=max_records,
             max_drop_fraction=max_drop_fraction,
         )
+        if merge_current:
+            report.update({
+                "release_mode": "incremental_merge",
+                "approved_references": batch_approved,
+                "release_references": [
+                    str(record["source_record_id"]) for record in records
+                ],
+                "removed_references": removed,
+                "reviewed_batch_record_count": len(reviewed_records),
+            })
     except Exception as error:
         report = {
             "status": "failed",

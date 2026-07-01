@@ -128,7 +128,9 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 
 首批 explicitly reviewed release 已发布 3 条 active reference：`2026.5752`、`2026.5760`、`2026.5781`。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
 
-`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。新增的每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；首次 hosted run 尚待维护者验收。
+`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；首批 3 条数据的第一次 hosted audit 已通过。
+
+后续发布使用 `--merge-current`：未点名的既有记录保持不变，新增或更正必须逐条批准；官方确认撤回时使用 `--removal-only --remove-reference`，并受数量下降门禁保护。完整的人审、增量、撤回与 `git revert` 回滚流程见 `docs/RASFF_OPERATIONS.md`。
 
 扩大 detail 复核现覆盖 10 条唯一记录、三类 notification、五种 risk 决策、chemical/adulteration/no-hazard、corrigendum 与 withdrawn；全部字段和 Schema 检查通过，混入 withdrawn 时 lifecycle gate 会阻塞。CC BY 4.0 复用评审也已完成：未来 release 必须保留 © European Union / European Commission / DG SANTE / RASFF 署名、来源与许可链接，明确本项目做过筛选和标准化修改，并禁止暗示官方背书。详见 `docs/reviews/RASFF_EXPANDED_DETAIL_REVIEW.md` 与 `docs/reviews/RASFF_REUSE_REVIEW.md`。
 

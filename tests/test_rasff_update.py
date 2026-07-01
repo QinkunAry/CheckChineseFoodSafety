@@ -10,6 +10,7 @@ from food_safety_watch.rasff_update import (
     _atomic_publish_pair,
     build_rasff_release,
     build_release_metadata,
+    merge_reviewed_release,
     publish_rasff_reviewed,
 )
 from food_safety_watch.update import QualityCheckFailed
@@ -101,6 +102,64 @@ class RasffUpdateTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "passed")
         self.assertEqual(records[0]["retrieved_at"], "2026-07-01T00:00:00+00:00")
+
+    def test_incremental_merge_adds_only_explicitly_approved_batch(self) -> None:
+        merged, approved, removed = merge_reviewed_release(
+            baseline_records=[record()],
+            reviewed_records=[record(reference="2026.6000")],
+            approved_references=["2026.6000"],
+        )
+        self.assertEqual(
+            [item["source_record_id"] for item in merged],
+            ["2026.5752", "2026.6000"],
+        )
+        self.assertEqual(approved, ["2026.6000"])
+        self.assertEqual(removed, [])
+
+    def test_incremental_merge_replaces_reviewed_correction(self) -> None:
+        corrected = record()
+        corrected["product_name"] = "Corrected vermicelli"
+        merged, _, _ = merge_reviewed_release(
+            baseline_records=[record()],
+            reviewed_records=[corrected],
+            approved_references=["2026.5752"],
+        )
+        report, records = build_rasff_release(
+            records=merged,
+            approved_references=["2026.5752"],
+            schema=SCHEMA,
+            baseline_records=[record()],
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(records[0]["product_name"], "Corrected vermicelli")
+        self.assertEqual(records[0]["retrieved_at"], "2026-07-01T00:00:00+00:00")
+
+    def test_incremental_merge_supports_explicit_removal(self) -> None:
+        merged, approved, removed = merge_reviewed_release(
+            baseline_records=[record(), record(reference="2026.6000")],
+            reviewed_records=[],
+            approved_references=[],
+            remove_references=["2026.5752"],
+        )
+        self.assertEqual([item["source_record_id"] for item in merged], ["2026.6000"])
+        self.assertEqual(approved, [])
+        self.assertEqual(removed, ["2026.5752"])
+
+    def test_incremental_merge_rejects_unknown_or_overlapping_removal(self) -> None:
+        with self.assertRaisesRegex(ValueError, "cannot remove unpublished"):
+            merge_reviewed_release(
+                baseline_records=[record()],
+                reviewed_records=[],
+                approved_references=[],
+                remove_references=["2026.9999"],
+            )
+        with self.assertRaisesRegex(ValueError, "approved and removed together"):
+            merge_reviewed_release(
+                baseline_records=[record()],
+                reviewed_records=[record()],
+                approved_references=["2026.5752"],
+                remove_references=["2026.5752"],
+            )
 
     def test_metadata_contains_attribution_changes_and_per_record_provenance(self) -> None:
         report, records = build_rasff_release(

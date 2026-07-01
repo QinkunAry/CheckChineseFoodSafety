@@ -300,6 +300,14 @@ is rolled back to the previous release. Metadata records the approval mode,
 approved references, release scope, CC BY 4.0 attribution/change statement and
 per-record source URL, retrieval time, official last update and lifecycle.
 
+For later updates, `--merge-current` retains all unmentioned published rows,
+adds or replaces only the explicitly approved candidate references, and
+preserves their first retrieval time. A confirmed withdrawal requires
+`--removal-only --remove-reference`; an unknown removal, an overlap between
+approval and removal, or an empty operation fails closed. The full operating
+and rollback procedure is in
+[`RASFF_OPERATIONS.md`](RASFF_OPERATIONS.md).
+
 ## Published-record status audit
 
 `audit-rasff-status` reads the published JSONL itself,
@@ -336,7 +344,7 @@ python -m food_safety_watch audit-rasff-status `
 `audit-rasff-status.yml` now runs weekly and on manual dispatch. It uploads the
 report on every outcome, opens or updates a maintenance Issue on failure or
 `action_required`, closes that Issue after recovery, and never edits the
-committed release. Its first hosted run remains an acceptance gate.
+committed release. The first hosted audit passed after commit `51b1a1b`.
 
 ## Approved reuse wording
 

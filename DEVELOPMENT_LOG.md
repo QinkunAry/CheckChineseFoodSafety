@@ -17,6 +17,50 @@
 
 ---
 
+## 2026-07-01 · Round 51 · EU RASFF hosted audit acceptance and release operations
+
+### 触发结果
+
+维护者确认 `Audit published EU RASFF records` 首次 GitHub hosted run 通过。提交 `51b1a1b` 中的 3 条正式记录在 Runner 上逐条重取 detail 后保持一致，发布后状态审计、报告和工作流路径得到首次真实验收。
+
+### 本轮目标
+
+补齐日常维护中最容易出错的三条路径：只合并已批准增量、用同一 reference 替换官方更正、以及有证据地移除官方撤回记录；同时形成可执行的回滚手册。
+
+### 实现内容
+
+- `publish-rasff-reviewed` 新增 `--merge-current`；未在本批次点名的已发布记录保持不变；
+- 新增或更正 reference 必须与本批次 `--approved-reference` 完全一致；
+- 同 reference 的更正替换旧字段，但保留首次 `retrieved_at`；
+- 新增 `--removal-only --remove-reference`，仅允许显式移除已经发布的 reference；
+- 未发布 reference 的删除、同一 reference 同时批准和删除、空操作、没有既有 release 时合并均失败关闭；
+- 删除仍受最小记录数和 drop percentage 门禁保护；小数据集需要提高阈值时必须人工明确给出；
+- release metadata 新增 release mode、完整 release references、本批批准 references 和 removed references；
+- 用原 3 条批准记录成功重发内容不变的快照，验证新版 metadata 生成与发布路径。
+
+### 运维手册
+
+新建 `docs/RASFF_OPERATIONS.md`，定义：
+
+- discovery、candidate、人工 detail 复核、增量发布、hosted audit、最后接受 inventory baseline 的顺序；
+- active correction、confirmed withdrawal 和 ambiguous `review_required` 的不同处理；
+- withdrawn candidate 只作为删除证据，不能直接进入 active JSONL；
+- 发布前 pair rollback 与发布后 `git revert` 回滚；禁止 force push 和 `git reset --hard`；
+- 发布后人工检查 JSONL、metadata、provenance、署名、数量和无关记录变化的验收表。
+
+### 验证与状态
+
+- 新增 4 项增量运维测试：批准新增、同 reference 更正、显式删除、未知/冲突删除；
+- RASFF release 专项 11 项测试通过；
+- 全套 195 项单元测试通过；
+- RASFF 暂时保持 `prototype`，等待维护者接受操作手册，并完成一次真实增量/更正或撤回演练后再升级 `implemented`。
+
+### 下一步
+
+维护者审核 `RASFF_OPERATIONS.md`。下一次 inventory 出现新/变更 reference 时，严格按手册执行一次 `--merge-current` 发布并通过 hosted audit；若没有自然增量，不为升级状态而伪造数据变化。
+
+---
+
 ## 2026-07-01 · Round 50 · EU RASFF first reviewed release and scheduled status audit
 
 ### 本轮目标

@@ -99,7 +99,7 @@
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
     "status": "prototype",
-    "notes": "Search, full inventory and detail smoke pass on GitHub Actions. Ten unique detail records cover all observed risk decisions, three classifications, hazards/no-hazard, corrigendum and withdrawal; the reviewed baseline is 1,214. The first explicitly reviewed release contains three active records with per-record provenance and CC BY 4.0 attribution metadata. Atomic quality/count-drop gates and rollback tests pass; the scheduled status-audit/failure-Issue workflow still needs its first hosted acceptance run before an implemented decision."
+    "notes": "Search, full inventory, detail smoke and the first published-record status audit pass on GitHub Actions. Ten reviewed details cover all observed risk decisions, three classifications, hazards/no-hazard, corrigendum and withdrawal; the inventory baseline is 1,214. The first release contains three active records with per-record provenance and CC BY 4.0 metadata. Atomic gates, incremental merge, explicit withdrawal, rollback and failure-Issue paths are implemented; maintainer acceptance of the operating procedure remains before an implemented decision."
   },
   {
     "id": "au_fsanz_recalls",
