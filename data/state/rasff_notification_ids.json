@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-06-30T13:57:13.764760+00:00",
+  "created_at": "2026-07-01T13:29:07.002269+00:00",
   "fingerprint_fields": [
     "reference",
     "ecValidationDate",
@@ -13,7 +13,7 @@
     "originCountries"
   ],
   "identity_model": "official_reference_plus_selected_field_sha256",
-  "record_count": 1211,
+  "record_count": 1214,
   "records": [
     {
       "fingerprint": "029d89fde8bfa8a29787bbff781422ea9d35103d0c311d3245fefc3ad70d3275",
@@ -6069,6 +6069,21 @@
       "fingerprint": "5ce869ab60a5d7ff04249da94eec172df8cfffc042000d9175614974866ddcc8",
       "notification_id": 853498,
       "reference": "2026.5655"
+    },
+    {
+      "fingerprint": "d5ac9eff59aabf471ef2bc1b0e346186081845b63109fa4714a3f25336625c59",
+      "notification_id": 854651,
+      "reference": "2026.5752"
+    },
+    {
+      "fingerprint": "1cd16d6b25538de8d0bd7f9ff408ebc4487d0d75abfad8078ff914b6f8be9ecc",
+      "notification_id": 854577,
+      "reference": "2026.5760"
+    },
+    {
+      "fingerprint": "3db3d33c24cebd55d3ade50d0d2b2b7b47f64118c618ec87c3b67495bc0d112e",
+      "notification_id": 854865,
+      "reference": "2026.5781"
     }
   ],
   "scope": {

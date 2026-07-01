@@ -17,6 +17,97 @@
 
 ---
 
+## 2026-07-01 · Round 50 · EU RASFF first reviewed release and scheduled status audit
+
+### 本轮目标
+
+把已经完成 detail 人工复核的 RASFF 小批量候选升级为可审计的首批正式数据文件，同时保持“发现不等于发布”的人工批准边界。
+
+### 发布门禁与实现
+
+- 新增 `publish-rasff-reviewed` 与 `rasff_update.py`；
+- 每条输入必须出现在显式 `--approved-reference` allowlist 中，且批准集合必须与 JSONL 完全一致；
+- 重新执行统一 Schema、duplicate ID/reference、来源、CN 原产、origin-based scope、官方 detail URL 和 detail-enriched 字段检查；
+- 只有 `record_status: active` 且官方状态为 `ec_validated` 的记录可发布；
+- 增加最小/最大记录数与相对上一 release 的数量下降门禁；
+- 保留既有记录首次 `retrieved_at`；
+- 数据与 metadata 先同时 staging，再成对替换；第二个替换失败时恢复旧数据和旧 metadata；
+- metadata 包含 release scope、批准方式/reference、CC BY 4.0 来源与修改声明、非背书声明，以及逐条 source URL、retrieval time、official last update 和 lifecycle provenance。
+
+### 首批真实发布
+
+- 输入为本轮已复核的 3 条 active 增量：`2026.5752`、`2026.5760`、`2026.5781`；
+- 发布结果：3 records、3 unique IDs、0 Schema error、event date 2026-06-29 至 2026-06-30；
+- 包含 1 条 chemical 与 2 条 other/unclassified 检索标签；后两者属于官方 no-hazard/证书流程记录，不作为未解析危害阻塞；
+- 生成 `data/processed/rasff_cn.jsonl` 与 `rasff_cn.metadata.json`；
+- 首次受限环境替换临时文件失败，正式目标文件保持不存在；随后在允许文件替换的环境中以同一命令成功，证明失败不会产生半发布。
+
+### 发布后审计 Action
+
+- 新增 `audit-rasff-status.yml`，支持每周与手动运行；
+- 对正式 JSONL 中每条记录重取官方 detail；
+- `action_required` 或技术失败均返回非零、上传报告并创建/更新维护 Issue；
+- 恢复后自动关闭对应 Issue；
+- 审计只读，不自动改写或删除已发布记录。
+
+### 验证
+
+- 新增 7 项 release 测试，覆盖 allowlist、active/withdrawn 门禁、首次抓取时间、署名/provenance、双文件回滚和失败不发布；
+- 发布 CLI 已用真实 3 条候选成功执行；
+- 全套 191 项单元测试通过；
+- 新 Action 的首次 GitHub hosted run 尚未执行，因此 RASFF 保持 `prototype`。
+
+### 下一步
+
+提交并手动运行 `Audit published EU RASFF records`。若 hosted audit 通过，人工检查 committed JSONL、metadata 与 artifact；随后写明增量合并、撤回修订和回滚操作手册，再决定是否升级 `implemented`。
+
+---
+
+## 2026-07-01 · Round 49 · EU RASFF expanded detail review and reuse decision
+
+### 触发结果
+
+维护者确认上一轮 RASFF published-record status audit 相关运行通过。项目文档继续按轮次更新；本轮同时清理了来源文档中首次 search-only 评审留下的过时阻塞表述，避免与后续 detail enrichment 结论冲突。
+
+### 本轮目标
+
+在设计首批正式数据发布前，扩大 RASFF detail 人工样本覆盖，并明确欧盟公开数据的署名、修改声明和非背书边界。
+
+### 扩大样本复核
+
+- 显式复核 8 条 reference，并复核默认增量发现的 3 条记录；去重后共 10 条唯一通知；
+- 覆盖 alert、information for attention、border rejection 三种 notification classification；
+- 覆盖 serious、potentially serious、potential risk、not serious、no risk 五种当前观察到的 risk decision；
+- 覆盖 structured hazard 与 no-hazard、corrigendum、active 和 withdrawn；
+- 抽查产品包括粉丝、花生、辣椒粉、茶、蟹味鱼糜、果冻糖、花椒、黄原胶和大蒜；
+- 所有候选均通过明确中国原产、human-food、ID/reference 一致性、稳定 ID、Schema 和重复检查；
+- withdrawn 样本可被正确解析并保留审计证据，但 lifecycle gate 阻止其进入 active 视图。
+
+默认增量发现 `2026.5752`、`2026.5760` 和 `2026.5781` 三条新 reference；逐条 detail 复核后，将 inventory baseline 从 1,211 接受到 1,214。接受 baseline 仅表示发现范围已人工检查，不表示已经发布 RASFF production JSONL。
+
+### 字段与复用决策
+
+- `product.description` 继续作为产品名，search subject 仅作为流程/原因摘要；
+- notification classification、risk、basis、官方 status、distribution、last update、hazards、measures 和 follow-up 保留为独立字段；
+- 对人类可读 `reasons` 去除重复 hazard 名，但 `official_hazards` 保留官方结构化行，避免损失检测结果或抽样信息；
+- 根据欧盟委员会法律声明与 RASFF dataset 元数据，项目仅复用并标准化事实字段，按 CC BY 4.0 提供来源、许可链接、抓取时间、修改声明和非背书声明；
+- 不复制欧盟标志、网站视觉资产或没有明确权利状态的第三方附件；
+- 新建扩大样本评审与 reuse review，并在统一数据署名文档中加入经批准的中英文展示要求。
+
+### 验证
+
+- 8 条显式 detail batch：8 enriched、0 Schema error、0 duplicate ID；其中 7 active、1 withdrawn，技术门禁通过且生命周期门禁按设计阻塞；
+- 默认增量 batch：3 enriched、3 active、0 Schema error，技术与生命周期门禁均通过；
+- inventory `--accept-current`：1,214 current、3 new、0 removed、0 changed；
+- 新增 duplicate-hazard 展示去重测试；
+- 全套 184 项单元测试通过。
+
+### 状态与下一步
+
+RASFF 仍为 `prototype`。下一步实现首批 reviewed production release：生成逐条 attribution/provenance 元数据，执行 fail-closed 质量与数量门禁，原子写入 processed JSONL，并配套失败通知、回滚和 published-record status audit Action。完成真实发布演练与人工验收后，再评估升级为 `implemented`。
+
+---
+
 ## 2026-07-01 · Round 48 · EU RASFF published-record status audit framework
 
 ### 触发结果

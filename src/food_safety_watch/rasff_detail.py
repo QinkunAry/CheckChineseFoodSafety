@@ -254,7 +254,10 @@ def normalize_detail(
     if not is_china_food_detail(detail):
         return None
     reference = detail["reference"]
-    hazard_names = [hazard["name"] for hazard in detail["hazards"]]
+    hazard_names: list[str] = []
+    for hazard in detail["hazards"]:
+        if hazard["name"] not in hazard_names:
+            hazard_names.append(hazard["name"])
     reasons = hazard_names or [detail["subject"]]
     return {
         "id": stable_id(SOURCE_ID, reference),

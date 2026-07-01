@@ -1,0 +1,51 @@
+{
+  "approval_mode": "explicit_reference_allowlist",
+  "approved_references": [
+    "2026.5752",
+    "2026.5760",
+    "2026.5781"
+  ],
+  "attribution": "Source: © European Union, 1995–2026; European Commission, Directorate-General for Health and Food Safety (DG SANTE), Food and Feed Alert Notifications / RASFF Window. Retrieved from the linked official notifications and dataset. Source material is licensed under CC BY 4.0. This project selected and normalized records and added project metadata; changes were made. The European Commission and RASFF do not endorse this project.",
+  "authority": "European Commission, Directorate-General for Health and Food Safety (DG SANTE)",
+  "changes_made": [
+    "selected China-origin human-food notifications",
+    "normalized fields and dates",
+    "added stable IDs, lifecycle status and deterministic search labels"
+  ],
+  "dataset_title": "Food and Feed Alert Notifications / RASFF Window",
+  "dataset_url": "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en",
+  "human_search_url": "https://webgate.ec.europa.eu/rasff-window/screen/search",
+  "legal_notice_url": "https://commission.europa.eu/legal-notice_en",
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "record_count": 3,
+  "record_provenance": [
+    {
+      "id": "8bca9a4e0623e294d172144606f98786c8ee691f0c2c2caba9da44e0bc2ee510",
+      "official_last_update": "29-06-2026 17:15:21",
+      "record_status": "active",
+      "reference": "2026.5752",
+      "retrieved_at": "2026-07-01T13:27:56.057826+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/854651"
+    },
+    {
+      "id": "7caee0b07f2bcad1ebd1ee7726f6b00551ce580282ca7759c30f050aeb52ee07",
+      "official_last_update": "30-06-2026 10:24:51",
+      "record_status": "active",
+      "reference": "2026.5760",
+      "retrieved_at": "2026-07-01T13:27:56.057826+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/854577"
+    },
+    {
+      "id": "65a411613842379cbe3807793152f0c2f39a8f64802e589f1d7cd8010d220477",
+      "official_last_update": "30-06-2026 14:55:12",
+      "record_status": "active",
+      "reference": "2026.5781",
+      "retrieved_at": "2026-07-01T13:27:56.057826+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/854865"
+    }
+  ],
+  "release_scope": "explicitly_reviewed_subset",
+  "snapshot_retrieved_at": "2026-07-01T13:37:20.082448+00:00",
+  "source_id": "eu_rasff"
+}

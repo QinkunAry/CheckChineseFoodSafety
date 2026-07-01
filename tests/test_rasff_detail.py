@@ -169,6 +169,16 @@ class RasffDetailTests(unittest.TestCase):
         assert record is not None
         self.assertEqual(record["hazard_tags"], ["chemical"])
 
+    def test_duplicate_hazard_names_are_deduplicated_only_in_reasons(self) -> None:
+        value = json.loads(detail_payload())
+        value["product"]["hazards"].append(
+            dict(value["product"]["hazards"][0], analyticalResult="0,099")
+        )
+        record = normalize_detail(parse_detail(json.dumps(value)))
+        assert record is not None
+        self.assertEqual(record["reasons"], ["anthraquinone - pesticide residues"])
+        self.assertEqual(len(record["official_hazards"]), 2)
+
     def test_non_china_origin_is_not_normalized(self) -> None:
         detail = parse_detail(detail_payload(origin="IN"))
         self.assertFalse(is_china_food_detail(detail))

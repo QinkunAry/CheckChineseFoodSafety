@@ -8,6 +8,7 @@
 [![Update Taiwan TFDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml)
 [![Probe China SAMR source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml)
 [![Probe EU RASFF source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-rasff.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-rasff.yml)
+[![Audit published EU RASFF records](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/audit-rasff-status.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/audit-rasff-status.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，也研究中国境内官方抽检不合格信息；所有范围保留原始出处并转换为可区分监管语境的统一记录。
 
@@ -119,13 +120,17 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
 
-欧盟 RASFF 已升级为只读 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页并建立 1,211 条 notification baseline，只保存官方 ID、reference 和选定字段指纹；首次回读为 0 new、0 removed、0 changed。Action 只上传诊断报告，不提交或发布监管记录。详见 `docs/SOURCE_RASFF.md`。
+欧盟 RASFF 当前为 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页；三条新增完成 detail 复核后 baseline 已从 1,211 更新为 1,214。Probe Action 仍只上传诊断报告，不自动发布监管记录。详见 `docs/SOURCE_RASFF.md`。
 
 本地 `candidate-rasff` 默认只选择 baseline 后新增或指纹变化的 reference，也可用 `--reference` 生成小规模显式复核批次。官方 detail endpoint 已解决 search `subject` 不是产品名的问题：新增 `2026.5752` 的真实产品是 `Vermicelli`，候选还会保留 classification、risk、basis、status、distribution、measures 和结构化 hazard。`smoke-rasff-detail` 使用两条有效中国样本与一条印度对照验证 detail 漂移。另一个样本 `2026.5575` 已被官方标记为 withdrawn，证明正式发布前还必须定义撤回/更正及已发布记录的 detail-status 重查规则。详见 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`。
 
-RASFF lifecycle 现采用明确状态机：`ec_validated` 映射为 `active`，`ec_withdrawn` 映射为 `withdrawn`，未知或矛盾组合映射为 `review_required`；corrigendum 本身不会撤回仍有效的通知。候选技术状态与 `lifecycle_gate_status` 分离，withdrawn 记录保留审计证据但不能通过 active 发布门禁。正式发布前仍需实现对所有已发布 reference 的周期性 detail-status 重查。
+RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_withdrawn` 映射为 `withdrawn`，未知或矛盾组合映射为 `review_required`；corrigendum 本身不会撤回仍有效的通知。候选技术状态与 `lifecycle_gate_status` 分离，withdrawn 记录保留审计证据但不能通过 active 发布门禁。
 
-`audit-rasff-status` 已实现发布后重查框架：它以未来的正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。目前没有 RASFF processed release，因此该命令尚不进入定时 Action，也不会伪造一个“已发布记录”状态文件。
+首批 explicitly reviewed release 已发布 3 条 active reference：`2026.5752`、`2026.5760`、`2026.5781`。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
+
+`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。新增的每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；首次 hosted run 尚待维护者验收。
+
+扩大 detail 复核现覆盖 10 条唯一记录、三类 notification、五种 risk 决策、chemical/adulteration/no-hazard、corrigendum 与 withdrawn；全部字段和 Schema 检查通过，混入 withdrawn 时 lifecycle gate 会阻塞。CC BY 4.0 复用评审也已完成：未来 release 必须保留 © European Union / European Commission / DG SANTE / RASFF 署名、来源与许可链接，明确本项目做过筛选和标准化修改，并禁止暗示官方背书。详见 `docs/reviews/RASFF_EXPANDED_DETAIL_REVIEW.md` 与 `docs/reviews/RASFF_REUSE_REVIEW.md`。
 
 日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
 
@@ -156,10 +161,12 @@ RASFF lifecycle 现采用明确状态机：`ec_validated` 映射为 `active`，`
 - [x] 为中国大陆 SAMR 建立完整分页与 78 条公告 URL baseline
 - [x] 为中国大陆 SAMR 实现抽样编号聚合和本地候选复核
 - [x] 打通欧盟 RASFF 官方公开 JSON 探针与 China+food 双过滤
-- [x] 为欧盟 RASFF 建立完整分页与 1,211 条指纹 baseline
+- [x] 为欧盟 RASFF 建立完整分页与 1,214 条指纹 baseline
 - [x] 为欧盟 RASFF 增加本地增量候选与首次字段复核
 - [x] 接入欧盟 RASFF 官方 detail 产品、hazard 与监管状态
 - [x] 实现欧盟 RASFF 已发布记录 detail-status 审计框架
+- [x] 完成欧盟 RASFF 扩大 detail 样本与 CC BY 4.0 署名评审
+- [x] 发布首批 3 条人工批准 RASFF 数据与逐条 provenance metadata
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill

@@ -163,10 +163,11 @@ scan. A failed or `--max-pages` partial scan is refused.
 
 ## Prototype to implemented gate
 
-Before moving from `prototype` to `implemented`, the project must add a reviewed
-candidate batch, final CC BY 4.0 attribution, a decision about the combined
-subject/product field, publication count-drop and atomic-write gates, explicit
-correction/removal handling, maintainer notification and rollback documentation.
+The expanded detail candidate review and CC BY 4.0 attribution review are now
+complete. Before moving from `prototype` to `implemented`, the project still
+needs a reviewed initial processed release, release metadata generation,
+publication count-drop and atomic-write gates, status-audit integration,
+maintainer notification and rollback verification.
 
 ## Local candidate pipeline and initial review
 
@@ -180,21 +181,29 @@ Candidate JSONL and reports are ignored local artifacts. They are not part of
 the scheduled workflow because publication rights and field semantics are still
 under review.
 
-The first review covered five recent explicit references and the first real
-post-baseline increment, `2026.5752`. All six passed explicit China origin,
-human-food scope, stable-ID and Schema checks. Publication remains blocked:
+The first, search-only review covered five recent explicit references and the
+first real post-baseline increment, `2026.5752`. All six passed explicit China
+origin, human-food scope, stable-ID and Schema checks. At that stage it exposed
+the following blockers, which were subsequently addressed or qualified by the
+official-detail enrichment and expanded review described below:
 
 - the public search `subject` combines product, finding and regulatory action;
 - `2026.5752` has subject `Consignment possibly subject to veterinary checks`,
   which contains no identifiable product;
-- notification classification and risk decision need dedicated production
+- notification classification and risk decision needed dedicated production
   fields rather than being hidden in diagnostic output;
 - generic project hazard rules leave most reviewed RASFF subjects unclassified;
-- one pepper-powder subject has an official search category of nuts/seeds and
-  requires detail-level verification rather than heuristic correction.
+- one pepper-powder subject had an official search category of nuts/seeds and
+  required detail-level verification rather than heuristic correction.
 
 See the full review:
 [`RASFF_INITIAL_CANDIDATE_REVIEW.md`](reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md).
+
+The expanded review covers ten unique records across all five observed risk
+decisions, three notification classifications, structured hazard/no-hazard,
+corrigendum and withdrawn cases. After all three post-baseline increments were
+detail-reviewed, the inventory baseline advanced from 1,211 to 1,214. See
+[`RASFF_EXPANDED_DETAIL_REVIEW.md`](reviews/RASFF_EXPANDED_DETAIL_REVIEW.md).
 
 ## Official notification detail
 
@@ -256,14 +265,44 @@ Real verification:
 - `2026.5575` is `ec_withdrawn`, has request/withdrawal follow-ups and maps to
   `withdrawn`.
 
-Production still needs a periodic detail-status audit for every published RASFF
-reference. Search fingerprints cannot substitute for that audit because search
-does not expose final notification status.
+Every published RASFF reference therefore receives a periodic detail-status
+audit. Search fingerprints cannot substitute for that audit because search does
+not expose final notification status.
+
+## Explicitly reviewed release
+
+The first reviewed subset was published on 2026-07-01 with three active
+references: `2026.5752`, `2026.5760` and `2026.5781`. It is deliberately a
+small acceptance release, not a claim that all 1,214 inventory entries have
+been detail-reviewed or published.
+
+`publish-rasff-reviewed` requires an explicit human-approved reference
+allowlist that exactly matches the input JSONL. It then fails closed on Schema
+errors, duplicate IDs/references, non-China or non-origin-based records,
+non-RASFF actions, non-official detail URLs, missing detail fields, any status
+other than active/`ec_validated`, count drops and an excessive batch size.
+
+```powershell
+python -m food_safety_watch publish-rasff-reviewed `
+  --input data/candidates/rasff_cn.jsonl `
+  --output data/processed/rasff_cn.jsonl `
+  --metadata data/processed/rasff_cn.metadata.json `
+  --report reports/rasff_quality.json `
+  --schema schemas/record.schema.json `
+  --approved-reference 2026.5752 `
+  --approved-reference 2026.5760 `
+  --approved-reference 2026.5781 `
+  --min-records 3 --max-records 10 --max-drop-percent 25
+```
+
+Data and metadata are staged together. If either replacement fails, the pair
+is rolled back to the previous release. Metadata records the approval mode,
+approved references, release scope, CC BY 4.0 attribution/change statement and
+per-record source URL, retrieval time, official last update and lifecycle.
 
 ## Published-record status audit
 
-`audit-rasff-status` implements the audit path without inventing a production
-baseline before a RASFF release exists. It reads the published JSONL itself,
+`audit-rasff-status` reads the published JSONL itself,
 extracts each official notification ID from the validated source URL, retrieves
 the current detail and compares all publication-relevant fields:
 
@@ -294,10 +333,27 @@ python -m food_safety_watch audit-rasff-status `
   --max-records 100
 ```
 
-No scheduled audit is enabled yet because `data/processed/rasff_cn.jsonl` does
-not exist. After the first reviewed production release, the audit must be wired
-to that release and its failure-notification path.
+`audit-rasff-status.yml` now runs weekly and on manual dispatch. It uploads the
+report on every outcome, opens or updates a maintenance Issue on failure or
+`action_required`, closes that Issue after recovery, and never edits the
+committed release. Its first hosted run remains an acceptance gate.
+
+## Approved reuse wording
+
+The Commission legal notice and dataset metadata support CC BY 4.0 reuse of the
+EU-owned RASFF material, provided appropriate credit is given and modifications
+are indicated. The project will preserve © European Union / European Commission
+/ DG SANTE / RASFF attribution, dataset and record links, the CC BY 4.0 link,
+the Commission disclaimer/legal-notice link, an explicit description of project
+transformations, and a no-endorsement statement.
+
+This review covers normalized facts and short official hazard/reason text. It
+does not approve copying HTML/JavaScript/full pages, publishing attachments,
+using EU logos or marks, or implying endorsement. The release metadata generator
+emits the approved wording beside every RASFF release. See
+[`RASFF_REUSE_REVIEW.md`](reviews/RASFF_REUSE_REVIEW.md) and
+[`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md).
 
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
-before any records are published under `data/processed/`.
+before its status is upgraded from `prototype` to `implemented`.

@@ -36,6 +36,7 @@ from .rasff_inventory import inventory_rasff, write_inventory_state
 from .rasff_candidates import candidate_rasff
 from .rasff_detail_smoke import build_detail_smoke_report
 from .rasff_status_audit import audit_rasff_records
+from .rasff_update import publish_rasff_reviewed
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
@@ -524,6 +525,38 @@ def build_parser() -> argparse.ArgumentParser:
     rasff_candidate.add_argument("--max-candidates", type=int, default=100)
     rasff_candidate.add_argument("--page-size", type=int, default=100)
 
+    rasff_publish = subparsers.add_parser(
+        "publish-rasff-reviewed",
+        help="Validate and atomically publish an explicitly approved RASFF subset",
+    )
+    rasff_publish.add_argument(
+        "--input", type=Path, default=Path("data/candidates/rasff_cn.jsonl")
+    )
+    rasff_publish.add_argument(
+        "--output", type=Path, default=Path("data/processed/rasff_cn.jsonl")
+    )
+    rasff_publish.add_argument(
+        "--metadata",
+        type=Path,
+        default=Path("data/processed/rasff_cn.metadata.json"),
+    )
+    rasff_publish.add_argument(
+        "--report", type=Path, default=Path("reports/rasff_quality.json")
+    )
+    rasff_publish.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    rasff_publish.add_argument(
+        "--approved-reference",
+        action="append",
+        required=True,
+        dest="approved_references",
+        help="Human-reviewed reference; the list must exactly match the input JSONL",
+    )
+    rasff_publish.add_argument("--min-records", type=int, default=1)
+    rasff_publish.add_argument("--max-records", type=int, default=100)
+    rasff_publish.add_argument("--max-drop-percent", type=float, default=25.0)
+
     rasff_detail_smoke = subparsers.add_parser(
         "smoke-rasff-detail",
         help="Validate official public RASFF notification-detail fields",
@@ -990,6 +1023,28 @@ def main(argv: list[str] | None = None) -> int:
             f"output={args.output}; report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "publish-rasff-reviewed":
+        try:
+            report = publish_rasff_reviewed(
+                input_path=args.input,
+                output=args.output,
+                report_path=args.report,
+                metadata_path=args.metadata,
+                schema_path=args.schema,
+                approved_references=args.approved_references,
+                min_records=args.min_records,
+                max_records=args.max_records,
+                max_drop_fraction=args.max_drop_percent / 100,
+            )
+        except QualityCheckFailed as error:
+            print(error)
+            return 1
+        print(
+            f"Published {report['record_count']} explicitly reviewed RASFF records "
+            f"to {args.output}; quality report={args.report}; metadata={args.metadata}"
+        )
+        return 0
 
     if args.command == "smoke-rasff-detail":
         report = build_detail_smoke_report(
