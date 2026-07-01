@@ -7,6 +7,7 @@ from .quality import build_quality_report
 from .rasff_detail import (
     detail_api_url,
     is_china_food_detail,
+    lifecycle_status,
     normalize_detail,
     parse_detail,
 )
@@ -23,6 +24,7 @@ def _sample(detail: dict[str, Any]) -> dict[str, Any]:
         "classification": detail["classification"],
         "risk_decision": detail["risk_decision"],
         "notification_status": detail["notification_status"],
+        "record_status": lifecycle_status(detail),
         "origin_codes": detail["origin_codes"],
         "hazard_count": len(detail["hazards"]),
         "hazards": detail["hazards"],
@@ -57,6 +59,14 @@ def build_detail_smoke_report(
                 is_china = is_china_food_detail(detail)
                 if expected_scope == "china" and not is_china:
                     raise ValueError("expected China-origin human-food detail")
+                if (
+                    expected_scope == "china"
+                    and lifecycle_status(detail) != "active"
+                ):
+                    raise ValueError(
+                        "expected active China detail, got "
+                        f"{lifecycle_status(detail)}"
+                    )
                 if expected_scope == "control" and is_china:
                     raise ValueError("non-China control normalized as China food")
                 (china_details if expected_scope == "china" else control_details).append(

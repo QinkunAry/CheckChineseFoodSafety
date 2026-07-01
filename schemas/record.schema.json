@@ -24,6 +24,9 @@
     "regulatory_scope": {
       "enum": ["origin_based", "domestic_market"]
     },
+    "record_status": {
+      "enum": ["active", "withdrawn", "review_required"]
+    },
     "producer_name": { "type": "string" },
     "producer_location": { "type": "string" },
     "product_code": { "type": "string" },

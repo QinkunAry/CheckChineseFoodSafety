@@ -24,7 +24,6 @@ class RasffDetailSmokeTests(unittest.TestCase):
             detail_api_url(852931): detail_payload(
                 notification_id=852931,
                 reference="2026.5575",
-                status="ec_withdrawn",
             ),
             detail_api_url(827209): detail_payload(
                 notification_id=827209,
@@ -42,7 +41,7 @@ class RasffDetailSmokeTests(unittest.TestCase):
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["normalized_china_count"], 2)
         self.assertEqual(report["control_emitted_count"], 0)
-        self.assertEqual(report["withdrawn_china_count"], 1)
+        self.assertEqual(report["withdrawn_china_count"], 0)
         self.assertEqual(report["hazard_detail_count"], 1)
         self.assertEqual(report["schema_error_count"], 0)
 

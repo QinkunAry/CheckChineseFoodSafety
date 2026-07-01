@@ -231,6 +231,35 @@ inventory alone is insufficient for production correction handling. RASFF stays
 `prototype` until the project defines detail-status rechecks, withdrawal and
 corrigendum semantics.
 
+## Lifecycle decision
+
+The project now separates technical candidate success from lifecycle
+eligibility:
+
+- official `ec_validated` with no withdrawal follow-up maps to project
+  `record_status: active`;
+- official `ec_withdrawn` maps to `record_status: withdrawn` and remains
+  auditable rather than being silently deleted;
+- an unknown official status, or a contradictory validated record carrying a
+  withdrawal follow-up, maps to `record_status: review_required`;
+- a corrigendum follow-up alone does not withdraw a currently validated record.
+
+Candidate reports include counts for all three states and a separate
+`lifecycle_gate_status`. Technical parsing may pass while the lifecycle gate is
+blocked. Only an all-active detail-enriched batch can pass that gate; this does
+not by itself satisfy licence, human-review or production-publication gates.
+
+Real verification:
+
+- `2026.5752` is `ec_validated`, has a `corrigendum` follow-up and maps to
+  `active`;
+- `2026.5575` is `ec_withdrawn`, has request/withdrawal follow-ups and maps to
+  `withdrawn`.
+
+Production still needs a periodic detail-status audit for every published RASFF
+reference. Search fingerprints cannot substitute for that audit because search
+does not expose final notification status.
+
 RASFF must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
 before any records are published under `data/processed/`.

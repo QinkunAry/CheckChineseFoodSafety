@@ -18,7 +18,12 @@ from .rasff_probe import (
     fetch_public_json,
     normalize_notification,
 )
-from .rasff_detail import detail_api_url, normalize_detail, parse_detail
+from .rasff_detail import (
+    detail_api_url,
+    lifecycle_status,
+    normalize_detail,
+    parse_detail,
+)
 
 
 REFERENCE_RE = re.compile(r"\d{4}\.\d+")
@@ -107,6 +112,7 @@ def _detail_evidence_sample(detail: dict[str, Any]) -> dict[str, Any]:
         "hazards": detail["hazards"],
         "measures": detail["measures"],
         "followup_types": detail["followup_types"],
+        "record_status": lifecycle_status(detail),
     }
 
 
@@ -168,6 +174,22 @@ def build_candidate_report(
         min_records=0,
     )
     blocking_errors.extend(str(error) for error in quality["blocking_errors"])
+    lifecycle_counts = {
+        status: sum(lifecycle_status(detail) == status for detail in details or [])
+        for status in ("active", "withdrawn", "review_required")
+    }
+    lifecycle_blockers: list[str] = []
+    if details is None:
+        lifecycle_blockers.append("candidate batch is not detail enriched")
+    if lifecycle_counts["withdrawn"]:
+        lifecycle_blockers.append(
+            f"batch contains {lifecycle_counts['withdrawn']} withdrawn records"
+        )
+    if lifecycle_counts["review_required"]:
+        lifecycle_blockers.append(
+            f"batch contains {lifecycle_counts['review_required']} records "
+            "requiring lifecycle review"
+        )
     return (
         {
             "status": "failed" if blocking_errors else "passed",
@@ -191,6 +213,11 @@ def build_candidate_report(
                 detail.get("notification_status") == "ec_withdrawn"
                 for detail in details or []
             ),
+            "lifecycle_counts": lifecycle_counts,
+            "lifecycle_gate_status": (
+                "blocked" if lifecycle_blockers else "passed"
+            ),
+            "lifecycle_blockers": lifecycle_blockers,
             "evidence_samples": (
                 [_detail_evidence_sample(item) for item in details[:20]]
                 if details is not None

@@ -11,7 +11,7 @@ from food_safety_watch.rasff_candidates import (
     select_candidate_notifications,
 )
 from food_safety_watch.rasff_inventory import state_entry
-from food_safety_watch.rasff_detail import detail_api_url
+from food_safety_watch.rasff_detail import detail_api_url, parse_detail
 from tests.test_rasff_detail import detail_payload
 from food_safety_watch.rasff_probe import (
     COUNTRY_URL,
@@ -180,6 +180,28 @@ class RasffCandidateTests(unittest.TestCase):
         self.assertEqual(candidates, [])
         self.assertIn("exceeds maximum", report["blocking_errors"][0])
 
+    def test_withdrawn_detail_blocks_lifecycle_gate(self) -> None:
+        item = notification(1)
+        detail = parse_detail(
+            detail_payload(
+                notification_id=item["notifId"],
+                reference=item["reference"],
+                status="ec_withdrawn",
+            )
+        )
+        report, candidates = build_candidate_report(
+            selected=[item],
+            details=[detail],
+            selection=selection(scope="explicit_review"),
+            schema=SCHEMA,
+            baseline_count=1,
+            current_count=1,
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["lifecycle_gate_status"], "blocked")
+        self.assertEqual(report["lifecycle_counts"]["withdrawn"], 1)
+        self.assertEqual(candidates[0]["record_status"], "withdrawn")
+
     def test_unchanged_baseline_produces_empty_passing_batch(self) -> None:
         records = [notification(1), notification(2)]
         selected, details = select_candidate_notifications(
@@ -221,6 +243,7 @@ class RasffCandidateTests(unittest.TestCase):
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["scope"], "explicit_review")
         self.assertEqual(report["detail_enriched_count"], 1)
+        self.assertEqual(report["lifecycle_gate_status"], "passed")
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["source_record_id"], "2026.0002")
         self.assertEqual(candidates[0]["product_name"], "Tea sample 800002")

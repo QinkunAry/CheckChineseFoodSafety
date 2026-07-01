@@ -99,7 +99,7 @@
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
     "status": "prototype",
-    "notes": "The public search probe and complete inventory passed on GitHub Actions. The official public detail endpoint now enriches incremental candidates with real product names, hazards, classification, risk, basis, status, distribution and measures; reference 2026.5752 resolves to Vermicelli. A detail smoke is pending hosted acceptance. Production remains blocked on withdrawal/corrigendum semantics, status rechecks, attribution and publishing gates."
+    "notes": "Search, complete inventory and public-detail smoke all passed on GitHub Actions. Detail-enriched candidates preserve product, hazard, classification, risk, basis, status, distribution, measures and follow-ups. Lifecycle maps validated to active, withdrawn to withdrawn, and unknown/contradictory combinations to review_required. Production remains blocked on periodic status rechecks for published references, broader review, attribution and publishing gates."
   },
   {
     "id": "au_fsanz_recalls",

@@ -8,6 +8,7 @@ from food_safety_watch.quality import build_quality_report, load_schema
 from food_safety_watch.rasff_detail import (
     detail_api_url,
     is_china_food_detail,
+    lifecycle_status,
     normalize_detail,
     parse_detail,
 )
@@ -141,6 +142,7 @@ class RasffDetailTests(unittest.TestCase):
         self.assertEqual(record["official_risk_decision"], "serious")
         self.assertEqual(record["official_notification_status"], "ec_validated")
         self.assertEqual(record["official_followup_types"], [])
+        self.assertEqual(record["record_status"], "active")
         quality = build_quality_report(
             [record], SCHEMA, source_id="eu_rasff", min_records=1
         )
@@ -171,6 +173,22 @@ class RasffDetailTests(unittest.TestCase):
         detail = parse_detail(detail_payload(origin="IN"))
         self.assertFalse(is_china_food_detail(detail))
         self.assertIsNone(normalize_detail(detail))
+
+    def test_lifecycle_state_machine_handles_corrigendum_and_withdrawal(self) -> None:
+        active = parse_detail(detail_payload())
+        active["followup_types"] = ["corrigendum"]
+        self.assertEqual(lifecycle_status(active), "active")
+
+        withdrawn = parse_detail(detail_payload(status="ec_withdrawn"))
+        self.assertEqual(lifecycle_status(withdrawn), "withdrawn")
+
+        contradictory = parse_detail(detail_payload())
+        contradictory["followup_types"] = ["withdrawal of original notification"]
+        self.assertEqual(lifecycle_status(contradictory), "review_required")
+
+        unknown = parse_detail(detail_payload())
+        unknown["notification_status"] = "unexpected_status"
+        self.assertEqual(lifecycle_status(unknown), "review_required")
 
     def test_parser_rejects_identity_mismatch_and_missing_origin(self) -> None:
         with self.assertRaisesRegex(ValueError, "ID mismatch"):

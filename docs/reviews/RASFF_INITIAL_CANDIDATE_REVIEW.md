@@ -5,8 +5,9 @@
 `detail_enriched_pipeline_passed_production_blocked` — candidate selection,
 origin/product-type scope, detail enrichment and Schema validation work. The
 official detail endpoint resolves the product-name and hazard-field blockers,
-but production still requires withdrawal/correction policy, broader detail
-coverage, final attribution and publishing gates.
+and the project now has an explicit lifecycle mapping. Production still requires
+periodic status rechecks, broader detail coverage, final attribution and
+publishing gates.
 
 ## Reviewed snapshot
 
@@ -106,13 +107,26 @@ analytical result `0,078 mg/kg`, maximum `0,02 mg/kg` and official hazard
 category `pesticide residues`; deterministic normalization now labels it
 `chemical`. Records with no official hazards retain an empty hazard-detail list.
 
-### 5. Withdrawal and correction semantics remain unresolved
+### 5. Withdrawal and correction policy
 
 The detail endpoint reports `2026.5575` as `ec_withdrawn` and exposes follow-up
 type `withdrawal of original notification`. The search inventory did not expose
 this status. Production must define whether withdrawn records are excluded,
 retained with status, or represented as tombstones, and must recheck detail
 status for already published records. This is now the central semantic blocker.
+
+Project decision after hosted detail-smoke acceptance:
+
+- `ec_validated` without withdrawal follow-up maps to `active`;
+- `ec_withdrawn` maps to `withdrawn` and remains available for audit;
+- unknown or contradictory combinations map to `review_required`;
+- a corrigendum alone does not withdraw a validated record;
+- candidate technical status is separate from `lifecycle_gate_status`; withdrawn
+  or review-required records block that gate.
+
+The remaining blocker is operational: every published reference must have its
+detail status rechecked periodically because search fingerprints omit this
+field.
 
 ## Candidate pipeline decision
 
@@ -134,11 +148,8 @@ not uploaded while reuse wording and field semantics remain unresolved.
 
 ## Required follow-up
 
-1. Run the new detail smoke on GitHub Actions with two active China records and
-   one India control.
-2. Define withdrawn/corrigendum semantics and how previously published records
-   are rechecked for status changes.
-3. Review a broader detail-enriched candidate batch across hazard, no-hazard,
+1. Implement a periodic detail-status audit for every published RASFF reference.
+2. Review a broader detail-enriched candidate batch across hazard, no-hazard,
    alert, border-rejection and information classifications.
-4. Finalize CC BY 4.0 attribution and API-use wording before candidate artifacts
+3. Finalize CC BY 4.0 attribution and API-use wording before candidate artifacts
    or processed records are published.

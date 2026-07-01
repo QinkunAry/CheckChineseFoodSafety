@@ -17,6 +17,57 @@
 
 ---
 
+## 2026-07-01 · Round 47 · EU RASFF lifecycle gate
+
+### 触发结果
+
+维护者确认扩展后的 `Probe EU RASFF source` GitHub Action 运行成功。公开 search probe、13 页 inventory 和新增 notification-detail smoke 均已在 hosted runner 通过；固定样本验证 active China no-hazard、active China hazard 与 India non-China control。
+
+### 本轮目标
+
+把 detail 中的官方 notification status 与 follow-up 转换成明确、可审计的项目生命周期，并防止 withdrawn 或语义矛盾记录因为“Schema 通过”而进入 active 发布视图。
+
+### 生命周期决策
+
+- `ec_validated` 且没有 withdrawal follow-up：`record_status: active`；
+- `ec_withdrawn`：`record_status: withdrawn`，保留记录用于审计，不静默删除；
+- 未知官方状态：`record_status: review_required`；
+- `ec_validated` 同时出现 withdrawal follow-up：矛盾状态，映射 `review_required`；
+- `corrigendum` 本身不撤回仍为 `ec_validated` 的记录。
+
+消费者当前有效视图未来默认只包含 `active`；withdrawn 和 review-required 仍应能在审计/历史视图查询。该决策不等于已经完成生产发布。
+
+### 实现内容
+
+- 统一 schema 新增可选 `record_status`，枚举 active、withdrawn、review_required；
+- detail normalization 根据官方 status 和 follow-up 类型确定生命周期；
+- 保留 `official_followup_types`，使 corrigendum 与 withdrawal 证据可追溯；
+- candidate evidence sample 增加 project record status；
+- candidate report 新增 active/withdrawn/review-required 计数、独立 `lifecycle_gate_status` 和 blockers；
+- 技术 parse/Schema `status` 与生命周期 gate 分离：withdrawn 可被正确解析并保留，但不能通过 active gate；
+- fixed detail smoke 现在要求两条 China 样本保持 active；若官方后续撤回其中一条，workflow 会明确失败而非继续显示绿色。
+
+### 真实验证
+
+- `2026.5752`：官方 `ec_validated`，包含 `corrigendum`，项目状态 `active`；默认增量候选 lifecycle gate `passed`；
+- `2026.5575`：官方 `ec_withdrawn`，包含 request for withdrawal 与 withdrawal of original notification，项目状态 `withdrawn`；
+- 真实增量候选仍为 1 条 `Vermicelli`，detail enriched、Schema 通过、active=1、withdrawn=0、review_required=0；
+- withdrawn fixture 技术解析通过但 lifecycle gate `blocked`，证明两种门禁不会混淆。
+
+### 验证与状态
+
+- 新增 lifecycle 状态机测试，覆盖 active+corrigendum、withdrawn、矛盾 withdrawal follow-up 和未知状态；
+- 新增 withdrawn candidate lifecycle-gate 测试；
+- RASFF detail/detail-smoke/candidate 共 21 项专项测试通过；
+- 全套 176 项单元测试通过；
+- RASFF 保持 `prototype`。
+
+### 剩余阻塞与下一步
+
+search inventory 不提供最终 notification status，因此它无法发现一个既有 reference 仅在 detail 中变为 withdrawn。下一步实现“已发布 reference detail-status audit”：为未来 RASFF processed release 保存最小 ID/reference/status/last-update baseline，周期性重查每条已发布记录，报告 active→withdrawn、active→review_required 和 last-update 变化。在还没有 RASFF 正式发布记录时，不伪造 production status baseline。
+
+---
+
 ## 2026-07-01 · Round 46 · EU RASFF official detail enrichment
 
 ### 本轮目标

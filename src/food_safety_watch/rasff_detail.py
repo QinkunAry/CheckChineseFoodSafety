@@ -233,6 +233,19 @@ def detail_hazard_tags(detail: dict[str, Any], reasons: list[str]) -> list[str]:
     return tags or ["other_or_unclassified"]
 
 
+def lifecycle_status(detail: dict[str, Any]) -> str:
+    official_status = str(detail.get("notification_status") or "").casefold()
+    followups = [
+        str(value).casefold() for value in detail.get("followup_types", [])
+    ]
+    has_withdrawal_followup = any("withdrawal" in value for value in followups)
+    if official_status == "ec_withdrawn":
+        return "withdrawn"
+    if official_status == "ec_validated" and not has_withdrawal_followup:
+        return "active"
+    return "review_required"
+
+
 def normalize_detail(
     detail: dict[str, Any],
     *,
@@ -264,6 +277,7 @@ def normalize_detail(
         "hazard_tags": detail_hazard_tags(detail, reasons),
         "source_url": notification_url(detail["notification_id"]),
         "retrieved_at": retrieved_at or datetime.now(timezone.utc).isoformat(),
+        "record_status": lifecycle_status(detail),
         "official_notification_classification": detail["classification"],
         "official_risk_decision": detail["risk_decision"],
         "official_notification_basis": detail["notification_basis"],
