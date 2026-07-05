@@ -1,18 +1,18 @@
 {
-  "baseline_count": null,
+  "baseline_count": 388,
   "blocking_errors": [],
-  "china_source_record_count": 576,
-  "count_change_percent": null,
+  "china_source_record_count": 581,
+  "count_change_percent": 0.52,
   "data_url": "https://data.fda.gov.tw/data/opendata/export/52/json",
   "dataset_url": "https://data.gov.tw/dataset/6133",
   "duplicate_id_count": 0,
   "duplicate_id_samples": [],
-  "event_date_max": "2026-06-23",
+  "event_date_max": "2026-06-30",
   "event_date_min": "2023-01-03",
-  "excluded_record_count": 2084,
-  "generated_at": "2026-06-28T19:47:38.857677+00:00",
+  "excluded_record_count": 2091,
+  "generated_at": "2026-07-05T09:48:18.946531+00:00",
   "hazard_tags": {
-    "chemical": 388
+    "chemical": 390
   },
   "maximum_drop_fraction": 0.25,
   "maximum_unclassified_hazards": 0,
@@ -32,16 +32,16 @@
     "prepared_fruit_and_vegetables": 28,
     "prepared_meat_and_seafood": 4,
     "seafood": 18,
-    "seeds_and_herbs": 74,
+    "seeds_and_herbs": 75,
     "sugar_and_confectionery": 1,
-    "vegetables": 100
+    "vegetables": 101
   },
-  "record_count": 388,
+  "record_count": 390,
   "schema_error_count": 0,
   "schema_error_samples": [],
   "source_id": "tw_tfda",
-  "source_record_count": 2472,
+  "source_record_count": 2481,
   "status": "passed",
   "unclassified_hazard_count": 0,
-  "unique_id_count": 388
+  "unique_id_count": 390
 }
