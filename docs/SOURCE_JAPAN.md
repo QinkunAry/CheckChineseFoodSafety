@@ -239,6 +239,24 @@ Project decision:
 - exact approved wording is recorded in
   [`reviews/JAPAN_REUSE_REVIEW.md`](reviews/JAPAN_REUSE_REVIEW.md).
 
+## Initial reviewed release
+
+The first hosted explicit candidate workflow passed, and the three fixed pages
+were reviewed again from current official CAA/MHLW HTML on 2026-07-05.
+
+- `RCL202601519`, `とんぶり瓶詰（中国産）`, was accepted and published as the
+  first MHLW-backed record;
+- `RCL202601495` was excluded because one notice combines Miyazaki- and
+  China-origin eel products and the current schema cannot represent that mixed
+  product scope safely;
+- `RCL202601408` remained the expected non-China control.
+
+`publish-japan-reviewed` requires an explicit MHLW reference allowlist, exact
+MHLW URL/reference agreement, CN origin, recall action, MHLW authority, Schema
+validity, no duplicate IDs, count/drop limits and zero unclassified hazards. It
+atomically publishes JSONL and PDL metadata. See the field-level decision in
+[`reviews/JAPAN_INITIAL_CANDIDATE_REVIEW.md`](reviews/JAPAN_INITIAL_CANDIDATE_REVIEW.md).
+
 ## Known blockers before implementation
 
 - MHLW public search is session/form driven; direct detail pages are stable when
@@ -250,15 +268,13 @@ Project decision:
 
 ## Implemented gate
 
-Before Japan can move from `prototype` to `implemented`, the project needs:
+Before Japan can move from `prototype` to `implemented`, the project still needs:
 
-- a manually reviewed non-empty candidate JSONL and diagnostic report;
-- continued successful live smoke coverage for the two explicit China-origin
-  records and one non-China food recall fixed above;
+- a hosted pass of the strict two-China/two-MHLW candidate count gates;
 - unit tests covering list parsing, detail parsing, MHLW hidden-field parsing,
   non-China exclusion, inventory changes, candidate generation, and source-drift
   diagnostics;
-- MHLW-only production quality and metadata gates using the approved wording.
+- a published-record MHLW detail audit and incremental/rollback procedure.
 
 Japan must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)

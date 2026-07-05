@@ -56,6 +56,8 @@ jobs:
           --schema schemas/record.schema.json
           --output data/candidates/japan_caa_cn.jsonl
           --report reports/japan_caa_candidates.json
+          --min-china-records 2
+          --min-mhlw-records 2
           --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01'
           --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035471&screenkbn=01'
           --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035460&screenkbn=01'

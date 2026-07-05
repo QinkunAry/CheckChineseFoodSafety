@@ -33,3 +33,11 @@ jobs:
           --report reports/fda_quality.json
           --min-records 1000
 
+      - name: Validate committed Japan MHLW data
+        run: >-
+          python -m food_safety_watch validate
+          --input data/processed/japan_mhlw_cn.jsonl
+          --schema schemas/record.schema.json
+          --report reports/japan_mhlw_quality.json
+          --source-id jp_caa_recalls
+          --min-records 1

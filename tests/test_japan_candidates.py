@@ -138,6 +138,31 @@ class JapanCandidateTests(unittest.TestCase):
         self.assertEqual(records[0]["product_category"], "seafood")
         self.assertIn("labeling", records[0]["hazard_tags"])
 
+    def test_tonburi_clostridium_maps_to_vegetable_microbiological(self) -> None:
+        caa = caa_detail(china=True, mhlw=False).replace(
+            "中国産うなぎ長焼".encode(), "とんぶり瓶詰（中国産）".encode()
+        ).replace(
+            "消費期限の誤表示".encode(),
+            "芽胞菌（クロストリジウム属菌）を検出".encode(),
+        )
+        mhlw = mhlw_detail().replace(
+            "中国産うなぎ長焼".encode(), "とんぶり瓶詰（中国産）".encode()
+        ).replace(
+            "食品表示法違反".encode(), "食品衛生法違反のおそれ".encode()
+        ).replace(
+            "期限表示の印字誤り".encode(),
+            "芽胞菌（クロストリジウム属菌）を検出".encode(),
+        )
+        report, records = build_candidate_report(
+            items=[item(CHINA_URL, "とんぶり瓶詰（中国産） - 回収")],
+            schema=load_schema(SCHEMA),
+            fetcher={CHINA_URL: caa, MHLW_URL: mhlw}.__getitem__,
+            retrieved_at="2026-07-05T00:00:00+00:00",
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(records[0]["product_category"], "vegetables")
+        self.assertEqual(records[0]["hazard_tags"], ["microbiological"])
+
     def test_non_china_item_is_reported_but_not_emitted(self) -> None:
         report, records = build_candidate_report(
             items=[item(OTHER_URL)],
@@ -148,6 +173,37 @@ class JapanCandidateTests(unittest.TestCase):
         self.assertEqual(report["status"], "passed")
         self.assertEqual(records, [])
         self.assertEqual(report["page_results"][0]["status"], "parsed_non_china")
+
+    def test_mhlw_backed_record_requires_mhlw_origin_evidence(self) -> None:
+        payloads = {
+            CHINA_URL: caa_detail(china=True),
+            MHLW_URL: mhlw_detail(china=False),
+        }
+        report, records = build_candidate_report(
+            items=[item(CHINA_URL)],
+            schema=load_schema(SCHEMA),
+            fetcher=payloads.__getitem__,
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(records, [])
+        self.assertEqual(report["page_results"][0]["status"], "parsed_non_china")
+
+    def test_candidate_minimum_mhlw_gate_fails_closed(self) -> None:
+        payloads = {
+            CHINA_URL: caa_detail(china=True),
+            MHLW_URL: mhlw_detail(),
+        }
+        report, records = build_candidate_report(
+            items=[item(CHINA_URL)],
+            schema=load_schema(SCHEMA),
+            fetcher=payloads.__getitem__,
+            min_china_records=2,
+            min_mhlw_records=2,
+        )
+        self.assertEqual(len(records), 1)
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["mhlw_backed_record_count"], 1)
+        self.assertTrue(any("below minimum" in item for item in report["blocking_errors"]))
 
     def test_mhlw_identifier_mismatch_fails_closed(self) -> None:
         payloads = {

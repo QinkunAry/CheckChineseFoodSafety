@@ -45,7 +45,7 @@
     "mhlw_public_url": "https://i2fas.mhlw.go.jp/faspub/_link.do",
     "access_method": "caa_food_html_mhlw_detail_html",
     "status": "prototype",
-    "notes": "Read-only smoke, inventory, and candidate generation exist. Two fixed China-origin samples plus one non-China control now drive an explicit non-empty review batch; the URL baseline contains 321 CAA food recall details. MHLW-linked candidates use verified RCL IDs and MHLW URLs under approved PDL 1.0 attribution. Publication remains blocked on hosted batch review and MHLW-only production gates; CAA-only expressive content is excluded."
+    "notes": "Smoke, inventory and explicit candidate review exist. The first MHLW-backed release contains RCL202601519 with PDL 1.0 metadata; mixed-origin RCL202601495 is deliberately excluded and RCL202601408 is the non-China control. CI validates the committed release and the candidate workflow requires two China/two MHLW-backed rows. Remaining prototype gates are hosted acceptance of the stricter workflow, published-detail audit, and incremental/rollback operations."
   },
   {
     "id": "kr_food_safety_korea",

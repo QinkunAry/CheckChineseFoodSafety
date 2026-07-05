@@ -17,6 +17,55 @@
 
 ---
 
+## 2026-07-05 · Round 53 · Japan field review and first MHLW-backed release
+
+### 触发结果
+
+维护者确认更新后的 `Smoke test Japan CAA source` 通过。由于当前环境无法匿名读取仓库的 Actions artifact，随后直接重新下载 3 个官方 CAA 页面与其 3 个 MHLW detail，使用项目 parser 完成字段级复核。
+
+### 人工复核结论
+
+- `RCL202601495`：同一 notice 同时覆盖宫崎县产鳗鱼和中国产鳗鱼；当前 schema 只有单一 `origin_country`，把整条记录标成 CN 会误导，因此不进入首批 release；
+- `RCL202601519`：`とんぶり瓶詰（中国産）`，MHLW product 和 detail 明确给出中国产证据，event date 为 2026-06-12，原因是异味调查检出芽胞菌（クロストリジウム属菌），接受发布；
+- `RCL202601408`：乌冬/凉面，没有中国来源证据，正确排除；
+- MHLW `RCL202601519` 同时写有 `輸入食品：いいえ`，项目不据此推断供应链，只记录其产品字段明确写出的 `中国産`。
+
+### 解析与来源边界修正
+
+- `とんぶり` 映射到 `vegetables`；
+- `芽胞菌` 与 `クロストリジウム` 映射到 `microbiological`，不再落入未分类；
+- 有 MHLW detail 时，必须由 MHLW 本身提供中国来源证据；仅 CAA 写有中国来源而 MHLW 没有时不生成 MHLW-backed record；
+- MHLW-backed record 的 product、date 和 reasons 只使用 MHLW 字段，不混入 CAA 摘要；
+- CAA 继续只承担发现与交叉核验。
+
+### 首批正式 release
+
+- 新增 `publish-japan-reviewed` 与 `japan_update.py`；
+- 要求批准列表与 MHLW reference 完全一致；
+- 要求 MHLW authority、官方 MHLW URL/reference 一致、CN 原产、recall action、Schema、unique ID、数量/drop gate 和 0 unclassified hazard；
+- 数据与 metadata 成对 staging、原子替换并在失败时恢复旧版本；
+- 发布 `data/processed/japan_mhlw_cn.jsonl`：1 record、1 unique ID、0 Schema error、vegetables=1、microbiological=1；
+- metadata 包含 PDL 1.0、日英署名、加工与非政府制作/背书声明，以及逐条 provenance；
+- CI 新增已提交 Japan release 验证。
+
+### Workflow 加固
+
+- explicit candidate report 新增 China 和 MHLW-backed 最低数量门禁；
+- GitHub workflow 现在要求至少 2 条 China records 和 2 条 MHLW-backed records，避免“命令成功但候选为 0”仍显示绿色；
+- 新建 Japan 首次候选字段复核文档。
+
+### 验证与状态
+
+- Japan candidate/update 专项测试覆盖 MHLW evidence、分类、批准列表、CAA-only 阻塞、URL/reference mismatch、未分类危害和 PDL metadata；
+- 全套 207 项单元测试通过；
+- Japan 仍为 `prototype`，等待严格 workflow hosted pass、published-detail audit 与增量/回滚流程。
+
+### 下一步
+
+提交并运行 CI 与 `Smoke test Japan CAA source`。两者通过后，实现已发布 MHLW detail 的字段/status 重查、失败 Issue 和 Japan 增量发布操作手册，再评估升级 `implemented`。
+
+---
+
 ## 2026-07-02 · Round 52 · RASFF operations acceptance and Japan explicit review gate
 
 ### 触发结果

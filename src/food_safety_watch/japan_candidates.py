@@ -83,7 +83,7 @@ def _product_category(value: str) -> str:
         "seafood": ("魚", "うなぎ", "鰻", "えび", "海老", "かに", "蟹", "貝", "水産"),
         "meat_and_poultry": ("肉", "鶏", "豚", "牛", "鴨", "ソーセージ", "ハム"),
         "pasta_and_noodles": ("麺", "めん", "パスタ", "ビーフン"),
-        "vegetables": ("野菜", "きのこ", "茸"),
+        "vegetables": ("野菜", "きのこ", "茸", "とんぶり"),
         "fruit": ("果物", "フルーツ", "梅", "桃", "梨", "ぶどう", "葡萄"),
         "snacks": ("菓子", "クッキー", "ビスケット", "せんべい", "スナック"),
         "candy": ("飴", "キャンディ", "グミ", "チョコ"),
@@ -100,7 +100,15 @@ def _product_category(value: str) -> str:
 def _hazard_tags(reasons: list[str]) -> list[str]:
     text = " ".join(reasons)
     rules = {
-        "microbiological": ("サルモネラ", "リステリア", "大腸菌", "細菌", "カビ"),
+        "microbiological": (
+            "サルモネラ",
+            "リステリア",
+            "大腸菌",
+            "細菌",
+            "芽胞菌",
+            "クロストリジウム",
+            "カビ",
+        ),
         "chemical": ("農薬", "化学", "メラミン", "鉛", "カドミウム", "水銀"),
         "allergen": ("アレルゲン", "アレルギー"),
         "labeling": ("表示", "ラベル", "期限", "賞味", "消費期限"),
@@ -134,7 +142,9 @@ def parse_candidate_item(
 ) -> SafetyRecord | None:
     caa_china = bool(caa_detail.get("china_origin_evidence"))
     mhlw_china = bool(mhlw_detail and mhlw_detail.get("china_origin_evidence"))
-    if not caa_china and not mhlw_china:
+    if mhlw_detail is not None and not mhlw_china:
+        return None
+    if mhlw_detail is None and not caa_china:
         return None
 
     mhlw = mhlw_detail or {}
@@ -151,12 +161,11 @@ def parse_candidate_item(
         or caa_detail.get("title")
         or item.title
     )
-    reasons = _deduplicate([
-        mhlw.get("reason_type"),
-        mhlw.get("reason"),
-        caa_detail.get("reason_type"),
-        caa_detail.get("reason"),
-    ])
+    reasons = _deduplicate(
+        [mhlw.get("reason_type"), mhlw.get("reason")]
+        if mhlw_detail is not None
+        else [caa_detail.get("reason_type"), caa_detail.get("reason")]
+    )
     if not product_name:
         raise ValueError("Japan recall does not contain a product name")
     if not reasons:
@@ -201,7 +210,11 @@ def build_candidate_report(
     inventory_warnings: list[str] | None = None,
     scope: str = "new_since_baseline",
     requested_urls: list[str] | None = None,
+    min_china_records: int = 0,
+    min_mhlw_records: int = 0,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    if min_china_records < 0 or min_mhlw_records < 0:
+        raise ValueError("Japan candidate minimum counts must not be negative")
     generated_at = retrieved_at or datetime.now(timezone.utc).isoformat()
     page_results: list[dict[str, Any]] = []
     records: list[dict[str, Any]] = []
@@ -268,6 +281,17 @@ def build_candidate_report(
         min_records=0,
     )
     blocking_errors.extend(str(error) for error in quality["blocking_errors"])
+    mhlw_record_count = sum(
+        record.get("authority") == MHLW_AUTHORITY for record in records
+    )
+    if len(records) < min_china_records:
+        blocking_errors.append(
+            f"China record count {len(records)} below minimum {min_china_records}"
+        )
+    if mhlw_record_count < min_mhlw_records:
+        blocking_errors.append(
+            f"MHLW-backed record count {mhlw_record_count} below minimum {min_mhlw_records}"
+        )
 
     return (
         {
@@ -282,6 +306,9 @@ def build_candidate_report(
             "candidate_url_count": len(items),
             "tested_page_count": len(page_results),
             "china_record_count": len(records),
+            "mhlw_backed_record_count": mhlw_record_count,
+            "minimum_china_records": min_china_records,
+            "minimum_mhlw_records": min_mhlw_records,
             "inventory_warnings": inventory_warnings or [],
             "page_results": page_results,
             "schema_error_count": quality["schema_error_count"],
@@ -299,6 +326,8 @@ def candidate_japan_caa(
     fetcher: Fetcher = fetch_official,
     page_fetcher: PageFetcher = fetch_caa_food_page,
     review_urls: list[str] | None = None,
+    min_china_records: int = 0,
+    min_mhlw_records: int = 0,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     current_items, diagnostics = collect_caa_food_items(page_fetcher=page_fetcher)
     previous_urls = load_url_state(state_path)
@@ -316,4 +345,6 @@ def candidate_japan_caa(
         inventory_warnings=diagnostics.get("warnings", []),
         scope=scope,
         requested_urls=requested,
+        min_china_records=min_china_records,
+        min_mhlw_records=min_mhlw_records,
     )

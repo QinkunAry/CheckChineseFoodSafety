@@ -23,6 +23,7 @@ from .japan_candidates import candidate_japan_caa
 from .japan_probe import build_japan_probe_report
 from .japan_inventory import inventory_japan_caa, write_url_state as write_japan_url_state
 from .japan_smoke import build_japan_smoke_report
+from .japan_update import publish_japan_reviewed
 from .korea_probe import build_korea_probe_report
 from .quality import (
     build_quality_report,
@@ -71,6 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--schema", type=Path, default=Path("schemas/record.schema.json"))
     validate.add_argument("--report", type=Path, default=Path("reports/fda_quality.json"))
     validate.add_argument("--min-records", type=int, default=1_000)
+    validate.add_argument("--source-id", default="us_fda_import_refusals")
 
     update = subparsers.add_parser(
         "update-fda", help="Fetch, validate and atomically publish FDA records"
@@ -470,6 +472,37 @@ def build_parser() -> argparse.ArgumentParser:
         dest="urls",
         help="Explicit current CAA food detail URL for a bounded review batch",
     )
+    japan_candidate.add_argument("--min-china-records", type=int, default=0)
+    japan_candidate.add_argument("--min-mhlw-records", type=int, default=0)
+
+    japan_publish = subparsers.add_parser(
+        "publish-japan-reviewed",
+        help="Validate and atomically publish an explicitly approved MHLW subset",
+    )
+    japan_publish.add_argument(
+        "--input", type=Path, default=Path("data/candidates/japan_caa_reviewed.jsonl")
+    )
+    japan_publish.add_argument(
+        "--output", type=Path, default=Path("data/processed/japan_mhlw_cn.jsonl")
+    )
+    japan_publish.add_argument(
+        "--metadata", type=Path,
+        default=Path("data/processed/japan_mhlw_cn.metadata.json"),
+    )
+    japan_publish.add_argument(
+        "--report", type=Path, default=Path("reports/japan_mhlw_quality.json")
+    )
+    japan_publish.add_argument(
+        "--schema", type=Path, default=Path("schemas/record.schema.json")
+    )
+    japan_publish.add_argument(
+        "--approved-reference", action="append", required=True,
+        dest="approved_references",
+    )
+    japan_publish.add_argument("--min-records", type=int, default=1)
+    japan_publish.add_argument("--max-records", type=int, default=100)
+    japan_publish.add_argument("--max-drop-percent", type=float, default=25.0)
+    japan_publish.add_argument("--max-unclassified", type=int, default=0)
 
     rasff_probe = subparsers.add_parser(
         "probe-rasff",
@@ -629,7 +662,7 @@ def main(argv: list[str] | None = None) -> int:
         report = build_quality_report(
             records,
             load_schema(args.schema),
-            source_id="us_fda_import_refusals",
+            source_id=args.source_id,
             min_records=args.min_records,
         )
         write_json_file(report, args.report)
@@ -979,6 +1012,8 @@ def main(argv: list[str] | None = None) -> int:
             state_path=args.state,
             schema=load_schema(args.schema),
             review_urls=args.urls,
+            min_china_records=args.min_china_records,
+            min_mhlw_records=args.min_mhlw_records,
         )
         write_jsonl_file(records, args.output)
         write_json_file(report, args.report)
@@ -1004,6 +1039,29 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "publish-japan-reviewed":
+        try:
+            report = publish_japan_reviewed(
+                input_path=args.input,
+                output=args.output,
+                report_path=args.report,
+                metadata_path=args.metadata,
+                schema_path=args.schema,
+                approved_references=args.approved_references,
+                min_records=args.min_records,
+                max_records=args.max_records,
+                max_drop_fraction=args.max_drop_percent / 100,
+                max_unclassified=args.max_unclassified,
+            )
+        except QualityCheckFailed as error:
+            print(error)
+            return 1
+        print(
+            f"Published {report['record_count']} reviewed Japan MHLW records to "
+            f"{args.output}; quality report={args.report}; metadata={args.metadata}"
+        )
+        return 0
 
     if args.command == "inventory-rasff":
         report, entries = inventory_rasff(

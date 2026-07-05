@@ -18,7 +18,9 @@ data/processed/*.jsonl
 !data/processed/fda_cn.jsonl
 !data/processed/taiwan_tfda_cn.jsonl
 !data/processed/rasff_cn.jsonl
+!data/processed/japan_mhlw_cn.jsonl
 reports/rasff_quality.json
+reports/japan_mhlw_quality.json
 reports/.*.tmp
 reports/cfs_candidates.json
 reports/cfs_smoke.json
