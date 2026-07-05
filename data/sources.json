@@ -45,7 +45,7 @@
     "mhlw_public_url": "https://i2fas.mhlw.go.jp/faspub/_link.do",
     "access_method": "caa_food_html_mhlw_detail_html",
     "status": "prototype",
-    "notes": "Read-only smoke, inventory, and candidate generation exist. Smoke fixes two explicit China-origin pages plus one non-China control; the URL baseline contains 321 official CAA food recall details. Publication remains blocked on a reviewed non-empty candidate batch, production quality gates, and final PDL attribution wording."
+    "notes": "Read-only smoke, inventory, and candidate generation exist. Two fixed China-origin samples plus one non-China control now drive an explicit non-empty review batch; the URL baseline contains 321 CAA food recall details. MHLW-linked candidates use verified RCL IDs and MHLW URLs under approved PDL 1.0 attribution. Publication remains blocked on hosted batch review and MHLW-only production gates; CAA-only expressive content is excluded."
   },
   {
     "id": "kr_food_safety_korea",

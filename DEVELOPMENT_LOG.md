@@ -17,6 +17,49 @@
 
 ---
 
+## 2026-07-02 · Round 52 · RASFF operations acceptance and Japan explicit review gate
+
+### 触发结果
+
+维护者确认提交 `9294c91` 后 CI 与 `Audit published EU RASFF records` 通过。新版增量/撤回代码、metadata 与 3 条正式 RASFF 记录已在 GitHub 环境验收。RASFF 保持 `prototype`，等待下一次自然新增或官方更正按操作手册完成真实 merge；不为升级状态制造虚假数据变化。
+
+### RASFF 与来源优先级决策
+
+- 本地完整 inventory 因网络代理无法连接官方 RASFF host，失败关闭且没有把 0 条写入 baseline；
+- 香港 CFS 技术上接近发布，但官方版权声明仍要求事先书面授权，因此没有授权前不继续构建 production publisher；
+- 下一正式化目标改为日本 CAA/MHLW，因为现有 smoke、inventory、candidate 和 MHLW PDL 1.0 依据更完整。
+
+### Japan 显式候选复核
+
+- `candidate-japan-caa` 新增可重复 `--url`；
+- 显式 URL 必须是合法 CAA 食品 detail URL，并且仍存在于完整 current inventory；
+- 已进入 baseline 的固定样本也可以被选作有界人工复核，不会伪装成新记录；
+- workflow 改为固定复核两条中国来源样本与一条非中国对照，从而不再长期只产生空 candidate batch；
+- candidate report 新增 `scope` 与 `requested_urls`，区分增量和显式复核。
+
+### 许可边界
+
+- MHLW 利用条款明确：未另行说明的内容按 PDL 1.0 使用，需注明来源；编辑加工时需另行声明加工及主体，且不得表现为政府制作；
+- CAA 主站有等价 PDL 1.0 条款，但 `recall.caa.go.jp` 的已检查 about 页只显示版权声明，没有直接展示 PDL 条款；
+- 初始发布因此仅允许有已验证 MHLW `RCL...` detail 的记录；CAA 仅用于发现、ID 交叉核验和链接；
+- normalized record 改用 MHLW RCL ID、MHLW detail URL 与 MHLW authority；
+- 新建 Japan reuse review，并把日文署名、加工声明、非政府制作/背书声明写入统一 attribution 文档；
+- 不复制 HTML、图片、logo、附件或第三方内容，CAA-only 表述暂不发布。
+
+### 验证与状态
+
+- Japan candidate/smoke 专项 16 项测试通过；
+- 全套 198 项单元测试通过；
+- 本地在线显式批次因当前环境到官方站连接不可用而未生成新报告，不能记作 live pass；
+- 下一步由 GitHub Runner 运行更新后的 `Smoke test Japan CAA source`，检查 3 个固定 URL 是否生成 2 条 MHLW-backed 中国候选；
+- Japan 保持 `prototype`，在 hosted 非空批次与人工字段复核通过前不建立正式发布文件。
+
+### 下一步
+
+提交后手动运行 `Smoke test Japan CAA source`。通过后查看 candidate report 和 JSONL，重点复核混合日本/中国鳗鱼 notice 的产品范围、纯中国来源 `とんぶり瓶詰`、事件日期、MHLW ID 和 recall reason；再实现 MHLW-only 原子发布与 metadata gate。
+
+---
+
 ## 2026-07-01 · Round 51 · EU RASFF hosted audit acceptance and release operations
 
 ### 触发结果

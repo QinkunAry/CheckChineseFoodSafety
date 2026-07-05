@@ -125,7 +125,7 @@ operationally stable, and reviewable by a human maintainer.
 | FSANZ Recalls | `prototype` | Reuse terms, reviewed candidate batch, production quality gate, publishing workflow. |
 | Hong Kong CFS Alerts | `prototype` | Prior written authorization or equivalent reuse basis, reviewed candidate batch, production quality gate, publishing workflow. |
 | Canada Recalls and Safety Alerts | `candidate` | Explicit country-of-origin evidence, broader detail-page sampling, smoke workflow, prototype gate. |
-| Japan CAA / MHLW Recalls | `prototype` | Final PDL attribution wording, reviewed non-empty candidate batch, production quality gate, publishing workflow. |
+| Japan CAA / MHLW Recalls | `prototype` | First hosted explicit non-empty candidate review, mixed-origin acceptance, MHLW-only production quality/metadata gate and publishing workflow. |
 | Korea Food Safety Korea | `candidate` | Second explicit China-origin live sample and raising the workflow gate to two, production access decision (registered `I0490` API vs portal endpoint), inventory design. |
 | Taiwan TFDA Border Noncompliance | `implemented` | First production Action and automated data commit `21e8d22` reviewed. |
 | China SAMR National Sampling | `candidate` | Broader human candidate review, amended-notice correction semantics, historical category/risk coverage, reuse-rights decision. |

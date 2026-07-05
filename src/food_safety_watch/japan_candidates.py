@@ -26,7 +26,8 @@ from .models import SafetyRecord, stable_id
 from .quality import build_quality_report
 
 
-AUTHORITY = "Consumer Affairs Agency, Japan"
+CAA_AUTHORITY = "Consumer Affairs Agency, Japan"
+MHLW_AUTHORITY = "Ministry of Health, Labour and Welfare, Japan"
 
 
 def new_recall_items(
@@ -38,6 +39,31 @@ def new_recall_items(
         (item for item in current_items if item.url not in previous),
         key=lambda item: item.url,
     )
+
+
+def select_candidate_items(
+    *,
+    current_items: list[CaaListItem],
+    previous_urls: list[str],
+    review_urls: list[str] | None = None,
+) -> tuple[list[CaaListItem], list[str], str]:
+    requested: list[str] = []
+    for raw in review_urls or []:
+        value = raw.strip()
+        caa_rcl_from_detail_url(value)
+        if value not in requested:
+            requested.append(value)
+    if not requested:
+        return new_recall_items(current_items, previous_urls), [], "new_since_baseline"
+
+    current_by_url = {item.url: item for item in current_items}
+    missing = [url for url in requested if url not in current_by_url]
+    if missing:
+        raise ValueError(
+            "requested Japan CAA review URLs are not in the current food inventory: "
+            + ", ".join(missing)
+        )
+    return [current_by_url[url] for url in requested], requested, "explicit_review"
 
 
 def _normalize_date(*values: str | None) -> str:
@@ -136,12 +162,18 @@ def parse_candidate_item(
     if not reasons:
         raise ValueError("Japan recall does not contain a recall reason")
 
-    source_record_id = caa_rcl_from_detail_url(item.url)
+    mhlw_reference = mhlw.get("rcl_no")
+    if mhlw_detail is not None and not mhlw_reference:
+        raise ValueError("MHLW detail does not contain its recall identifier")
+    source_record_id = mhlw_reference or caa_rcl_from_detail_url(item.url)
+    source_url = (
+        mhlw_detail_url(source_record_id) if mhlw_reference else item.url
+    )
     return SafetyRecord(
         id=stable_id(SOURCE_ID, source_record_id),
         source_id=SOURCE_ID,
         source_record_id=source_record_id,
-        authority=AUTHORITY,
+        authority=MHLW_AUTHORITY if mhlw_reference else CAA_AUTHORITY,
         authority_region="JP",
         action_type="recall",
         event_date=event_date,
@@ -153,7 +185,7 @@ def parse_candidate_item(
         product_name=product_name,
         reasons=reasons,
         hazard_tags=_hazard_tags(reasons),
-        source_url=item.url,
+        source_url=source_url,
         retrieved_at=retrieved_at,
     )
 
@@ -167,6 +199,8 @@ def build_candidate_report(
     baseline_count: int = 0,
     current_count: int | None = None,
     inventory_warnings: list[str] | None = None,
+    scope: str = "new_since_baseline",
+    requested_urls: list[str] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     generated_at = retrieved_at or datetime.now(timezone.utc).isoformat()
     page_results: list[dict[str, Any]] = []
@@ -240,6 +274,8 @@ def build_candidate_report(
             "status": "failed" if blocking_errors else "passed",
             "generated_at": generated_at,
             "source_id": SOURCE_ID,
+            "scope": scope,
+            "requested_urls": requested_urls or [],
             "list_url": CAA_FOOD_URL,
             "baseline_count": baseline_count,
             "current_count": current_count if current_count is not None else len(items),
@@ -262,10 +298,15 @@ def candidate_japan_caa(
     schema: dict[str, Any],
     fetcher: Fetcher = fetch_official,
     page_fetcher: PageFetcher = fetch_caa_food_page,
+    review_urls: list[str] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     current_items, diagnostics = collect_caa_food_items(page_fetcher=page_fetcher)
     previous_urls = load_url_state(state_path)
-    items = new_recall_items(current_items, previous_urls)
+    items, requested, scope = select_candidate_items(
+        current_items=current_items,
+        previous_urls=previous_urls,
+        review_urls=review_urls,
+    )
     return build_candidate_report(
         items=items,
         schema=schema,
@@ -273,4 +314,6 @@ def candidate_japan_caa(
         baseline_count=len(previous_urls),
         current_count=len(current_items),
         inventory_warnings=diagnostics.get("warnings", []),
+        scope=scope,
+        requested_urls=requested,
     )

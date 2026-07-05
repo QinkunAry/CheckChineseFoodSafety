@@ -134,7 +134,7 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 
 扩大 detail 复核现覆盖 10 条唯一记录、三类 notification、五种 risk 决策、chemical/adulteration/no-hazard、corrigendum 与 withdrawn；全部字段和 Schema 检查通过，混入 withdrawn 时 lifecycle gate 会阻塞。CC BY 4.0 复用评审也已完成：未来 release 必须保留 © European Union / European Commission / DG SANTE / RASFF 署名、来源与许可链接，明确本项目做过筛选和标准化修改，并禁止暗示官方背书。详见 `docs/reviews/RASFF_EXPANDED_DETAIL_REVIEW.md` 与 `docs/reviews/RASFF_REUSE_REVIEW.md`。
 
-日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 只解析 baseline 之后的新 URL，跟进 MHLW 参照详情，并生成 ignored candidate JSONL 与诊断报告。工作流不会提交或发布日本数据；升级前仍需要人工复核非空候选批次、生产质量门禁和最终 PDL 1.0 署名文案。详见 `docs/SOURCE_JAPAN.md`。
+日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 除增量模式外新增显式 `--url` 复核模式，工作流会确认固定 URL 仍在当前 inventory，再生成非空候选批次。初始可发布边界仅限带已验证 MHLW `RCL...` 详情的记录：使用 MHLW ID、详情 URL和 PDL 1.0 署名；CAA-only 表述暂不发布。工作流目前仍不会提交正式日本数据。详见 `docs/SOURCE_JAPAN.md`。
 
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 

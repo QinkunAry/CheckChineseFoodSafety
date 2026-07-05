@@ -191,37 +191,53 @@ Command:
 python -m food_safety_watch candidate-japan-caa --state data/state/japan_caa_recall_urls.json --schema schemas/record.schema.json --output data/candidates/japan_caa_cn.jsonl --report reports/japan_caa_candidates.json
 ```
 
+For a bounded human review, repeat `--url` with current official CAA food-detail
+URLs. Explicit URLs must still exist in the complete current food inventory;
+being present in the historical baseline is not sufficient by itself. The
+weekly/manual workflow now reviews the two fixed China samples and one non-China
+control through this path.
+
 ## Evidence and filtering rules
 
 Before normalized records can be generated:
 
 - include only CAA category `食料品` / MHLW public food recall records;
 - prefer MHLW `RCL...` detail pages when a CAA record links to them;
-- use CAA management number and MHLW recall ID as stable source identifiers;
+- use the verified MHLW recall ID as the normalized source identifier when a
+  linked MHLW detail exists; retain CAA identifiers in review diagnostics;
 - include a China-origin record only when the official title, product field, or
   product-identification field explicitly states `中国産`, `中華人民共和国産`,
   `原産国：中国`, or an equivalent product-of-China phrase;
 - never infer origin from Chinese cuisine, Chinese characters, importer name,
   company name, product style, or sales channel;
-- preserve CAA and MHLW source URLs in diagnostics and future normalized records.
+- preserve both URLs in diagnostics; initial normalized publication uses the
+  MHLW detail URL as its source URL.
 
 ## Reuse review
 
 MHLW's copyright/terms page states that website content can be used under
 Japan's Public Data License 1.0 (PDL 1.0) conditions and requires source
-attribution. The CAA recall site about page also references PDL 1.0 conditions
-and states that edited/processed information must be marked as edited/processed
-and must not be presented as if created by the national government or agency.
+attribution, a separate processing statement, and a prohibition against
+presenting processed information as government-created.
+
+The main CAA website publishes equivalent PDL 1.0 terms, but the inspected
+`recall.caa.go.jp` about page does not directly expose those terms. The project
+therefore uses CAA as discovery/cross-check evidence and limits initial
+publication to records with a verified linked MHLW detail. Such records use the
+MHLW `RCL...` ID, MHLW detail URL and MHLW authority in normalized output.
 
 Project decision:
 
 - Japan is a read-only `prototype`;
-- future publication must include attribution to CAA and/or MHLW, source URLs,
-  and wording that normalized data is processed by this project;
+- initial publication must include MHLW attribution, detail URL, PDL 1.0 link
+  and wording that normalized data is processed by this project and is not
+  government-created or endorsed;
+- CAA-only expressive product/reason content remains outside the approved
+  publication boundary until the recall-subdomain reuse basis is documented;
 - do not publish full HTML, product images, or downloaded attachments until
   their reuse status and necessity are reviewed;
-- the source appears legally more tractable than CFS, but it still needs a
-  production attribution review before `implemented`.
+- exact approved wording is recorded in
+  [`reviews/JAPAN_REUSE_REVIEW.md`](reviews/JAPAN_REUSE_REVIEW.md).
 
 ## Known blockers before implementation
 
@@ -229,8 +245,7 @@ Project decision:
   `RCL...` IDs are known, but discovery still needs design.
 - The inventory discovers CAA detail URLs; MHLW `RCL...` IDs are followed from
   each new CAA detail rather than inventoried directly.
-- Attribution wording under PDL 1.0 must be finalized before publication.
-- The first non-empty candidate batch must be manually checked, including any
+- The first hosted non-empty candidate batch must be manually checked, including any
   recall that combines Chinese and non-Chinese products in one notice.
 
 ## Implemented gate
@@ -243,7 +258,7 @@ Before Japan can move from `prototype` to `implemented`, the project needs:
 - unit tests covering list parsing, detail parsing, MHLW hidden-field parsing,
   non-China exclusion, inventory changes, candidate generation, and source-drift
   diagnostics;
-- final PDL 1.0 attribution wording in README/source docs/report metadata.
+- MHLW-only production quality and metadata gates using the approved wording.
 
 Japan must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)

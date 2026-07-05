@@ -48,3 +48,27 @@ The release metadata must preserve the dataset, notification, licence and legal
 notice links. It must identify project transformations and must not use EU logos
 or imply endorsement. Full review and Chinese companion wording:
 [`reviews/RASFF_REUSE_REVIEW.md`](reviews/RASFF_REUSE_REVIEW.md).
+
+## Japan MHLW food recall public information
+
+- Data provider: 厚生労働省 (Ministry of Health, Labour and Welfare, Japan)
+- System: 食品衛生申請等システム 食品リコール公開情報
+- MHLW information page:
+  <https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/shokuhin/kigu/index_00012.html>
+- Terms: <https://www.mhlw.go.jp/chosakuken/index.html>
+- Licence: 公共データ利用規約（第1.0版） / Public Data License 1.0
+- Licence text:
+  <https://www.digital.go.jp/resources/open_data/public_data_license_v1.0>
+
+Approved wording for MHLW-linked normalized records:
+
+> 出典：厚生労働省「食品衛生申請等システム 食品リコール公開情報」
+> （当該公開情報URL）、公共データ利用規約（第1.0版）（規約URL）、
+> `{retrieved_at}`利用。本プロジェクトが中国産食品を選別し、項目・日付を
+> 標準化し、検索用分類を付与して加工・作成したものであり、厚生労働省又は
+> 日本国政府が作成・承認したものではありません。
+
+Initial publication is limited to records with a verified linked MHLW
+`RCL...` detail. CAA recall pages are used for discovery and cross-checking;
+CAA-only expressive content is not approved for publication by this review.
+See [`reviews/JAPAN_REUSE_REVIEW.md`](reviews/JAPAN_REUSE_REVIEW.md).

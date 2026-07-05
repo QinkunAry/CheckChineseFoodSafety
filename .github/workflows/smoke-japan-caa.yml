@@ -49,13 +49,16 @@ jobs:
           --state data/state/japan_caa_recall_urls.json
           --report reports/japan_caa_inventory.json
 
-      - name: Build Japan CAA candidate records from new URLs
+      - name: Build bounded Japan CAA candidate review batch
         run: >-
           python -m food_safety_watch candidate-japan-caa
           --state data/state/japan_caa_recall_urls.json
           --schema schemas/record.schema.json
           --output data/candidates/japan_caa_cn.jsonl
           --report reports/japan_caa_candidates.json
+          --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035456&screenkbn=01'
+          --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035471&screenkbn=01'
+          --url 'https://www.recall.caa.go.jp/result/detail.php?rcl=00000035460&screenkbn=01'
 
       - name: Publish diagnostic summary
         if: always() && hashFiles('reports/japan_caa_smoke.json') != ''

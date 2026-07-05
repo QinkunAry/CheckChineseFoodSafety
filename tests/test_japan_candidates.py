@@ -8,6 +8,7 @@ from food_safety_watch.japan_candidates import (
     build_candidate_report,
     candidate_japan_caa,
     new_recall_items,
+    select_candidate_items,
 )
 from food_safety_watch.japan_probe import CaaListItem
 from food_safety_watch.quality import load_schema
@@ -82,6 +83,24 @@ class JapanCandidateTests(unittest.TestCase):
             [CHINA_URL],
         )
 
+    def test_explicit_review_selects_current_url_already_in_baseline(self) -> None:
+        selected, requested, scope = select_candidate_items(
+            current_items=[item(OTHER_URL), item(CHINA_URL)],
+            previous_urls=[OTHER_URL, CHINA_URL],
+            review_urls=[CHINA_URL],
+        )
+        self.assertEqual([value.url for value in selected], [CHINA_URL])
+        self.assertEqual(requested, [CHINA_URL])
+        self.assertEqual(scope, "explicit_review")
+
+    def test_explicit_review_rejects_url_outside_current_inventory(self) -> None:
+        with self.assertRaisesRegex(ValueError, "not in the current food inventory"):
+            select_candidate_items(
+                current_items=[item(OTHER_URL)],
+                previous_urls=[OTHER_URL],
+                review_urls=[CHINA_URL],
+            )
+
     def test_no_new_items_produces_empty_passing_report(self) -> None:
         report, records = build_candidate_report(
             items=[],
@@ -108,7 +127,12 @@ class JapanCandidateTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["china_record_count"], 1)
-        self.assertEqual(records[0]["source_record_id"], "00000035456")
+        self.assertEqual(records[0]["source_record_id"], "RCL202601495")
+        self.assertEqual(
+            records[0]["authority"],
+            "Ministry of Health, Labour and Welfare, Japan",
+        )
+        self.assertEqual(records[0]["source_url"], MHLW_URL)
         self.assertEqual(records[0]["event_date"], "2026-06-21")
         self.assertEqual(records[0]["origin_country"], "CN")
         self.assertEqual(records[0]["product_category"], "seafood")
@@ -167,6 +191,26 @@ class JapanCandidateTests(unittest.TestCase):
         self.assertEqual(report["candidate_url_count"], 1)
         self.assertEqual(len(records), 1)
         self.assertEqual(fetched, [CHINA_URL, MHLW_URL])
+
+    def test_candidate_pipeline_supports_explicit_review_of_baseline_url(self) -> None:
+        payloads = {
+            CHINA_URL: caa_detail(china=True),
+            MHLW_URL: mhlw_detail(),
+        }
+        with patch(
+            "food_safety_watch.japan_candidates.load_url_state",
+            return_value=[OTHER_URL, CHINA_URL],
+        ):
+            report, records = candidate_japan_caa(
+                state_path=Path("unused-state.json"),
+                schema=load_schema(SCHEMA),
+                page_fetcher=lambda _: list_page(),
+                fetcher=payloads.__getitem__,
+                review_urls=[CHINA_URL],
+            )
+        self.assertEqual(report["scope"], "explicit_review")
+        self.assertEqual(report["requested_urls"], [CHINA_URL])
+        self.assertEqual(len(records), 1)
 
 
 if __name__ == "__main__":

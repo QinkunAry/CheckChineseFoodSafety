@@ -464,6 +464,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("reports/japan_caa_candidates.json"),
     )
+    japan_candidate.add_argument(
+        "--url",
+        action="append",
+        dest="urls",
+        help="Explicit current CAA food detail URL for a bounded review batch",
+    )
 
     rasff_probe = subparsers.add_parser(
         "probe-rasff",
@@ -972,12 +978,13 @@ def main(argv: list[str] | None = None) -> int:
         report, records = candidate_japan_caa(
             state_path=args.state,
             schema=load_schema(args.schema),
+            review_urls=args.urls,
         )
         write_jsonl_file(records, args.output)
         write_json_file(report, args.report)
         print(
             f"Japan CAA candidates {report['status']}: "
-            f"{report['candidate_url_count']} new URLs; "
+            f"{report['candidate_url_count']} selected URLs; "
             f"{report['china_record_count']} China records; "
             f"output={args.output}; report={args.report}"
         )
