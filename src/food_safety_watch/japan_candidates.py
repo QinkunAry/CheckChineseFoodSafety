@@ -133,6 +133,46 @@ def _deduplicate(values: list[str | None]) -> list[str]:
     return result
 
 
+def normalize_mhlw_detail(
+    *,
+    detail: dict[str, Any],
+    retrieved_at: str,
+    expected_reference: str | None = None,
+) -> SafetyRecord | None:
+    reference = str(detail.get("rcl_no") or "").strip()
+    if not reference:
+        raise ValueError("MHLW detail does not contain its recall identifier")
+    if expected_reference and reference != expected_reference:
+        raise ValueError(f"MHLW recall ID mismatch: {reference} != {expected_reference}")
+    if not detail.get("china_origin_evidence"):
+        return None
+    product_name = str(detail.get("product") or "").strip()
+    if not product_name:
+        raise ValueError("MHLW detail does not contain a product name")
+    reasons = _deduplicate([detail.get("reason_type"), detail.get("reason")])
+    if not reasons:
+        raise ValueError("MHLW detail does not contain a recall reason")
+    return SafetyRecord(
+        id=stable_id(SOURCE_ID, reference),
+        source_id=SOURCE_ID,
+        source_record_id=reference,
+        authority=MHLW_AUTHORITY,
+        authority_region="JP",
+        action_type="recall",
+        event_date=_normalize_date(detail.get("event_date"), detail.get("release_date")),
+        origin_country="CN",
+        producer_name="",
+        producer_location="",
+        product_code="",
+        product_category=_product_category(product_name),
+        product_name=product_name,
+        reasons=reasons,
+        hazard_tags=_hazard_tags(reasons),
+        source_url=mhlw_detail_url(reference),
+        retrieved_at=retrieved_at,
+    )
+
+
 def parse_candidate_item(
     *,
     item: CaaListItem,
@@ -140,49 +180,37 @@ def parse_candidate_item(
     mhlw_detail: dict[str, Any] | None,
     retrieved_at: str,
 ) -> SafetyRecord | None:
-    caa_china = bool(caa_detail.get("china_origin_evidence"))
-    mhlw_china = bool(mhlw_detail and mhlw_detail.get("china_origin_evidence"))
-    if mhlw_detail is not None and not mhlw_china:
-        return None
-    if mhlw_detail is None and not caa_china:
+    if mhlw_detail is not None:
+        return normalize_mhlw_detail(
+            detail=mhlw_detail,
+            retrieved_at=retrieved_at,
+            expected_reference=str(mhlw_detail.get("rcl_no") or ""),
+        )
+    if not caa_detail.get("china_origin_evidence"):
         return None
 
-    mhlw = mhlw_detail or {}
     event_date = _normalize_date(
-        mhlw.get("event_date"),
         caa_detail.get("event_date"),
         item.start_date,
-        mhlw.get("release_date"),
         item.post_date,
     )
     product_name = (
-        mhlw.get("product")
-        or caa_detail.get("product")
+        caa_detail.get("product")
         or caa_detail.get("title")
         or item.title
     )
-    reasons = _deduplicate(
-        [mhlw.get("reason_type"), mhlw.get("reason")]
-        if mhlw_detail is not None
-        else [caa_detail.get("reason_type"), caa_detail.get("reason")]
-    )
+    reasons = _deduplicate([caa_detail.get("reason_type"), caa_detail.get("reason")])
     if not product_name:
         raise ValueError("Japan recall does not contain a product name")
     if not reasons:
         raise ValueError("Japan recall does not contain a recall reason")
 
-    mhlw_reference = mhlw.get("rcl_no")
-    if mhlw_detail is not None and not mhlw_reference:
-        raise ValueError("MHLW detail does not contain its recall identifier")
-    source_record_id = mhlw_reference or caa_rcl_from_detail_url(item.url)
-    source_url = (
-        mhlw_detail_url(source_record_id) if mhlw_reference else item.url
-    )
+    source_record_id = caa_rcl_from_detail_url(item.url)
     return SafetyRecord(
         id=stable_id(SOURCE_ID, source_record_id),
         source_id=SOURCE_ID,
         source_record_id=source_record_id,
-        authority=MHLW_AUTHORITY if mhlw_reference else CAA_AUTHORITY,
+        authority=CAA_AUTHORITY,
         authority_region="JP",
         action_type="recall",
         event_date=event_date,
@@ -194,7 +222,7 @@ def parse_candidate_item(
         product_name=product_name,
         reasons=reasons,
         hazard_tags=_hazard_tags(reasons),
-        source_url=source_url,
+        source_url=item.url,
         retrieved_at=retrieved_at,
     )
 

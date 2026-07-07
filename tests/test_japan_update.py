@@ -3,7 +3,11 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from food_safety_watch.japan_update import build_japan_release, build_release_metadata
+from food_safety_watch.japan_update import (
+    build_japan_release,
+    build_release_metadata,
+    merge_reviewed_release,
+)
 from food_safety_watch.quality import load_schema
 
 
@@ -113,6 +117,76 @@ class JapanUpdateTests(unittest.TestCase):
         self.assertIn("加工・作成", metadata["attribution_ja"])
         self.assertIn("not created or endorsed", metadata["attribution_en"])
         self.assertEqual(metadata["record_provenance"][0]["reference"], "RCL202601519")
+
+    def test_incremental_merge_adds_only_approved_batch(self) -> None:
+        addition = record(reference="RCL202601600")
+        addition["id"] = "new-japan-record-stable-id"
+        merged, approved, removed = merge_reviewed_release(
+            baseline_records=[record()],
+            reviewed_records=[addition],
+            approved_references=["RCL202601600"],
+        )
+        self.assertEqual(
+            [item["source_record_id"] for item in merged],
+            ["RCL202601519", "RCL202601600"],
+        )
+        self.assertEqual(approved, ["RCL202601600"])
+        self.assertEqual(removed, [])
+
+    def test_incremental_correction_preserves_first_retrieval(self) -> None:
+        corrected = record()
+        corrected["product_name"] = "とんぶり瓶詰250g（中国産）"
+        corrected["retrieved_at"] = "2026-07-07T00:00:00+00:00"
+        merged, _, _ = merge_reviewed_release(
+            baseline_records=[record()],
+            reviewed_records=[corrected],
+            approved_references=["RCL202601519"],
+        )
+        report, records = build_japan_release(
+            records=merged,
+            approved_references=["RCL202601519"],
+            schema=SCHEMA,
+            baseline_records=[record()],
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(records[0]["retrieved_at"], "2026-07-05T00:00:00+00:00")
+
+    def test_incremental_removal_must_be_explicit_and_published(self) -> None:
+        merged, approved, removed = merge_reviewed_release(
+            baseline_records=[record()],
+            reviewed_records=[],
+            approved_references=[],
+            remove_references=["RCL202601519"],
+        )
+        self.assertEqual(merged, [])
+        self.assertEqual(approved, [])
+        self.assertEqual(removed, ["RCL202601519"])
+        report, records = build_japan_release(
+            records=merged,
+            approved_references=[],
+            schema=SCHEMA,
+            baseline_records=[record()],
+            min_records=0,
+            max_drop_fraction=0.99,
+        )
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(records, [])
+        with self.assertRaisesRegex(ValueError, "cannot remove unpublished"):
+            merge_reviewed_release(
+                baseline_records=[record()],
+                reviewed_records=[],
+                approved_references=[],
+                remove_references=["RCL202699999"],
+            )
+
+    def test_incremental_merge_rejects_approval_removal_overlap(self) -> None:
+        with self.assertRaisesRegex(ValueError, "approved and removed together"):
+            merge_reviewed_release(
+                baseline_records=[record()],
+                reviewed_records=[record()],
+                approved_references=["RCL202601519"],
+                remove_references=["RCL202601519"],
+            )
 
 
 if __name__ == "__main__":

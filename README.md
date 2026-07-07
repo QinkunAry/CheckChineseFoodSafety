@@ -138,6 +138,8 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 
 首次字段复核接受了 `RCL202601519`（中国产とんぶり瓶装，检出芽胞菌/梭菌属）并生成 1 条 MHLW-backed 正式记录及 PDL metadata。混合宫崎县产/中国产鳗鱼的 `RCL202601495` 因当前单一原产国字段会造成误导而未发布；`RCL202601408` 继续作为非中国对照。CI 会验证已提交日本 JSONL，显式 candidate workflow 现在还要求至少 2 条 China 且 2 条 MHLW-backed 候选。Japan 在发布后 detail audit 与增量回滚流程完成前仍保持 `prototype`。
 
+严格 Japan candidate workflow 已在 GitHub Runner 通过。`audit-japan-mhlw` 会逐条重取已发布 MHLW detail，字段变化返回 `action_required`，技术/证据失败返回 `failed`；首次在线审计为 1 audited、0 changed。新增的每周/手动 Action 会上传报告并维护失败 Issue。后续数据使用显式批准的 `--merge-current`；CAA inventory 是 append-only 已见 URL 集合，旧 URL 离开滚动列表不视为撤回。详见 `docs/JAPAN_OPERATIONS.md`。
+
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 
 台湾 TFDA 已升级为 `implemented`。官方不符合食品 JSON 直接提供产地、产品、原因、处置与日期；首次正式发布从 2,472 条官方记录中生成 388 条中国来源食品及食品添加物记录。`update-taiwan-tfda` 每次重建完整快照，通过生产门禁后原子替换 `data/processed/taiwan_tfda_cn.jsonl`，并同步发布署名 metadata 与质量报告。详见 `docs/SOURCE_TAIWAN.md` 和首次候选复核记录 `docs/reviews/TAIWAN_TFDA_INITIAL_CANDIDATE_REVIEW.md`。

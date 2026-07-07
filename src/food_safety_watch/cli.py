@@ -21,8 +21,14 @@ from .fsanz_smoke import build_smoke_report
 from .fsanz_inventory import inventory_fsanz, write_url_state
 from .japan_candidates import candidate_japan_caa
 from .japan_probe import build_japan_probe_report
-from .japan_inventory import inventory_japan_caa, write_url_state as write_japan_url_state
+from .japan_inventory import (
+    inventory_japan_caa,
+    load_url_state as load_japan_url_state,
+    merge_seen_urls as merge_japan_seen_urls,
+    write_url_state as write_japan_url_state,
+)
 from .japan_smoke import build_japan_smoke_report
+from .japan_status_audit import audit_japan_records
 from .japan_update import publish_japan_reviewed
 from .korea_probe import build_korea_probe_report
 from .quality import (
@@ -496,13 +502,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--schema", type=Path, default=Path("schemas/record.schema.json")
     )
     japan_publish.add_argument(
-        "--approved-reference", action="append", required=True,
+        "--approved-reference", action="append",
         dest="approved_references",
     )
+    japan_publish.add_argument("--merge-current", action="store_true")
+    japan_publish.add_argument(
+        "--remove-reference", action="append", dest="remove_references"
+    )
+    japan_publish.add_argument("--removal-only", action="store_true")
     japan_publish.add_argument("--min-records", type=int, default=1)
     japan_publish.add_argument("--max-records", type=int, default=100)
     japan_publish.add_argument("--max-drop-percent", type=float, default=25.0)
     japan_publish.add_argument("--max-unclassified", type=int, default=0)
+
+    japan_audit = subparsers.add_parser(
+        "audit-japan-mhlw",
+        help="Recheck official MHLW details for the published Japan release",
+    )
+    japan_audit.add_argument(
+        "--input", type=Path, default=Path("data/processed/japan_mhlw_cn.jsonl")
+    )
+    japan_audit.add_argument(
+        "--report", type=Path, default=Path("reports/japan_mhlw_status_audit.json")
+    )
+    japan_audit.add_argument("--max-records", type=int, default=100)
 
     rasff_probe = subparsers.add_parser(
         "probe-rasff",
@@ -997,7 +1020,10 @@ def main(argv: list[str] | None = None) -> int:
         )
         write_json_file(report, args.report)
         if args.accept_current:
-            write_japan_url_state(current_urls, args.state)
+            write_japan_url_state(
+                merge_japan_seen_urls(load_japan_url_state(args.state), current_urls),
+                args.state,
+            )
         print(
             f"Japan CAA inventory {report['status']}: "
             f"{report['current_count']} current; "
@@ -1049,6 +1075,9 @@ def main(argv: list[str] | None = None) -> int:
                 metadata_path=args.metadata,
                 schema_path=args.schema,
                 approved_references=args.approved_references,
+                merge_current=args.merge_current,
+                remove_references=args.remove_references,
+                removal_only=args.removal_only,
                 min_records=args.min_records,
                 max_records=args.max_records,
                 max_drop_fraction=args.max_drop_percent / 100,
@@ -1062,6 +1091,18 @@ def main(argv: list[str] | None = None) -> int:
             f"{args.output}; quality report={args.report}; metadata={args.metadata}"
         )
         return 0
+
+    if args.command == "audit-japan-mhlw":
+        report = audit_japan_records(
+            read_jsonl(args.input), max_records=args.max_records
+        )
+        write_json_file(report, args.report)
+        print(
+            f"Japan MHLW audit {report['status']}: "
+            f"{report['audited_record_count']} audited; "
+            f"{report['changed_record_count']} changed; report={args.report}"
+        )
+        return 0 if report["status"] == "passed" else 1
 
     if args.command == "inventory-rasff":
         report, entries = inventory_rasff(

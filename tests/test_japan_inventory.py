@@ -9,6 +9,7 @@ from food_safety_watch.japan_inventory import (
     build_inventory_report,
     collect_caa_food_urls,
     load_url_state,
+    merge_seen_urls,
     write_url_state,
 )
 
@@ -34,6 +35,12 @@ def list_page(total: int, *rcls: str) -> bytes:
 
 
 class JapanInventoryTests(unittest.TestCase):
+    def test_seen_url_state_is_append_only_when_current_list_rolls(self) -> None:
+        self.assertEqual(
+            merge_seen_urls(["old", "shared"], ["shared", "new"]),
+            ["new", "old", "shared"],
+        )
+
     def test_collect_caa_food_urls_scans_all_expected_pages(self) -> None:
         pages = {
             0: list_page(4, "00000000001", "00000000002"),

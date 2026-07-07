@@ -17,6 +17,53 @@
 
 ---
 
+## 2026-07-07 · Round 54 · Japan strict gate acceptance, published audit and operations
+
+### 触发结果
+
+维护者提供最新 GitHub Runner 报告。严格门禁完整通过：smoke `status: passed`、2 China-origin pages、3 MHLW references、0 blockers；candidate `status: passed`、3 selected URLs、2 China records、2 MHLW-backed records、minimums 均为 2、0 Schema errors，非中国对照保持 `parsed_non_china`。
+
+### Published-detail audit
+
+- 抽取 `normalize_mhlw_detail`，candidate 与 audit 使用同一 MHLW-only 标准化路径，避免规则漂移；
+- 新增 `audit-japan-mhlw`，逐条比较 event date、origin evidence、product/category、reasons、hazard tags、authority 与 source URL；
+- unchanged 返回 `passed`；合法官方字段变化或中国来源证据消失返回 `action_required`；网络、ID、authority 或 URL 失败返回 `failed`；
+- audit 只报告，不直接改写 release；
+- 2026-07-07 在线重查 `RCL202601519`：1 audited、0 changed、`passed`；
+- 新增每周/手动 `audit-japan-mhlw.yml`，始终上传报告，失败/变化时创建或更新 Issue，恢复后关闭 Issue。
+
+### 增量与撤回语义
+
+- `publish-japan-reviewed --merge-current` 只新增或替换本批显式批准 reference，未点名的正式记录保持不变；
+- 同 reference correction 保留首次 `retrieved_at`；
+- `--removal-only --remove-reference` 只允许显式删除已经发布的 MHLW reference；未知删除和批准/删除冲突失败关闭；
+- 如果最后一条记录经官方更正后必须移除，可明确使用 `--min-records 0` 生成合法空 release；空 release audit 为 passed + warning；
+- metadata 新增 release mode、完整 release references、本批批准和 removed references；
+- 新建 `JAPAN_OPERATIONS.md`，记录新增、更正、来源证据消失、回滚与人工验收步骤。
+
+### Inventory 语义修正
+
+Runner 报告显示 CAA current list 从 baseline 321 变化为 current 322，并出现大量 new/removed URL。该列表会滚动，离开 current list 不等于撤回。
+
+- Japan URL state 改为 append-only “历史已见集合”；
+- `--accept-current` 写入 previous ∪ current，只追加新 URL，不丢弃旧 URL；
+- inventory 的 removed 字段明确改为 `previously_seen_but_not_currently_listed`；
+- 不因 URL 离开 CAA 当前列表而删除正式 MHLW 记录，正式变更只由 MHLW detail audit 决定。
+
+### 验证与状态
+
+- 新增 audit 测试覆盖 unchanged、产品修订、origin evidence 消失、网络失败、错误 URL、空/超限 release；
+- 新增增量测试覆盖批准新增、更正时间保留、显式删除、未知/冲突删除和空 release；
+- 新增 append-only seen-URL inventory 测试；
+- 全套 218 项单元测试通过；
+- Japan 仍为 `prototype`，等待新 audit Action 的第一次 hosted pass 和维护者接受操作手册。
+
+### 下一步
+
+提交后运行 CI 与 `Audit published Japan MHLW records`。若 hosted audit 为 `passed / 1 audited / 0 changed`，审核 `JAPAN_OPERATIONS.md` 后即可评估 Japan 升级为 `implemented`。
+
+---
+
 ## 2026-07-05 · Round 53 · Japan field review and first MHLW-backed release
 
 ### 触发结果

@@ -74,6 +74,10 @@ def load_url_state(path: Path) -> list[str]:
     return sorted(set(urls))
 
 
+def merge_seen_urls(previous_urls: list[str], current_urls: list[str]) -> list[str]:
+    return sorted(set(previous_urls) | set(current_urls))
+
+
 def collect_caa_food_items(
     *,
     page_fetcher: PageFetcher = fetch_caa_food_page,
@@ -170,6 +174,7 @@ def build_inventory_report(
         "new_urls": new_urls,
         "removed_url_count": len(removed_urls),
         "removed_urls": removed_urls,
+        "removed_url_semantics": "previously_seen_but_not_currently_listed",
         "warnings": diagnostics.get("warnings", []),
     }
 

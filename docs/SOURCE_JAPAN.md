@@ -257,6 +257,25 @@ validity, no duplicate IDs, count/drop limits and zero unclassified hazards. It
 atomically publishes JSONL and PDL metadata. See the field-level decision in
 [`reviews/JAPAN_INITIAL_CANDIDATE_REVIEW.md`](reviews/JAPAN_INITIAL_CANDIDATE_REVIEW.md).
 
+## Published-detail audit and operations
+
+`audit-japan-mhlw` re-fetches every published MHLW detail and compares event
+date, China-origin evidence, product, project category, reasons, hazard tags,
+authority and source URL. An unchanged release returns `passed`; valid official
+changes return `action_required`; network, identity or source failures return
+`failed`. The audit is read-only.
+
+The first live audit on 2026-07-07 passed with 1 audited record and 0 changes.
+`.github/workflows/audit-japan-mhlw.yml` runs weekly and manually, uploads its
+report, opens/updates an Issue on failure or change, and closes the Issue after
+recovery.
+
+Later releases use `--merge-current` with an exact batch allowlist. Explicit
+removal requires `--removal-only --remove-reference`; disappearing from the CAA
+rolling list is never removal evidence. Inventory acceptance now unions current
+URLs into an append-only seen set. Full procedures:
+[`JAPAN_OPERATIONS.md`](JAPAN_OPERATIONS.md).
+
 ## Known blockers before implementation
 
 - MHLW public search is session/form driven; direct detail pages are stable when
@@ -270,11 +289,11 @@ atomically publishes JSONL and PDL metadata. See the field-level decision in
 
 Before Japan can move from `prototype` to `implemented`, the project still needs:
 
-- a hosted pass of the strict two-China/two-MHLW candidate count gates;
+- a hosted pass of the new published-detail audit workflow;
 - unit tests covering list parsing, detail parsing, MHLW hidden-field parsing,
   non-China exclusion, inventory changes, candidate generation, and source-drift
   diagnostics;
-- a published-record MHLW detail audit and incremental/rollback procedure.
+- maintainer acceptance of the operations checklist.
 
 Japan must satisfy the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
