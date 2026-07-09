@@ -44,8 +44,8 @@
     "food_list_url": "https://www.recall.caa.go.jp/result/index.php?screenkbn=01&category=1",
     "mhlw_public_url": "https://i2fas.mhlw.go.jp/faspub/_link.do",
     "access_method": "caa_food_html_mhlw_detail_html",
-    "status": "prototype",
-    "notes": "Strict smoke/candidate gates pass on GitHub. The first MHLW-backed release contains RCL202601519 with PDL 1.0 metadata; mixed-origin RCL202601495 is excluded and RCL202601408 is the control. Local published-detail audit passes 1/0 changed. Incremental merge, explicit removal, append-only seen-URL inventory, rollback and failure-Issue workflow are implemented. Remaining prototype gates are the first hosted audit pass and maintainer operations acceptance."
+    "status": "implemented",
+    "notes": "Strict smoke/candidate and published-detail audit gates pass on GitHub. The first MHLW-backed release contains RCL202601519 with PDL 1.0 metadata; mixed-origin RCL202601495 is excluded and RCL202601408 is the control. Incremental merge, explicit removal, append-only seen-URL inventory, rollback and failure-Issue workflows are implemented and documented."
   },
   {
     "id": "kr_food_safety_korea",

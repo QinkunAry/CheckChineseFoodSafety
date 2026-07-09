@@ -19,6 +19,9 @@ DETAIL_API_TEMPLATE = (
     "https://webgate.ec.europa.eu/rasff-window/backend/public/"
     "notification/view/id/{notification_id}/en/"
 )
+EXCLUDED_PRODUCT_CATEGORIES = {
+    "food contact materials",
+}
 
 
 def detail_api_url(notification_id: int) -> str:
@@ -194,9 +197,11 @@ def parse_detail(
 
 
 def is_china_food_detail(detail: dict[str, Any]) -> bool:
+    product_category = str(detail.get("product_category") or "").casefold()
     return (
         str(detail.get("product_type") or "").casefold() == "food"
         and "CN" in detail.get("origin_codes", [])
+        and product_category not in EXCLUDED_PRODUCT_CATEGORIES
     )
 
 

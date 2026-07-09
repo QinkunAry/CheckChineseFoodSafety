@@ -41,8 +41,11 @@ historical snapshot, or write records under `data/processed/`.
 - The country catalog identifies China as ID `5075`, ISO `CN`, and India as ID
   `5118`, ISO `IN`. The probe discovers these IDs at runtime instead of assuming
   the numeric values will never change.
-- The product-type catalog identifies human food as ID `283`. Feed, animals,
-  food-contact materials and other products are excluded.
+- The product-type catalog identifies human food as ID `283`. Feed, animals
+  and other non-food product types are excluded. Detail normalization also
+  excludes records whose official product category is `food contact materials`,
+  because the public search filter can still surface such a record under the
+  food product-type query.
 - The China-plus-food query returned 1,211 records. The India-plus-food control
   returned 2,083 records.
 - Ten requested China samples were all type `food` and contained explicit `CN`
@@ -204,6 +207,16 @@ decisions, three notification classifications, structured hazard/no-hazard,
 corrigendum and withdrawn cases. After all three post-baseline increments were
 detail-reviewed, the inventory baseline advanced from 1,211 to 1,214. See
 [`RASFF_EXPANDED_DETAIL_REVIEW.md`](reviews/RASFF_EXPANDED_DETAIL_REVIEW.md).
+
+A later local live run on 2026-07-09 observed 1,223 current China-origin
+food-query results versus the 1,214-record baseline: nine new references, zero
+removed references and zero changed fingerprints. Detail enrichment passed for
+the batch technically, but one new reference, `2026.5818`, exposed official
+detail category `food contact materials`. The project treats that as out of
+scope for food records and excludes it at detail-normalization time. The
+remaining eight references passed explicit candidate review with zero blockers,
+zero Schema errors and a passing lifecycle gate. They still require human field
+review before any merge into the published release.
 
 ## Official notification detail
 

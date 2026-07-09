@@ -1,6 +1,6 @@
 # Japan MHLW release operations / 日本来源运维手册
 
-Status: maintainer acceptance pending  
+Status: accepted for implemented source operations
 Applies to: `data/processed/japan_mhlw_cn.jsonl` and metadata  
 Last reviewed: 2026-07-07
 
@@ -100,4 +100,3 @@ current list.
 - [ ] PDL attribution, processing and no-endorsement wording remains intact.
 - [ ] Local and hosted published-detail audits passed.
 - [ ] Inventory acceptance appended to, rather than replaced, the seen set.
-

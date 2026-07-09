@@ -17,6 +17,76 @@
 
 ---
 
+## 2026-07-09 · Round 56 · RASFF natural increment test and FCM boundary
+
+### 本轮目标
+
+对 EU RASFF 做一次真实在线测试，确认 published audit、public API probe、detail smoke、complete inventory 和自然增量 candidate 是否仍可用。
+
+### 验证结果
+
+- RASFF 专项单元测试通过：58 tests；
+- `audit-rasff-status` 本地沙箱内因代理连接失败，沙箱外重跑通过：3 audited、0 changed；
+- `probe-rasff` 在线通过：当前 China-origin human-food query 返回 1,223 条，10 normalized samples；
+- `smoke-rasff-detail` 在线通过：2 个中国 detail、1 个 India control、1 个 hazard sample；
+- `inventory-rasff` 在线通过并发现自然增量：baseline 1,214，current 1,223，new 9，removed 0，changed 0；
+- 修正前 `candidate-rasff` 生成 9 条候选，技术解析、Schema 和 lifecycle gate 均通过；
+- 加入 FCM 排除规则后，自然 candidate 对 9 个 new reference 失败关闭：8 candidates、1 parse blocker，blocker 为 `2026.5818` out-of-scope；
+- 排除 `2026.5818` 后的 explicit review 通过：8 selected、8 candidates、0 blockers、0 Schema errors、lifecycle gate passed。
+
+### 新发现的问题与决策
+
+自然增量中 `2026.5818` 的 detail `product_category` 为 `food contact materials`。虽然它出现在 RASFF food product-type query 中，但项目面向食品记录，不应把食品接触材料发布为食品安全记录。
+
+已新增 detail-level 排除规则：`product_type == food` 和中国 ORIGIN 仍是必要条件，同时 `product_category == food contact materials` 时不归一化为食品记录。这样 search/inventory 可以继续记录官方返回的 reference，但候选发布前会把 FCM 排除在正式食品数据外。当前剩余 8 个 explicit review 候选产品覆盖 herbs/spices、food additives、meat、tea、fruit、cereal/bakery、nuts 和 food supplements。
+
+### 代码与文档变更
+
+- `rasff_detail.is_china_food_detail` 排除官方 detail category `food contact materials`；
+- 增加 RASFF detail 单元测试，确保 FCM 不会生成 normalized record；
+- `SOURCE_RASFF.md` 记录 2026-07-09 在线测试结果、9 个自然增量和 FCM 边界决策。
+
+### 下一步
+
+下一步可以人工复核这 8 个 explicit review 候选；若接受，则用 `publish-rasff-reviewed --merge-current` 发布增量，并在发布后更新/接受 RASFF inventory baseline。
+
+---
+
+## 2026-07-07 · Round 55 · Japan upgraded to implemented
+
+### Hosted acceptance result
+
+维护者提供 `Audit published Japan MHLW records` 的 GitHub Runner 报告：
+
+- `status: passed`；
+- published 1、audited 1、changed 0；
+- `blocking_errors: []`、`change_samples: []`、`warnings: []`；
+- `RCL202601519` 当前官方 MHLW detail 与正式 release 的全部审计字段一致。
+
+这完成了 Japan 最后一个 hosted 门禁。此前严格 candidate workflow 已通过 2 China records、2 MHLW-backed records、0 Schema errors；首批字段人工复核、PDL 1.0 reuse decision、正式 JSONL/metadata、CI、在线 audit、失败 Issue、增量/显式移除、append-only inventory 与回滚流程均已完成。
+
+### 状态升级
+
+- `data/sources.json`：`jp_caa_recalls` 从 `prototype` 升级为 `implemented`；
+- checklist 将 Japan 标记为 `implemented`；
+- `JAPAN_OPERATIONS.md` 标记为已接受的正式运维流程；
+- README 增加 Japan audit badge，并同步正式来源状态；
+- `SOURCE_JAPAN.md` 清理旧 prototype/blocker 表述，保留 mixed-origin、CAA-only rights 和 MHLW discovery 等真实限制。
+
+### 持续约束
+
+- 只有 MHLW 自身明确给出中国来源证据的记录才能发布；
+- CAA-only 表述和 mixed-origin notice 不进入当前正式数据；
+- CAA URL 离开滚动列表不等于撤回；
+- 官方字段变化必须经过 `action_required` 人工复核与原子重建，不能由 audit 自动修改；
+- 每次增量仍需显式批准 reference、质量门禁和 hosted audit。
+
+### 下一步
+
+Japan 进入维护模式。下一开发重点应从继续扩展 Japan 转向下一个最接近 implemented 的来源，优先比较 EU RASFF 的真实增量验收与 FSANZ 的 reuse/首批候选门禁。
+
+---
+
 ## 2026-07-07 · Round 54 · Japan strict gate acceptance, published audit and operations
 
 ### 触发结果

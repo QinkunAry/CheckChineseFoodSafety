@@ -23,6 +23,7 @@ def detail_payload(
     reference: str = "2026.5575",
     origin: str = "CN",
     product_name: str = "Pepper Powder",
+    product_category: str = "nuts, nut products and seeds",
     status: str = "ec_validated",
     with_hazard: bool = True,
 ) -> bytes:
@@ -59,7 +60,7 @@ def detail_payload(
             "description": product_name,
             "productCategory": {
                 "id": 18427,
-                "description": "nuts, nut products and seeds",
+                "description": product_category,
             },
             "hazards": hazards,
             "measures": [
@@ -181,6 +182,13 @@ class RasffDetailTests(unittest.TestCase):
 
     def test_non_china_origin_is_not_normalized(self) -> None:
         detail = parse_detail(detail_payload(origin="IN"))
+        self.assertFalse(is_china_food_detail(detail))
+        self.assertIsNone(normalize_detail(detail))
+
+    def test_food_contact_material_category_is_not_normalized(self) -> None:
+        detail = parse_detail(
+            detail_payload(product_category="food contact materials")
+        )
         self.assertFalse(is_china_food_detail(detail))
         self.assertIsNone(normalize_detail(detail))
 

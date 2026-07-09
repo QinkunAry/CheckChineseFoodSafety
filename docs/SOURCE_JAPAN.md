@@ -7,11 +7,9 @@ Japan is a strong next source for the project. The Consumer Affairs Agency
 often link to the Ministry of Health, Labour and Welfare (MHLW) Food Sanitation
 Application System public recall detail.
 
-This source is a **read-only prototype**. It is more promising than Canada for
-the China-origin dataset because current live samples include explicit
-`中国産` product evidence and stable MHLW recall IDs. It still must not publish
-records under `data/processed/` until candidate review, attribution, and
-production quality gates are complete.
+This source is **implemented**. CAA provides food-recall discovery and
+cross-checking; production rows are limited to verified MHLW details with
+explicit `中国産` evidence, stable `RCL...` IDs and PDL 1.0 attribution.
 
 ## Official endpoints
 
@@ -85,7 +83,7 @@ python -m food_safety_watch probe-japan-caa --limit 10 --china-mention-limit 5 -
 
 ## Read-only smoke workflow
 
-`smoke-japan-caa` is the source-health gate for the prototype. It is intentionally
+`smoke-japan-caa` is the implemented source-health gate. It is intentionally
 narrow:
 
 - parse the official CAA food recall list and require a minimum total count;
@@ -228,7 +226,7 @@ MHLW `RCL...` ID, MHLW detail URL and MHLW authority in normalized output.
 
 Project decision:
 
-- Japan is a read-only `prototype`;
+- Japan production reuse is approved for verified MHLW-backed normalized facts;
 - initial publication must include MHLW attribution, detail URL, PDL 1.0 link
   and wording that normalized data is processed by this project and is not
   government-created or endorsed;
@@ -276,25 +274,19 @@ rolling list is never removal evidence. Inventory acceptance now unions current
 URLs into an append-only seen set. Full procedures:
 [`JAPAN_OPERATIONS.md`](JAPAN_OPERATIONS.md).
 
-## Known blockers before implementation
+## Known limitations
 
 - MHLW public search is session/form driven; direct detail pages are stable when
   `RCL...` IDs are known, but discovery still needs design.
 - The inventory discovers CAA detail URLs; MHLW `RCL...` IDs are followed from
   each new CAA detail rather than inventoried directly.
-- The first hosted non-empty candidate batch must be manually checked, including any
-  recall that combines Chinese and non-Chinese products in one notice.
+- Mixed-origin notices require manual review and remain excluded while one
+  record cannot safely express product-level origin scope.
 
-## Implemented gate
+## Implemented acceptance
 
-Before Japan can move from `prototype` to `implemented`, the project still needs:
-
-- a hosted pass of the new published-detail audit workflow;
-- unit tests covering list parsing, detail parsing, MHLW hidden-field parsing,
-  non-China exclusion, inventory changes, candidate generation, and source-drift
-  diagnostics;
-- maintainer acceptance of the operations checklist.
-
-Japan must satisfy the shared
-[`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
-before any records are published under `data/processed/`.
+The strict candidate workflow and first hosted published-detail audit passed.
+The accepted audit result was 1 published, 1 audited, 0 changed and 0 blocking
+errors. Production quality, PDL metadata, append-only inventory, incremental
+merge, explicit removal, rollback and failure-Issue handling are covered by
+tests and [`JAPAN_OPERATIONS.md`](JAPAN_OPERATIONS.md).

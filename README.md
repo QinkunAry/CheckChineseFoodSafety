@@ -3,6 +3,7 @@
 [![CI](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/ci.yml)
 [![Update FDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-fda.yml)
 [![Smoke test Japan CAA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/smoke-japan-caa.yml)
+[![Audit published Japan MHLW records](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/audit-japan-mhlw.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/audit-japan-mhlw.yml)
 [![Probe Korea Food Safety source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-korea-recalls.yml)
 [![Probe Taiwan TFDA source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-taiwan-tfda.yml)
 [![Update Taiwan TFDA data](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/update-taiwan-tfda.yml)
@@ -134,11 +135,11 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 
 扩大 detail 复核现覆盖 10 条唯一记录、三类 notification、五种 risk 决策、chemical/adulteration/no-hazard、corrigendum 与 withdrawn；全部字段和 Schema 检查通过，混入 withdrawn 时 lifecycle gate 会阻塞。CC BY 4.0 复用评审也已完成：未来 release 必须保留 © European Union / European Commission / DG SANTE / RASFF 署名、来源与许可链接，明确本项目做过筛选和标准化修改，并禁止暗示官方背书。详见 `docs/reviews/RASFF_EXPANDED_DETAIL_REVIEW.md` 与 `docs/reviews/RASFF_REUSE_REVIEW.md`。
 
-日本 CAA / MHLW 当前为只读 `prototype`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，扫描 CAA 食料品分页并与 321 条 URL baseline 比较；`candidate-japan-caa` 除增量模式外新增显式 `--url` 复核模式，工作流会确认固定 URL 仍在当前 inventory，再生成非空候选批次。初始可发布边界仅限带已验证 MHLW `RCL...` 详情的记录：使用 MHLW ID、详情 URL和 PDL 1.0 署名；CAA-only 表述暂不发布。工作流目前仍不会提交正式日本数据。详见 `docs/SOURCE_JAPAN.md`。
+日本 CAA / MHLW 已升级为 `implemented`。`smoke-japan-caa` 每周固定检查两条中国来源样本和一条非中国对照，并要求至少 2 条 China 与 2 条 MHLW-backed 候选；CAA inventory 使用 append-only 已见 URL 集合。正式发布边界仅限带已验证 MHLW `RCL...` 详情的记录，使用 MHLW ID、详情 URL和 PDL 1.0 署名；CAA-only 表述不发布。详见 `docs/SOURCE_JAPAN.md`。
 
-首次字段复核接受了 `RCL202601519`（中国产とんぶり瓶装，检出芽胞菌/梭菌属）并生成 1 条 MHLW-backed 正式记录及 PDL metadata。混合宫崎县产/中国产鳗鱼的 `RCL202601495` 因当前单一原产国字段会造成误导而未发布；`RCL202601408` 继续作为非中国对照。CI 会验证已提交日本 JSONL，显式 candidate workflow 现在还要求至少 2 条 China 且 2 条 MHLW-backed 候选。Japan 在发布后 detail audit 与增量回滚流程完成前仍保持 `prototype`。
+首次字段复核接受了 `RCL202601519`（中国产とんぶり瓶装，检出芽胞菌/梭菌属）并生成 1 条 MHLW-backed 正式记录及 PDL metadata。混合宫崎县产/中国产鳗鱼的 `RCL202601495` 因当前单一原产国字段会造成误导而未发布；`RCL202601408` 继续作为非中国对照。CI 验证正式 JSONL，增量、显式移除、原子回滚和 PDL provenance 均已实现。
 
-严格 Japan candidate workflow 已在 GitHub Runner 通过。`audit-japan-mhlw` 会逐条重取已发布 MHLW detail，字段变化返回 `action_required`，技术/证据失败返回 `failed`；首次在线审计为 1 audited、0 changed。新增的每周/手动 Action 会上传报告并维护失败 Issue。后续数据使用显式批准的 `--merge-current`；CAA inventory 是 append-only 已见 URL 集合，旧 URL 离开滚动列表不视为撤回。详见 `docs/JAPAN_OPERATIONS.md`。
+严格 Japan candidate 与 published-detail audit workflow 均已在 GitHub Runner 通过。`audit-japan-mhlw` 会逐条重取已发布 MHLW detail，字段变化返回 `action_required`，技术/证据失败返回 `failed`；首次 hosted audit 为 1 audited、0 changed。每周/手动 Action 上传报告并维护失败 Issue。后续数据使用显式批准的 `--merge-current`，完整流程见 `docs/JAPAN_OPERATIONS.md`。
 
 韩国 Food Safety Korea 当前保持 `candidate`。`probe-korea-recalls` 及其每周只读 GitHub Action 可无密钥检查官方召回门户列表和详情，并要求至少保留 1 条明确中国来源样本；2026-06-28 的 359 条当前记录中只有 1 条 `중국산` 产品，制造国和进口产品关联字段均为空，尚未满足升级 prototype 所需的两条中国来源门槛。官方 `I0490` OpenAPI 可申请认证 key，正式自动化前需确定生产访问方式。详见 `docs/SOURCE_KOREA.md`。
 
@@ -159,6 +160,7 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 - [x] 增加来源级 URL 增量监控
 - [x] 将香港 CFS 从 smoke prototype 推进到 candidate 管线
 - [x] 将日本 CAA / MHLW 推进到 smoke、inventory 与 candidate 管线
+- [x] 将日本 CAA / MHLW 升级为 implemented 正式数据源
 - [x] 完成韩国 Food Safety Korea 来源 probe 与原产地证据评估
 - [x] 将台湾 TFDA 边境不合格食品推进到只读 probe prototype
 - [x] 为台湾 TFDA 增加增量记录基线与候选 JSONL 管线
