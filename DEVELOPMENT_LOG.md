@@ -17,6 +17,47 @@
 
 ---
 
+## 2026-07-12 · Round 58 · RASFF reviewed increment release and baseline acceptance
+
+### 本轮目标
+
+继续处理 EU RASFF 自然增量：重新扫描当前官方 inventory，排除不属于食品记录的 FCM，复核可发布候选，发布增量并更新 baseline。
+
+### 在线扫描结果
+
+- `inventory-rasff` 当前完整扫描：baseline 1,214，current 1,226；
+- 新增 reference 12 个，removed 0，changed 0；
+- 新增 reference 为 `2026.5595`、`2026.5818`、`2026.5869`、`2026.5888`、`2026.5922`、`2026.5933`、`2026.5938`、`2026.5947`、`2026.6040`、`2026.6070`、`2026.6159`、`2026.6185`。
+
+### 候选复核
+
+- 自然 candidate 对 12 个新增 reference 失败关闭：11 candidates、1 parse blocker；
+- blocker 为 `2026.5818`，detail category 是 `food contact materials`，继续按 out-of-scope 排除；
+- 对剩余 11 个 reference 执行 explicit review：11 selected、11 candidates、0 blockers、0 Schema errors、lifecycle gate passed；
+- 11 条均为 `active` / `ec_validated`，中国 ORIGIN 明确，source URL 均为官方 RASFF notification route；
+- 分类覆盖 herbs/spices、food additives、meat、tea、fruit、cereals/bakery、nuts、food supplements、confectionery；
+- hazard tags：chemical 7，other/unclassified 4。
+
+### 发布与 baseline
+
+- 使用 `publish-rasff-reviewed --merge-current` 发布 11 条增量；
+- 正式 RASFF release 从 3 条增至 14 条；
+- 本批 approved references 记录在 metadata，完整 release references 保留 14 条；
+- 发布后 `audit-rasff-status` 在线通过：14 audited、0 changed；
+- 执行 `inventory-rasff --accept-current` 接受当前 1,226 条官方 search baseline；
+- baseline 接受后普通 inventory 回查为 unchanged：current 1,226、new 0、removed 0、changed 0。
+
+### 下一步
+
+提交并推送后运行 GitHub Actions：
+
+- `Audit published EU RASFF records` 应审计 14 条并通过；
+- `Probe EU RASFF source` 应显示 inventory unchanged，除非官方又发生新变动。
+
+若 hosted audit 通过，RASFF 已完成真实增量与 correction 维护演练；下一步可以决定是否把 `eu_rasff` 从 `prototype` 升级为 `implemented`。
+
+---
+
 ## 2026-07-10 · Round 57 · RASFF published audit correction
 
 ### 触发结果

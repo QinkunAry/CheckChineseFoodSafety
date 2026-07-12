@@ -6,6 +6,9 @@ The European Commission Rapid Alert System for Food and Feed (RASFF) is a
 read-only `prototype` source. The live probe passed locally and on GitHub
 Actions on 2026-06-30. A complete inventory and minimal fingerprint baseline
 now provide incremental change detection without publishing a full API snapshot.
+The current explicitly reviewed release contains 14 active records, and the
+current accepted search baseline contains 1,226 China-origin food-query
+references as of 2026-07-12.
 
 The probe uses the same official public JSON endpoints as RASFF Window. It does
 not scrape rendered HTML, require an account, bypass access controls, publish a
@@ -84,11 +87,11 @@ distribution, JSON API distribution, and pre-2021 XLSX resource as
 
 Project decision:
 
-- RASFF is a read-only `prototype`; no processed records are published;
-- any future publication must include attribution to the European Commission /
+- RASFF remains a read-only `prototype`;
+- published normalized records include attribution to the European Commission /
   DG SANTE / RASFF and direct source links;
-- before publishing normalized records, exact attribution wording and any
-  endpoint usage limits must be recorded;
+- exact attribution wording and endpoint/reuse limits are recorded in release
+  metadata and `DATA_ATTRIBUTION.md`;
 - do not commit scraped RASFF Window HTML or JavaScript as project data.
 
 The API guide download still returns 404. This is a documentation concern but no
@@ -166,11 +169,12 @@ scan. A failed or `--max-pages` partial scan is refused.
 
 ## Prototype to implemented gate
 
-The expanded detail candidate review and CC BY 4.0 attribution review are now
-complete. Before moving from `prototype` to `implemented`, the project still
-needs a reviewed initial processed release, release metadata generation,
-publication count-drop and atomic-write gates, status-audit integration,
-maintainer notification and rollback verification.
+The expanded detail candidate review, CC BY 4.0 attribution review, reviewed
+initial processed release, metadata generation, publication count-drop and
+atomic-write gates, status-audit integration, correction rehearsal and natural
+increment rehearsal are now complete locally. Before moving from `prototype` to
+`implemented`, the project still needs hosted acceptance of the 14-record audit
+and maintainer acceptance of `RASFF_OPERATIONS.md` as the production procedure.
 
 ## Local candidate pipeline and initial review
 
@@ -218,6 +222,14 @@ remaining eight references passed explicit candidate review with zero blockers,
 zero Schema errors and a passing lifecycle gate. They still require human field
 review before any merge into the published release.
 
+On 2026-07-12 a new full scan observed 1,226 current references versus the
+1,214-record baseline: 12 new, zero removed and zero changed. `2026.5818`
+remained out of scope as `food contact materials`. The other 11 references
+passed explicit review with zero blockers, zero Schema errors and a passing
+lifecycle gate, then were published through `publish-rasff-reviewed
+--merge-current`. The accepted baseline was advanced to 1,226 only after the
+14-record published audit passed locally.
+
 ## Official notification detail
 
 RASFF Window loads public notification details from:
@@ -249,9 +261,9 @@ this detail smoke after the public search probe and complete inventory.
 
 One separately reviewed China detail, `2026.5575`, is `ec_withdrawn` even though
 the consolidated search result did not expose that status. Therefore search
-inventory alone is insufficient for production correction handling. RASFF stays
-`prototype` until the project defines detail-status rechecks, withdrawal and
-corrigendum semantics.
+inventory alone is insufficient for production correction handling; every
+published row must remain covered by detail-status audit and explicit
+correction/removal workflows.
 
 ## Lifecycle decision
 
@@ -287,6 +299,11 @@ not expose final notification status.
 The first reviewed subset was published on 2026-07-01 with three active
 references: `2026.5752`, `2026.5760` and `2026.5781`. It is deliberately a
 small acceptance release, not a claim that all 1,214 inventory entries have
+been detail-reviewed or published.
+
+The current reviewed subset was expanded on 2026-07-12 to 14 active references
+after one correction rehearsal and one natural-increment release. It is still a
+reviewed subset, not a claim that all 1,226 accepted inventory references have
 been detail-reviewed or published.
 
 `publish-rasff-reviewed` requires an explicit human-approved reference

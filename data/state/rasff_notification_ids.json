@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-01T13:29:07.002269+00:00",
+  "created_at": "2026-07-12T06:33:35.512760+00:00",
   "fingerprint_fields": [
     "reference",
     "ecValidationDate",
@@ -13,7 +13,7 @@
     "originCountries"
   ],
   "identity_model": "official_reference_plus_selected_field_sha256",
-  "record_count": 1214,
+  "record_count": 1226,
   "records": [
     {
       "fingerprint": "029d89fde8bfa8a29787bbff781422ea9d35103d0c311d3245fefc3ad70d3275",
@@ -6061,6 +6061,11 @@
       "reference": "2026.5575"
     },
     {
+      "fingerprint": "45dd6b2cdc69acec6519a6d53e34fdac235fc1bafe9e3a6445437176e1baca5f",
+      "notification_id": 853859,
+      "reference": "2026.5595"
+    },
+    {
       "fingerprint": "7ec05827682fd48fd8e3429695eae6a9a9453bd115bcf4a3f3b0b853b4f5067f",
       "notification_id": 853889,
       "reference": "2026.5625"
@@ -6084,6 +6089,61 @@
       "fingerprint": "3db3d33c24cebd55d3ade50d0d2b2b7b47f64118c618ec87c3b67495bc0d112e",
       "notification_id": 854865,
       "reference": "2026.5781"
+    },
+    {
+      "fingerprint": "f57566a851d42e93632649a9e1d8812cb5ed99dad5bc70829fe24c8e96aa617d",
+      "notification_id": 855585,
+      "reference": "2026.5818"
+    },
+    {
+      "fingerprint": "aa27fe9a523ac761b7f3af5b271e4f1ebd1af87993cba97ce0045e59778c3241",
+      "notification_id": 853486,
+      "reference": "2026.5869"
+    },
+    {
+      "fingerprint": "6ccd32044ccd80d3dbd01773b9fc3204da94783a7cf0734e5dfcb8dbdaf4c3cb",
+      "notification_id": 855881,
+      "reference": "2026.5888"
+    },
+    {
+      "fingerprint": "34e42489391f15bb79e58acc8338684f386662a621add34c3fcd1ea64867aba8",
+      "notification_id": 856394,
+      "reference": "2026.5922"
+    },
+    {
+      "fingerprint": "c7e1016c647274bc7bacfae07571105062aaaad6be5d5ed79c4eb9141222d3e7",
+      "notification_id": 856055,
+      "reference": "2026.5933"
+    },
+    {
+      "fingerprint": "66b5f988839c5f0b0bab955aa8b52391c437ce462bfa08565513a07be7b1585c",
+      "notification_id": 856527,
+      "reference": "2026.5938"
+    },
+    {
+      "fingerprint": "135bedf3b91850da78b136d20d9dd18d155b109827df366e3128e58d3e91b97d",
+      "notification_id": 856543,
+      "reference": "2026.5947"
+    },
+    {
+      "fingerprint": "33aff801d8c51c86f9d74a78b2bdc762c35e8719107cff41f34bd59dc6d5923b",
+      "notification_id": 856742,
+      "reference": "2026.6040"
+    },
+    {
+      "fingerprint": "301f02d8897d1e3a44cb9dca381fcee5fe802ef855fd9003b1c7f795abe68845",
+      "notification_id": 857135,
+      "reference": "2026.6070"
+    },
+    {
+      "fingerprint": "54e2388906c5ca710c8963b8907b0458e04c08b5f485c882bd2bc1d3abe0df43",
+      "notification_id": 856315,
+      "reference": "2026.6159"
+    },
+    {
+      "fingerprint": "73705458b0a769c480d5af97f23b860be0aa17eeac45953e39781e78250f22e2",
+      "notification_id": 858194,
+      "reference": "2026.6185"
     }
   ],
   "scope": {

@@ -121,15 +121,15 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
 
-欧盟 RASFF 当前为 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页；三条新增完成 detail 复核后 baseline 已从 1,211 更新为 1,214。Probe Action 仍只上传诊断报告，不自动发布监管记录。详见 `docs/SOURCE_RASFF.md`。
+欧盟 RASFF 当前为 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页；2026-07-12 复核 12 个自然增量后，11 条非 FCM 食品记录已发布，1 条 `food contact materials` 被排除，baseline 已更新为 1,226。Probe Action 仍只上传诊断报告，不自动发布监管记录。详见 `docs/SOURCE_RASFF.md`。
 
-本地 `candidate-rasff` 默认只选择 baseline 后新增或指纹变化的 reference，也可用 `--reference` 生成小规模显式复核批次。官方 detail endpoint 已解决 search `subject` 不是产品名的问题：新增 `2026.5752` 的真实产品是 `Vermicelli`，候选还会保留 classification、risk、basis、status、distribution、measures 和结构化 hazard。`smoke-rasff-detail` 使用两条有效中国样本与一条印度对照验证 detail 漂移。另一个样本 `2026.5575` 已被官方标记为 withdrawn，证明正式发布前还必须定义撤回/更正及已发布记录的 detail-status 重查规则。详见 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`。
+本地 `candidate-rasff` 默认只选择 baseline 后新增或指纹变化的 reference，也可用 `--reference` 生成小规模显式复核批次。官方 detail endpoint 已解决 search `subject` 不是产品名的问题：`2026.5752` 的真实产品是 `Vermicelli`，候选还会保留 classification、risk、basis、status、distribution、measures 和结构化 hazard。`smoke-rasff-detail` 使用两条有效中国样本与一条印度对照验证 detail 漂移。另一个样本 `2026.5575` 已被官方标记为 withdrawn，因此正式发布必须依赖 detail-status 重查规则，而不能只看 search inventory。详见 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`。
 
 RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_withdrawn` 映射为 `withdrawn`，未知或矛盾组合映射为 `review_required`；corrigendum 本身不会撤回仍有效的通知。候选技术状态与 `lifecycle_gate_status` 分离，withdrawn 记录保留审计证据但不能通过 active 发布门禁。
 
-首批 explicitly reviewed release 已发布 3 条 active reference：`2026.5752`、`2026.5760`、`2026.5781`。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
+RASFF explicitly reviewed release 当前包含 14 条 active reference。首批 3 条在 2026-07-01 发布；2026-07-10 已完成一次 `official_last_update` correction；2026-07-12 又发布 11 条自然增量并接受 1,226 条 inventory baseline。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
 
-`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；首批 3 条数据的第一次 hosted audit 已通过。
+`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；3 条首批数据的 hosted correction audit 已恢复通过，14 条增量 release 已在本地 audit 通过，等待 hosted audit 验收。
 
 后续发布使用 `--merge-current`：未点名的既有记录保持不变，新增或更正必须逐条批准；官方确认撤回时使用 `--removal-only --remove-reference`，并受数量下降门禁保护。完整的人审、增量、撤回与 `git revert` 回滚流程见 `docs/RASFF_OPERATIONS.md`。
 
@@ -175,6 +175,7 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 - [x] 实现欧盟 RASFF 已发布记录 detail-status 审计框架
 - [x] 完成欧盟 RASFF 扩大 detail 样本与 CC BY 4.0 署名评审
 - [x] 发布首批 3 条人工批准 RASFF 数据与逐条 provenance metadata
+- [x] 发布欧盟 RASFF 11 条真实增量并将完整 baseline 更新至 1,226
 - [ ] 发布静态数据页与筛选界面
 - [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
 - [ ] 在事实层稳定后提供 API / Agent skill
