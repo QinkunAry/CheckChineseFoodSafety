@@ -17,6 +17,45 @@
 
 ---
 
+## 2026-07-10 · Round 57 · RASFF published audit correction
+
+### 触发结果
+
+GitHub Actions `Audit published EU RASFF records` 返回 `action_required`：
+
+- published 3、audited 3；
+- changed 1；
+- changed reference: `2026.5752`；
+- changed field: `official_last_update`；
+- previous: `29-06-2026 17:15:21`；
+- current: `09-07-2026 14:50:36`；
+- record status remained `active`。
+
+### 处理方式
+
+- 本地复现 hosted audit，确认不是网络错误或代码异常；
+- 通过 `candidate-rasff --reference 2026.5752` 重新抓取官方 detail；
+- candidate 通过：1 selected、1 candidate、0 blockers、0 Schema errors、lifecycle gate passed；
+- 字段比对显示只有 `official_last_update` 与 candidate `retrieved_at` 变化，产品、原因、hazard、状态、source URL 均未变化；
+- 使用 `publish-rasff-reviewed --merge-current --approved-reference 2026.5752` 原子重建 RASFF release；
+- 正式 release 仍为 3 条，`release_references` 不变；同 reference correction 保留首次 `retrieved_at`。
+
+### 验证结果
+
+- correction 发布后重跑 `audit-rasff-status`：passed，3 audited、0 changed；
+- `2026.5752` 正式记录的 `official_last_update` 已更新为 `09-07-2026 14:50:36`；
+- `2026.5752` 的 `retrieved_at` 仍保留初次发布时间 `2026-07-01T13:27:56.057826+00:00`。
+
+### 额外观察
+
+同一次 live inventory 观察到当前 RASFF China-origin food query 已从前一轮 1,223 增至 1,224，新 reference 增至 10。此信息只作为增量提示；本轮只处理 published audit 指出的已发布记录 correction，没有发布新的未复核增量。
+
+### 下一步
+
+提交本次 correction 后重新运行 GitHub Actions 的 `Audit published EU RASFF records`。若通过，再回到 RASFF 8/9 个自然增量的人工复核与增量发布计划。
+
+---
+
 ## 2026-07-09 · Round 56 · RASFF natural increment test and FCM boundary
 
 ### 本轮目标

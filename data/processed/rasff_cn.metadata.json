@@ -1,9 +1,7 @@
 {
   "approval_mode": "explicit_batch_allowlist_and_explicit_removals",
   "approved_references": [
-    "2026.5752",
-    "2026.5760",
-    "2026.5781"
+    "2026.5752"
   ],
   "attribution": "Source: © European Union, 1995–2026; European Commission, Directorate-General for Health and Food Safety (DG SANTE), Food and Feed Alert Notifications / RASFF Window. Retrieved from the linked official notifications and dataset. Source material is licensed under CC BY 4.0. This project selected and normalized records and added project metadata; changes were made. The European Commission and RASFF do not endorse this project.",
   "authority": "European Commission, Directorate-General for Health and Food Safety (DG SANTE)",
@@ -22,7 +20,7 @@
   "record_provenance": [
     {
       "id": "8bca9a4e0623e294d172144606f98786c8ee691f0c2c2caba9da44e0bc2ee510",
-      "official_last_update": "29-06-2026 17:15:21",
+      "official_last_update": "09-07-2026 14:50:36",
       "record_status": "active",
       "reference": "2026.5752",
       "retrieved_at": "2026-07-01T13:27:56.057826+00:00",
@@ -45,7 +43,7 @@
       "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/854865"
     }
   ],
-  "release_mode": "full_reviewed_input",
+  "release_mode": "incremental_merge",
   "release_references": [
     "2026.5752",
     "2026.5760",
@@ -53,6 +51,6 @@
   ],
   "release_scope": "explicitly_reviewed_subset",
   "removed_references": [],
-  "snapshot_retrieved_at": "2026-07-01T13:53:26.843728+00:00",
+  "snapshot_retrieved_at": "2026-07-09T15:48:08.522401+00:00",
   "source_id": "eu_rasff"
 }
