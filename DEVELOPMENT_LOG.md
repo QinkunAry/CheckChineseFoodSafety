@@ -17,6 +17,39 @@
 
 ---
 
+## 2026-07-12 · Round 59 · RASFF configuration portal-link drift
+
+### 触发结果
+
+GitHub Actions `Probe EU RASFF source` 失败，CLI 摘要显示 `0 China-origin food notifications`。本地复现后发现实际失败点不是 search API 返回 0，而是 `parse_configuration` 拒绝了官方 public configuration 中新的 `openPortalLink`。
+
+### 原因
+
+RASFF public configuration 当前返回：
+
+`https://developer.datalake.sante.service.ec.europa.eu/api-details#api=2955fdc1-9da2-4927-977f-40dc50db1128&operation=cc6aab62-bd15-4904-b20d-54551ccb9468`
+
+旧代码只接受 data.europa 的 `restored_rasff` dataset URL。官方 search、country catalog、product-type catalog 和完整 inventory 仍然正常；本地 `inventory-rasff` 回查仍为 1,226 current、0 new、0 removed、0 changed。
+
+### 修复
+
+- `parse_configuration` 现在接受两种官方 portal link：
+  - `data.europa.eu` 上的 `restored_rasff` dataset；
+  - `developer.datalake.sante.service.ec.europa.eu/api-details#api=...`；
+- 新增单元测试覆盖 data.europa 与 DG SANTE developer portal 两种 configuration；
+- `probe-rasff` CLI 在失败时额外打印第一条 blocker，避免 future logs 只显示 `0 notifications` 而隐藏真正原因。
+
+### 验证
+
+- `probe-rasff` 在线恢复通过：1,226 China-origin food notifications、10 normalized samples；
+- `tests.test_rasff_probe` 11 tests passed。
+
+### 下一步
+
+提交并推送后重新运行 `Probe EU RASFF source`。预期 probe 阶段恢复绿色；若后续 inventory 或 detail smoke 失败，再按对应 report 单独处理。
+
+---
+
 ## 2026-07-12 · Round 58 · RASFF reviewed increment release and baseline acceptance
 
 ### 本轮目标

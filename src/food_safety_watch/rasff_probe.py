@@ -16,6 +16,8 @@ SOURCE_ID = "eu_rasff"
 AUTHORITY = "European Commission / DG SANTE / RASFF"
 AUTHORITY_REGION = "EU"
 PUBLIC_HOST = "webgate.ec.europa.eu"
+DATA_EUROPA_HOST = "data.europa.eu"
+DG_SANTE_DEVELOPER_HOST = "developer.datalake.sante.service.ec.europa.eu"
 SEARCH_PAGE_URL = "https://webgate.ec.europa.eu/rasff-window/screen/search"
 DATASET_URL = "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en"
 CONFIG_URL = "https://webgate.ec.europa.eu/rasff-window/backend/public/configuration/"
@@ -128,10 +130,22 @@ def parse_configuration(payload: bytes | str) -> dict[str, str]:
     if not isinstance(link, str) or not isinstance(support_email, str):
         raise ValueError("RASFF configuration lacks portal link or support email")
     parsed = urlparse(link)
-    if parsed.scheme != "https" or parsed.netloc != "data.europa.eu":
-        raise ValueError("RASFF configuration portal link is not the official dataset")
-    if "restored_rasff" not in parsed.path:
-        raise ValueError("RASFF configuration points to an unexpected dataset")
+    is_data_europa_dataset = (
+        parsed.scheme == "https"
+        and parsed.netloc == DATA_EUROPA_HOST
+        and "restored_rasff" in parsed.path
+    )
+    is_dg_sante_api_details = (
+        parsed.scheme == "https"
+        and parsed.netloc == DG_SANTE_DEVELOPER_HOST
+        and parsed.path == "/api-details"
+        and "api=" in parsed.fragment
+    )
+    if not (is_data_europa_dataset or is_dg_sante_api_details):
+        raise ValueError(
+            "RASFF configuration portal link is not an official dataset or "
+            "DG SANTE API-details URL"
+        )
     return {"openPortalLink": link, "supportEmail": support_email}
 
 

@@ -1064,6 +1064,8 @@ def main(argv: list[str] | None = None) -> int:
             f"{report.get('normalized_sample_count', 0)} normalized samples; "
             f"report={args.report}"
         )
+        if report["status"] != "passed" and report.get("blocking_errors"):
+            print(f"RASFF probe blocker: {report['blocking_errors'][0]}")
         return 0 if report["status"] == "passed" else 1
 
     if args.command == "publish-japan-reviewed":

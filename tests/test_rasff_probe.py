@@ -17,6 +17,7 @@ from food_safety_watch.rasff_probe import (
     fetch_public_json,
     is_china_food_notification,
     normalize_notification,
+    parse_configuration,
     parse_country_catalog,
     parse_search_response,
 )
@@ -31,6 +32,19 @@ def configuration_payload() -> bytes:
             "supportEmail": "SANTE-RASFF-AAC-FF-SUPPORT@ec.europa.eu",
             "openPortalLink": (
                 "https://data.europa.eu/data/datasets/restored_rasff~~1?locale=en"
+            ),
+        }
+    ).encode()
+
+
+def developer_portal_configuration_payload() -> bytes:
+    return json.dumps(
+        {
+            "supportEmail": "SANTE-RASFF-AAC-FF-SUPPORT@ec.europa.eu",
+            "openPortalLink": (
+                "https://developer.datalake.sante.service.ec.europa.eu/"
+                "api-details#api=2955fdc1-9da2-4927-977f-40dc50db1128"
+                "&operation=cc6aab62-bd15-4904-b20d-54551ccb9468"
             ),
         }
     ).encode()
@@ -140,6 +154,26 @@ class RasffProbeTests(unittest.TestCase):
         ).encode()
         with self.assertRaisesRegex(ValueError, "lacks China or India"):
             parse_country_catalog(missing)
+
+    def test_configuration_accepts_dataset_and_developer_portal_links(self) -> None:
+        self.assertIn(
+            "restored_rasff",
+            parse_configuration(configuration_payload())["openPortalLink"],
+        )
+        self.assertIn(
+            "developer.datalake.sante.service.ec.europa.eu",
+            parse_configuration(developer_portal_configuration_payload())[
+                "openPortalLink"
+            ],
+        )
+        invalid = json.dumps(
+            {
+                "supportEmail": "SANTE-RASFF-AAC-FF-SUPPORT@ec.europa.eu",
+                "openPortalLink": "https://example.com/api-details#api=1",
+            }
+        ).encode()
+        with self.assertRaisesRegex(ValueError, "not an official"):
+            parse_configuration(invalid)
 
     def test_search_payload_applies_origin_and_human_food_filters(self) -> None:
         payload = build_search_payload(

@@ -39,8 +39,10 @@ historical snapshot, or write records under `data/processed/`.
 
 - RASFF Window itself sends an unauthenticated JSON `POST` request to the
   consolidated public search endpoint.
-- Public configuration points `openPortalLink` to the official
-  `restored_rasff` dataset on data.europa.
+- Public configuration originally pointed `openPortalLink` to the official
+  `restored_rasff` dataset on data.europa. On 2026-07-12 it pointed to the
+  official DG SANTE developer portal API-details page instead. The probe accepts
+  both official portal-link forms but still rejects unrelated hosts.
 - The country catalog identifies China as ID `5075`, ISO `CN`, and India as ID
   `5118`, ISO `IN`. The probe discovers these IDs at runtime instead of assuming
   the numeric values will never change.
