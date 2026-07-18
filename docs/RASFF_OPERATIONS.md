@@ -2,7 +2,7 @@
 
 Status: maintainer acceptance pending  
 Applies to: `data/processed/rasff_cn.jsonl` and its metadata  
-Last reviewed: 2026-07-01
+Last reviewed: 2026-07-14
 
 This runbook defines the only approved paths for adding, correcting, removing
 or rolling back published RASFF records. Discovery never authorizes
@@ -121,6 +121,17 @@ After a release commit has been pushed:
 If the bad commit also accepted inventory state, revert that state with the
 same commit so the candidate remains discoverable.
 
+## Verified rehearsals
+
+- 2026-07-10: official `official_last_update` drift for `2026.5752` was handled
+  as an explicit correction and the release passed published-record audit.
+- 2026-07-12: 11 reviewed natural-increment records were merged into the active
+  release; `2026.5818` was excluded as `food contact materials`; the accepted
+  inventory baseline advanced to 1,226 only after release validation.
+- 2026-07-14: `2026.5888` changed to `ec_withdrawn` and was removed from the
+  active release while three still-active records were rebuilt as corrections;
+  the resulting 13-record release passed local published-record audit.
+
 ## Human acceptance checklist
 
 - [ ] Candidate references exactly equal the approval allowlist.
@@ -133,4 +144,3 @@ same commit so the candidate remains discoverable.
 - [ ] CC BY 4.0 attribution, modification and no-endorsement text remains.
 - [ ] Hosted published-record audit passed after the commit.
 - [ ] Inventory baseline was accepted only after publication validation.
-

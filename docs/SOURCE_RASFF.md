@@ -6,7 +6,7 @@ The European Commission Rapid Alert System for Food and Feed (RASFF) is a
 read-only `prototype` source. The live probe passed locally and on GitHub
 Actions on 2026-06-30. A complete inventory and minimal fingerprint baseline
 now provide incremental change detection without publishing a full API snapshot.
-The current explicitly reviewed release contains 14 active records, and the
+The current explicitly reviewed release contains 13 active records, and the
 current accepted search baseline contains 1,226 China-origin food-query
 references as of 2026-07-12.
 
@@ -173,10 +173,11 @@ scan. A failed or `--max-pages` partial scan is refused.
 
 The expanded detail candidate review, CC BY 4.0 attribution review, reviewed
 initial processed release, metadata generation, publication count-drop and
-atomic-write gates, status-audit integration, correction rehearsal and natural
-increment rehearsal are now complete locally. Before moving from `prototype` to
-`implemented`, the project still needs hosted acceptance of the 14-record audit
-and maintainer acceptance of `RASFF_OPERATIONS.md` as the production procedure.
+atomic-write gates, status-audit integration, correction rehearsal, natural
+increment rehearsal and explicit withdrawn-record removal rehearsal are now
+complete locally. Before moving from `prototype` to `implemented`, the project
+still needs hosted acceptance of the current 13-record audit and maintainer
+acceptance of `RASFF_OPERATIONS.md` as the production procedure.
 
 ## Local candidate pipeline and initial review
 
@@ -231,6 +232,12 @@ passed explicit review with zero blockers, zero Schema errors and a passing
 lifecycle gate, then were published through `publish-rasff-reviewed
 --merge-current`. The accepted baseline was advanced to 1,226 only after the
 14-record published audit passed locally.
+
+On 2026-07-14 the published-record audit reported four changed details. Three
+references (`2026.5595`, `2026.5922` and `2026.6070`) remained active and were
+rebuilt as explicit corrections. `2026.5888` had changed to `ec_withdrawn` and
+was removed from the active release with `--remove-reference`. The resulting
+13-record release passed local published-detail audit.
 
 ## Official notification detail
 
@@ -303,10 +310,11 @@ references: `2026.5752`, `2026.5760` and `2026.5781`. It is deliberately a
 small acceptance release, not a claim that all 1,214 inventory entries have
 been detail-reviewed or published.
 
-The current reviewed subset was expanded on 2026-07-12 to 14 active references
-after one correction rehearsal and one natural-increment release. It is still a
-reviewed subset, not a claim that all 1,226 accepted inventory references have
-been detail-reviewed or published.
+The reviewed subset was expanded on 2026-07-12 to 14 active references after
+one correction rehearsal and one natural-increment release. On 2026-07-14 it
+was reduced to 13 active references after the official withdrawal of
+`2026.5888`. It is still a reviewed subset, not a claim that all 1,226 accepted
+inventory references have been detail-reviewed or published.
 
 `publish-rasff-reviewed` requires an explicit human-approved reference
 allowlist that exactly matches the input JSONL. It then fails closed on Schema

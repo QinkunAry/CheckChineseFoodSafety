@@ -99,7 +99,7 @@
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
     "status": "prototype",
-    "notes": "Search, full inventory, detail smoke and the first published-record status audit pass on GitHub Actions. Ten reviewed details cover all observed risk decisions, three classifications, hazards/no-hazard, corrigendum and withdrawal; the inventory baseline is 1,214. The first release contains three active records with per-record provenance and CC BY 4.0 metadata. Atomic gates, incremental merge, explicit withdrawal, rollback and failure-Issue paths are implemented; maintainer acceptance of the operating procedure remains before an implemented decision."
+    "notes": "Search, full inventory, detail smoke, reviewed release publication, correction and removal paths are implemented. The accepted inventory baseline is 1,226 and the current active release contains 13 records with per-record provenance and CC BY 4.0 metadata. Natural increment, official_last_update correction and an ec_withdrawn removal have all passed local audit. Hosted 13-record audit acceptance and maintainer acceptance of RASFF_OPERATIONS.md remain before implemented status."
   },
   {
     "id": "au_fsanz_recalls",

@@ -17,6 +17,44 @@
 
 ---
 
+## 2026-07-14 · Round 60 · RASFF withdrawal removal rehearsal
+
+### 本轮目标
+
+在准备把 EU RASFF 升级为 `implemented` 前，重新核查 14 条正式记录的 detail-status，并确认 operations 文档是否覆盖真实维护场景。
+
+### 触发结果
+
+本地在线 `audit-rasff-status` 返回 `action_required`：
+
+- published 14、audited 14；
+- changed 4；
+- `2026.5595`：仍 active，`official_last_update` 与 follow-up/measures 变化；
+- `2026.5888`：从 active 变为 `ec_withdrawn` / project `withdrawn`；
+- `2026.5922`：仍 active，`official_last_update` 与 measures 变化；
+- `2026.6070`：仍 active，`official_last_update`、measures 与 follow-up 变化。
+
+### 处理方式
+
+- 为 4 条 reference 生成 explicit candidate，确认 lifecycle counts 为 active 3、withdrawn 1；
+- 没有把 withdrawn candidate 发布为 active 记录；
+- 为 `2026.5595`、`2026.5922`、`2026.6070` 生成 active correction candidate；
+- 使用 `publish-rasff-reviewed --merge-current` 批准 3 条 correction，同时 `--remove-reference 2026.5888`；
+- 正式 RASFF release 从 14 条 active records 变为 13 条；
+- metadata 记录本批 approved references 与 removed reference。
+
+### 验证结果
+
+- 发布后重跑 `audit-rasff-status`：passed，13 audited、0 changed；
+- RASFF 专项测试 60 tests passed；
+- `probe-rasff` 与 `inventory-rasff` 在同轮检查中分别通过：1,226 China-origin food notifications，inventory unchanged。
+
+### 决策
+
+RASFF 已完成三类真实维护演练：active correction、natural increment、withdrawn removal。由于本轮 13 条 release 还需要 GitHub hosted audit 验收，`eu_rasff` 仍暂留 `prototype`；如果 hosted audit 通过且维护者接受 `RASFF_OPERATIONS.md`，下一轮即可升级为 `implemented`。
+
+---
+
 ## 2026-07-12 · Round 59 · RASFF configuration portal-link drift
 
 ### 触发结果
