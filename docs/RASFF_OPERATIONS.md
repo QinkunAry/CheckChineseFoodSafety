@@ -58,11 +58,14 @@ Unmentioned published rows remain unchanged.
 5. Inspect the JSONL and metadata diff. Confirm count, approved batch,
    `release_references`, per-record provenance, event dates, product names,
    hazards and lifecycle.
-6. Run `audit-rasff-status` locally when the official host is reachable, then
-   commit and run `Audit published EU RASFF records` on GitHub.
-7. Only after the hosted audit passes, run the complete inventory with
-   `--accept-current` and commit the reviewed state change. If practical, keep
-   release and accepted inventory state in the same reviewed commit.
+6. Run `audit-rasff-status` locally when the official host is reachable.
+7. After local publication and local status audit pass, run the complete
+   inventory with `--accept-current` if the reviewed release covers the
+   discovered new/changed references. Commit the release and accepted inventory
+   state together when practical; otherwise commit the release first and accept
+   the baseline in a follow-up after hosted audit passes.
+8. Push and run `Audit published EU RASFF records` on GitHub. Treat any hosted
+   failure as a publication freeze until the report is reviewed.
 
 ## Withdrawn notification
 
@@ -135,6 +138,11 @@ same commit so the candidate remains discoverable.
   after official detail updates. No baseline was accepted because the same
   candidate run also reported unrelated new/search-changed references needing
   separate review.
+- 2026-07-19: after the 13-record hosted audit recovered, five reviewed
+  natural-increment records plus the already corrected `2026.5595` search
+  fingerprint update were merged into the active release. The release expanded
+  to 18 records, local published-record audit passed, and the accepted inventory
+  baseline advanced to 1,231.
 
 ## Human acceptance checklist
 

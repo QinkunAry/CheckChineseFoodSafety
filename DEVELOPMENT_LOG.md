@@ -17,6 +17,45 @@
 
 ---
 
+## 2026-07-19 · Round 62 · RASFF reviewed natural increment release
+
+### 本轮目标
+
+在 13 条 RASFF release 的 hosted audit 恢复通过后，处理上一轮刻意暂缓的 search inventory 增量：5 个 new reference 与 1 个 changed search fingerprint。
+
+### 候选结果
+
+重新运行 fresh `candidate-rasff`，结果为 baseline 1,226、current 1,231、5 new、1 changed、6 candidates。
+
+- `2026.5595`：既有记录，search fingerprint changed；detail 已是上一轮 correction 后的 active 版本；
+- `2026.6208`：Matcha powder，农药残留，border rejection；
+- `2026.6214`：Rice flour，未经授权 genetically modified，border rejection；
+- `2026.6241`：Green Tea，高氯酸盐，information notification；
+- `2026.6278`：Cooking Wine，health certificate 不合格，border rejection；
+- `2026.6384`：herbal drink，novel food，border rejection。
+
+6 条均为 China-origin human food、`record_status: active`、official status `ec_validated`；candidate report 为 0 blockers、0 Schema errors、lifecycle gate passed。
+
+### 处理方式
+
+- 使用 `publish-rasff-reviewed --merge-current` 显式批准 6 个 reference；
+- RASFF formally reviewed active release 从 13 条扩展到 18 条；
+- metadata 记录本批 approved references 与逐条 provenance，`removed_references` 为空；
+- 在发布后本地 audit 通过的前提下，使用 `inventory-rasff --accept-current` 接受当前完整 inventory baseline；
+- RASFF accepted inventory baseline 从 1,226 更新为 1,231。
+
+### 验证结果
+
+- `publish-rasff-reviewed` quality gate passed；
+- 发布后 `audit-rasff-status`：passed，18 audited、0 changed；
+- inventory accept-current 完成，state `record_count` 为 1,231。
+
+### 下一步
+
+提交并推送后重新运行 hosted `Audit published EU RASFF records`，确认 18 条 release 在 GitHub runner 上也通过。RASFF 暂不升级为 `implemented`：仍需 hosted audit 验收本轮 18 条 release，并由维护者接受 `docs/RASFF_OPERATIONS.md` 的发布/回滚流程。
+
+---
+
 ## 2026-07-19 · Round 61 · RASFF active correction batch
 
 ### 本轮目标

@@ -244,8 +244,19 @@ references (`2026.5595`, `2026.5922`, `2026.5938`, `2026.6040`, `2026.6070`
 and `2026.6185`) remained active and were rebuilt as explicit corrections. The
 release stayed at 13 active records and passed local published-detail audit.
 The same candidate run observed five new search references and one changed
-search fingerprint; those require a separate candidate-review round and did not
-advance the accepted inventory baseline.
+search fingerprint; those were deliberately left for a separate
+candidate-review round and did not advance the accepted inventory baseline in
+that correction batch.
+
+Later on 2026-07-19, after the 13-record hosted audit recovered, a fresh
+incremental candidate scan again reported baseline 1,226, current 1,231, five
+new references and one changed search fingerprint. The reviewed batch
+(`2026.5595`, `2026.6208`, `2026.6214`, `2026.6241`, `2026.6278` and
+`2026.6384`) passed technical, Schema and lifecycle gates. The five new
+China-origin food notifications were published together with the already
+corrected `2026.5595` search-fingerprint update, expanding the active release
+to 18 records. After local published-detail audit passed with 18 audited and
+zero changed, the accepted inventory baseline was advanced to 1,231.
 
 ## Official notification detail
 
@@ -322,8 +333,10 @@ The reviewed subset was expanded on 2026-07-12 to 14 active references after
 one correction rehearsal and one natural-increment release. On 2026-07-14 it
 was reduced to 13 active references after the official withdrawal of
 `2026.5888`, then rebuilt again on 2026-07-19 for six still-active official
-detail corrections. It is still a reviewed subset, not a claim that all 1,226
-accepted inventory references have been detail-reviewed or published.
+detail corrections. A later 2026-07-19 natural-increment review expanded the
+release to 18 active references and advanced the accepted inventory baseline to
+1,231. It is still a reviewed subset, not a claim that all 1,231 accepted
+inventory references have been detail-reviewed or published.
 
 `publish-rasff-reviewed` requires an explicit human-approved reference
 allowlist that exactly matches the input JSONL. It then fails closed on Schema

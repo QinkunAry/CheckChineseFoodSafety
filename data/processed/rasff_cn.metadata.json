@@ -2,11 +2,11 @@
   "approval_mode": "explicit_batch_allowlist_and_explicit_removals",
   "approved_references": [
     "2026.5595",
-    "2026.5922",
-    "2026.5938",
-    "2026.6040",
-    "2026.6070",
-    "2026.6185"
+    "2026.6208",
+    "2026.6214",
+    "2026.6241",
+    "2026.6278",
+    "2026.6384"
   ],
   "attribution": "Source: © European Union, 1995–2026; European Commission, Directorate-General for Health and Food Safety (DG SANTE), Food and Feed Alert Notifications / RASFF Window. Retrieved from the linked official notifications and dataset. Source material is licensed under CC BY 4.0. This project selected and normalized records and added project metadata; changes were made. The European Commission and RASFF do not endorse this project.",
   "authority": "European Commission, Directorate-General for Health and Food Safety (DG SANTE)",
@@ -21,7 +21,7 @@
   "legal_notice_url": "https://commission.europa.eu/legal-notice_en",
   "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
   "license_url": "https://creativecommons.org/licenses/by/4.0/",
-  "record_count": 13,
+  "record_count": 18,
   "record_provenance": [
     {
       "id": "8bfa9e361d8530894ad53d2039178ae36b0cbbd4f6f66eb161af48d2fd94c227",
@@ -126,6 +126,46 @@
       "reference": "2026.6185",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
       "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/858194"
+    },
+    {
+      "id": "052af4ab0a225c59d720feec8364864aa7e1f1c579227e7e8100de63a1b6bd81",
+      "official_last_update": "13-07-2026 10:09:55",
+      "record_status": "active",
+      "reference": "2026.6208",
+      "retrieved_at": "2026-07-19T11:52:00.673529+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/858191"
+    },
+    {
+      "id": "42291b1b75f3420dc8d8d448a7fd1b0ac7698c665bac3851a0bc2cba954e7877",
+      "official_last_update": "13-07-2026 13:41:45",
+      "record_status": "active",
+      "reference": "2026.6214",
+      "retrieved_at": "2026-07-19T11:52:00.673529+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/858414"
+    },
+    {
+      "id": "42ac25a94d6fe8b5d49e9a4a352ae8ceccfc230ffa61bfa6c6702337841d6fa3",
+      "official_last_update": "13-07-2026 17:17:54",
+      "record_status": "active",
+      "reference": "2026.6241",
+      "retrieved_at": "2026-07-19T11:52:00.673529+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/856452"
+    },
+    {
+      "id": "e6e4e568974d267b6d8908fdae9a4c49409a04de59480c3518b9d509a5a64ba5",
+      "official_last_update": "14-07-2026 16:40:38",
+      "record_status": "active",
+      "reference": "2026.6278",
+      "retrieved_at": "2026-07-19T11:52:00.673529+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/855444"
+    },
+    {
+      "id": "145a5daac1cb819ecdf91d0f57a2e2ded8dee79c29b533436271093bcaf1ae70",
+      "official_last_update": "17-07-2026 12:50:46",
+      "record_status": "active",
+      "reference": "2026.6384",
+      "retrieved_at": "2026-07-19T11:52:00.673529+00:00",
+      "source_url": "https://webgate.ec.europa.eu/rasff-window/screen/notification/851809"
     }
   ],
   "release_mode": "incremental_merge",
@@ -142,10 +182,15 @@
     "2026.6040",
     "2026.6070",
     "2026.6159",
-    "2026.6185"
+    "2026.6185",
+    "2026.6208",
+    "2026.6214",
+    "2026.6241",
+    "2026.6278",
+    "2026.6384"
   ],
   "release_scope": "explicitly_reviewed_subset",
   "removed_references": [],
-  "snapshot_retrieved_at": "2026-07-19T09:06:19.348760+00:00",
+  "snapshot_retrieved_at": "2026-07-19T11:52:58.086124+00:00",
   "source_id": "eu_rasff"
 }
