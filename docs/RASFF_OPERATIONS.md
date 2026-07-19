@@ -2,7 +2,7 @@
 
 Status: maintainer acceptance pending  
 Applies to: `data/processed/rasff_cn.jsonl` and its metadata  
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-19
 
 This runbook defines the only approved paths for adding, correcting, removing
 or rolling back published RASFF records. Discovery never authorizes
@@ -131,6 +131,10 @@ same commit so the candidate remains discoverable.
 - 2026-07-14: `2026.5888` changed to `ec_withdrawn` and was removed from the
   active release while three still-active records were rebuilt as corrections;
   the resulting 13-record release passed local published-record audit.
+- 2026-07-19: six still-active records were rebuilt as explicit corrections
+  after official detail updates. No baseline was accepted because the same
+  candidate run also reported unrelated new/search-changed references needing
+  separate review.
 
 ## Human acceptance checklist
 

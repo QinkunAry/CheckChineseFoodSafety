@@ -3,7 +3,10 @@
   "approved_references": [
     "2026.5595",
     "2026.5922",
-    "2026.6070"
+    "2026.5938",
+    "2026.6040",
+    "2026.6070",
+    "2026.6185"
   ],
   "attribution": "Source: © European Union, 1995–2026; European Commission, Directorate-General for Health and Food Safety (DG SANTE), Food and Feed Alert Notifications / RASFF Window. Retrieved from the linked official notifications and dataset. Source material is licensed under CC BY 4.0. This project selected and normalized records and added project metadata; changes were made. The European Commission and RASFF do not endorse this project.",
   "authority": "European Commission, Directorate-General for Health and Food Safety (DG SANTE)",
@@ -22,7 +25,7 @@
   "record_provenance": [
     {
       "id": "8bfa9e361d8530894ad53d2039178ae36b0cbbd4f6f66eb161af48d2fd94c227",
-      "official_last_update": "13-07-2026 10:14:16",
+      "official_last_update": "17-07-2026 15:09:14",
       "record_status": "active",
       "reference": "2026.5595",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
@@ -62,7 +65,7 @@
     },
     {
       "id": "579a5ea97610833045eedbb034b0774f95460b742307a8e987c8982e5d8dfce6",
-      "official_last_update": "13-07-2026 16:55:18",
+      "official_last_update": "17-07-2026 11:08:37",
       "record_status": "active",
       "reference": "2026.5922",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
@@ -78,7 +81,7 @@
     },
     {
       "id": "e9b0fe8f7a80a6eac19c4823966ad4a02dc66c870be8037fdf1e192b885e210c",
-      "official_last_update": "06-07-2026 09:54:43",
+      "official_last_update": "16-07-2026 15:01:48",
       "record_status": "active",
       "reference": "2026.5938",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
@@ -94,7 +97,7 @@
     },
     {
       "id": "07e21a5422a880efa2f1fd600b6a0368db506edbd80615216d59017cb4c52ce1",
-      "official_last_update": "08-07-2026 08:16:07",
+      "official_last_update": "16-07-2026 15:09:45",
       "record_status": "active",
       "reference": "2026.6040",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
@@ -102,7 +105,7 @@
     },
     {
       "id": "6901343b6337e7ebffd647f4438496c5a2cbb4b8e4926c13335ec310af011de8",
-      "official_last_update": "13-07-2026 14:07:56",
+      "official_last_update": "16-07-2026 09:18:58",
       "record_status": "active",
       "reference": "2026.6070",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
@@ -118,7 +121,7 @@
     },
     {
       "id": "fc9a0b5d3964ae1e4e01239d73b199977f6b685ef437ec724a939dda82f820c9",
-      "official_last_update": "10-07-2026 14:17:04",
+      "official_last_update": "16-07-2026 15:07:05",
       "record_status": "active",
       "reference": "2026.6185",
       "retrieved_at": "2026-07-12T06:31:31.527379+00:00",
@@ -142,9 +145,7 @@
     "2026.6185"
   ],
   "release_scope": "explicitly_reviewed_subset",
-  "removed_references": [
-    "2026.5888"
-  ],
-  "snapshot_retrieved_at": "2026-07-13T20:37:36.224747+00:00",
+  "removed_references": [],
+  "snapshot_retrieved_at": "2026-07-19T09:06:19.348760+00:00",
   "source_id": "eu_rasff"
 }

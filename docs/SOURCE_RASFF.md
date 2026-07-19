@@ -239,6 +239,14 @@ rebuilt as explicit corrections. `2026.5888` had changed to `ec_withdrawn` and
 was removed from the active release with `--remove-reference`. The resulting
 13-record release passed local published-detail audit.
 
+On 2026-07-19 the published-record audit reported six changed details. All six
+references (`2026.5595`, `2026.5922`, `2026.5938`, `2026.6040`, `2026.6070`
+and `2026.6185`) remained active and were rebuilt as explicit corrections. The
+release stayed at 13 active records and passed local published-detail audit.
+The same candidate run observed five new search references and one changed
+search fingerprint; those require a separate candidate-review round and did not
+advance the accepted inventory baseline.
+
 ## Official notification detail
 
 RASFF Window loads public notification details from:
@@ -313,8 +321,9 @@ been detail-reviewed or published.
 The reviewed subset was expanded on 2026-07-12 to 14 active references after
 one correction rehearsal and one natural-increment release. On 2026-07-14 it
 was reduced to 13 active references after the official withdrawal of
-`2026.5888`. It is still a reviewed subset, not a claim that all 1,226 accepted
-inventory references have been detail-reviewed or published.
+`2026.5888`, then rebuilt again on 2026-07-19 for six still-active official
+detail corrections. It is still a reviewed subset, not a claim that all 1,226
+accepted inventory references have been detail-reviewed or published.
 
 `publish-rasff-reviewed` requires an explicit human-approved reference
 allowlist that exactly matches the input JSONL. It then fails closed on Schema

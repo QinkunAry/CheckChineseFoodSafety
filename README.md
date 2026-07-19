@@ -127,7 +127,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_withdrawn` 映射为 `withdrawn`，未知或矛盾组合映射为 `review_required`；corrigendum 本身不会撤回仍有效的通知。候选技术状态与 `lifecycle_gate_status` 分离，withdrawn 记录保留审计证据但不能通过 active 发布门禁。
 
-RASFF explicitly reviewed release 当前包含 13 条 active reference。首批 3 条在 2026-07-01 发布；2026-07-10 已完成一次 `official_last_update` correction；2026-07-12 又发布 11 条自然增量并接受 1,226 条 inventory baseline；2026-07-14 因官方将 `2026.5888` 标记为 `ec_withdrawn`，已显式从 active release 移除，并同步更新 3 条仍 active 的 correction。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
+RASFF explicitly reviewed release 当前包含 13 条 active reference。首批 3 条在 2026-07-01 发布；2026-07-10 已完成一次 `official_last_update` correction；2026-07-12 又发布 11 条自然增量并接受 1,226 条 inventory baseline；2026-07-14 因官方将 `2026.5888` 标记为 `ec_withdrawn`，已显式从 active release 移除，并同步更新 3 条仍 active 的 correction；2026-07-19 又处理 6 条仍 active 的官方 detail correction。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
 
 `audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；3 条首批数据的 hosted correction audit 已恢复通过，13 条 withdrawal/correction release 已在本地 audit 通过，等待 hosted audit 验收。
 

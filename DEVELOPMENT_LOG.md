@@ -17,6 +17,43 @@
 
 ---
 
+## 2026-07-19 · Round 61 · RASFF active correction batch
+
+### 本轮目标
+
+处理 GitHub Actions `Audit published EU RASFF records` 返回的 13 条 release 中 6 条 `action_required`，确认是否有撤回或只需 active correction。
+
+### 触发结果
+
+本地复现 hosted audit：published 13、audited 13、changed 6。
+
+- `2026.5595`：仍 active，`reasons`、`official_hazards`、`official_measures` 与 `official_last_update` 变化；
+- `2026.5922`：仍 active，`official_last_update` 与 follow-up 变化；
+- `2026.5938`：仍 active，`official_last_update` 与 follow-up 变化；
+- `2026.6040`：仍 active，`official_last_update` 与 follow-up 变化；
+- `2026.6070`：仍 active，`official_last_update` 与 follow-up 变化；
+- `2026.6185`：仍 active，`official_last_update` 与 follow-up 变化。
+
+### 处理方式
+
+- 为 6 条 reference 生成 explicit candidate；
+- candidate 结果：6 candidates、0 blockers、0 Schema errors、lifecycle gate passed；
+- 6 条均为 `active` / `ec_validated`，没有 withdrawn removal；
+- 使用 `publish-rasff-reviewed --merge-current` 批准 6 条 correction；
+- 正式 RASFF release 保持 13 条 active records；
+- metadata 记录本批 6 条 approved references，`removed_references` 为空。
+
+### 验证结果
+
+- 发布后重跑 `audit-rasff-status`：passed，13 audited、0 changed；
+- candidate 同时提示当前 search inventory 存在 5 个 new reference 与 1 个 changed search fingerprint；这些不是本轮 published audit 修复范围，未发布、未接受 baseline。
+
+### 下一步
+
+提交并推送后重新运行 hosted `Audit published EU RASFF records`。若通过，再单独处理当前 search inventory 的 5 个 new 与 1 个 changed candidate review；不要在 hosted audit 通过前接受新的 inventory baseline。
+
+---
+
 ## 2026-07-14 · Round 60 · RASFF withdrawal removal rehearsal
 
 ### 本轮目标
