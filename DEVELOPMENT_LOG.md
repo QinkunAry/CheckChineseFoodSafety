@@ -17,6 +17,30 @@
 
 ---
 
+## 2026-07-19 · Round 63 · RASFF 18-record hosted audit accepted
+
+### 本轮目标
+
+记录维护者确认 GitHub Actions `Audit published EU RASFF records` 已对 18 条 RASFF release 通过，并同步修正状态文档中的旧阻塞描述。
+
+### 已完成内容
+
+- 确认当前 `main` / `origin/main` 为 `290d6a9 data: publish reviewed RASFF increment`；
+- 本地工作区在检查前为 clean；
+- 将 RASFF 顶层说明从 13 条 release / 1,226 baseline 更新为 18 条 release / 1,231 baseline；
+- 将 `prototype -> implemented` checklist 中的 RASFF 阻塞项更新为：18-record hosted audit 已通过，仍需维护者接受 `RASFF_OPERATIONS.md`；
+- 将 README 与 `data/sources.json` 的 RASFF 状态说明从“等待 hosted audit”更新为“hosted audit 已通过，等待 operations 接受”。
+
+### 决策
+
+RASFF 仍暂留 `prototype`，不在本轮自动升级为 `implemented`。最后剩余门槛是维护者明确接受 `docs/RASFF_OPERATIONS.md` 作为生产发布、撤回和回滚流程。
+
+### 下一步
+
+若维护者接受 `RASFF_OPERATIONS.md`，下一轮即可把 `eu_rasff` 从 `prototype` 升级为 `implemented`，并同步更新 README、source assessment、checklist 和 development log。
+
+---
+
 ## 2026-07-19 · Round 62 · RASFF reviewed natural increment release
 
 ### 本轮目标

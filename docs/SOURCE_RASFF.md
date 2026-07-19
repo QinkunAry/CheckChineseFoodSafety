@@ -6,13 +6,15 @@ The European Commission Rapid Alert System for Food and Feed (RASFF) is a
 read-only `prototype` source. The live probe passed locally and on GitHub
 Actions on 2026-06-30. A complete inventory and minimal fingerprint baseline
 now provide incremental change detection without publishing a full API snapshot.
-The current explicitly reviewed release contains 13 active records, and the
-current accepted search baseline contains 1,226 China-origin food-query
-references as of 2026-07-12.
+The current explicitly reviewed release contains 18 active records, and the
+current accepted search baseline contains 1,231 China-origin food-query
+references as of 2026-07-19. The 18-record published-detail audit has passed on
+GitHub; maintainer acceptance of `RASFF_OPERATIONS.md` remains before upgrading
+the source to `implemented`.
 
-The probe uses the same official public JSON endpoints as RASFF Window. It does
-not scrape rendered HTML, require an account, bypass access controls, publish a
-historical snapshot, or write records under `data/processed/`.
+The probe and publication pipeline use the same official public JSON endpoints
+as RASFF Window. They do not scrape rendered HTML, require an account, bypass
+access controls, or publish a full historical snapshot.
 
 ## Official endpoints
 
@@ -175,8 +177,8 @@ The expanded detail candidate review, CC BY 4.0 attribution review, reviewed
 initial processed release, metadata generation, publication count-drop and
 atomic-write gates, status-audit integration, correction rehearsal, natural
 increment rehearsal and explicit withdrawn-record removal rehearsal are now
-complete locally. Before moving from `prototype` to `implemented`, the project
-still needs hosted acceptance of the current 13-record audit and maintainer
+complete and have passed hosted audit on the current 18-record release. Before
+moving from `prototype` to `implemented`, the project still needs maintainer
 acceptance of `RASFF_OPERATIONS.md` as the production procedure.
 
 ## Local candidate pipeline and initial review

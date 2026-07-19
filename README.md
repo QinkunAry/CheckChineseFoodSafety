@@ -129,7 +129,7 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 
 RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 3 条在 2026-07-01 发布；2026-07-10 已完成一次 `official_last_update` correction；2026-07-12 又发布 11 条自然增量并接受 1,226 条 inventory baseline；2026-07-14 因官方将 `2026.5888` 标记为 `ec_withdrawn`，已显式从 active release 移除，并同步更新 3 条仍 active 的 correction；2026-07-19 先处理 6 条仍 active 的官方 detail correction，随后发布 5 条新增 China-origin food reference 并接受 1,231 条 inventory baseline。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
 
-`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；13 条 withdrawal/correction release 的 hosted audit 已恢复通过，18 条 reviewed release 已在本地 audit 通过，等待 hosted audit 验收。
+`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；13 条 withdrawal/correction release 的 hosted audit 已恢复通过，18 条 reviewed release 的 hosted audit 也已通过。RASFF 距离 `implemented` 只剩维护者接受 `docs/RASFF_OPERATIONS.md`。
 
 后续发布使用 `--merge-current`：未点名的既有记录保持不变，新增或更正必须逐条批准；官方确认撤回时使用 `--removal-only --remove-reference`，并受数量下降门禁保护。完整的人审、增量、撤回与 `git revert` 回滚流程见 `docs/RASFF_OPERATIONS.md`。
 
