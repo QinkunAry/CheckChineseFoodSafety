@@ -1,16 +1,16 @@
 {
-  "baseline_count": 393,
+  "baseline_count": 395,
   "blocking_errors": [],
-  "china_source_record_count": 593,
-  "count_change_percent": 0.51,
+  "china_source_record_count": 598,
+  "count_change_percent": 0.0,
   "data_url": "https://data.fda.gov.tw/data/opendata/export/52/json",
   "dataset_url": "https://data.gov.tw/dataset/6133",
   "duplicate_id_count": 0,
   "duplicate_id_samples": [],
   "event_date_max": "2026-08-04",
   "event_date_min": "2023-01-03",
-  "excluded_record_count": 2142,
-  "generated_at": "2026-08-09T08:04:41.630502+00:00",
+  "excluded_record_count": 2155,
+  "generated_at": "2026-08-16T07:48:05.567972+00:00",
   "hazard_tags": {
     "chemical": 395
   },
@@ -40,7 +40,7 @@
   "schema_error_count": 0,
   "schema_error_samples": [],
   "source_id": "tw_tfda",
-  "source_record_count": 2537,
+  "source_record_count": 2550,
   "status": "passed",
   "unclassified_hazard_count": 0,
   "unique_id_count": 395
