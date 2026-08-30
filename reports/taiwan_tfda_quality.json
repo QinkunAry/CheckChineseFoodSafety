@@ -1,18 +1,18 @@
 {
   "baseline_count": 395,
   "blocking_errors": [],
-  "china_source_record_count": 600,
-  "count_change_percent": 0.0,
+  "china_source_record_count": 607,
+  "count_change_percent": 1.01,
   "data_url": "https://data.fda.gov.tw/data/opendata/export/52/json",
   "dataset_url": "https://data.gov.tw/dataset/6133",
   "duplicate_id_count": 0,
   "duplicate_id_samples": [],
-  "event_date_max": "2026-08-04",
+  "event_date_max": "2026-08-25",
   "event_date_min": "2023-01-03",
-  "excluded_record_count": 2164,
-  "generated_at": "2026-08-23T07:49:51.085525+00:00",
+  "excluded_record_count": 2175,
+  "generated_at": "2026-08-30T12:58:34.728722+00:00",
   "hazard_tags": {
-    "chemical": 395
+    "chemical": 399
   },
   "maximum_drop_fraction": 0.25,
   "maximum_unclassified_hazards": 0,
@@ -20,7 +20,7 @@
   "parse_error_count": 0,
   "parse_error_samples": [],
   "product_categories": {
-    "coffee_tea_and_spices": 89,
+    "coffee_tea_and_spices": 91,
     "food_additives_and_processing_aids": 4,
     "food_capsules": 5,
     "fruit": 38,
@@ -31,17 +31,17 @@
     "prepared_foods": 10,
     "prepared_fruit_and_vegetables": 28,
     "prepared_meat_and_seafood": 4,
-    "seafood": 18,
+    "seafood": 19,
     "seeds_and_herbs": 76,
     "sugar_and_confectionery": 1,
-    "vegetables": 102
+    "vegetables": 103
   },
-  "record_count": 395,
+  "record_count": 399,
   "schema_error_count": 0,
   "schema_error_samples": [],
   "source_id": "tw_tfda",
-  "source_record_count": 2559,
+  "source_record_count": 2574,
   "status": "passed",
   "unclassified_hazard_count": 0,
-  "unique_id_count": 395
+  "unique_id_count": 399
 }
