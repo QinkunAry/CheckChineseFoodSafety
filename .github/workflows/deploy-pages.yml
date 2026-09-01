@@ -28,6 +28,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -50,9 +53,6 @@ jobs:
           test -s site/data/records.json
           test -s site/data/summary.json
           python -c "import json,pathlib; summary=json.loads(pathlib.Path('site/data/summary.json').read_text(encoding='utf-8')); records=json.loads(pathlib.Path('site/data/records.json').read_text(encoding='utf-8')); assert summary['record_count']==len(records); assert summary['record_count']>=3000; assert not summary['missing_files']; print(f\"Verified static site with {summary['record_count']} records\")"
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4

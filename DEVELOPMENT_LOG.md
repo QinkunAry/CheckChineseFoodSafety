@@ -17,6 +17,29 @@
 
 ---
 
+## 2026-09-01 · Round 67 · GitHub Pages first-run 404 fix
+
+### 本轮目标
+
+处理 `Deploy static data site` workflow 在 `Configure GitHub Pages` 步骤失败的问题：`Get Pages site failed` / `HttpError: Not Found`。
+
+### 诊断
+
+失败发生在 Pages 配置阶段，而不是数据构建阶段。根据 GitHub Pages custom workflow 与 `actions/configure-pages` action 定义，custom workflow 首次使用前必须先在仓库 Settings → Pages 中将 Build and deployment Source 设为 GitHub Actions。`configure-pages` 的 `enablement` 参数可以尝试启用 Pages，但需要非默认 `GITHUB_TOKEN` 的额外高权限 token，因此本项目不在 workflow 中自动启用。
+
+### 已完成内容
+
+- 将 `actions/configure-pages` 从 `v5` 升级到 `v6`，避免 Node.js 20 deprecation warning；
+- 将 `Configure GitHub Pages` 步骤提前到 checkout 后，使未启用 Pages 时更早失败；
+- README 增加 `Get Pages site failed` / `HttpError: Not Found` 的处理说明；
+- 明确不使用 PAT 自动启用 Pages，避免引入额外高权限 secret。
+
+### 下一步
+
+维护者需要在 GitHub 仓库 Settings → Pages 中选择 Source: GitHub Actions，然后重新运行 `Deploy static data site`。若仍失败，再根据新的 deploy job 日志处理权限或 environment 问题。
+
+---
+
 ## 2026-08-31 · Round 66 · GitHub Pages deployment workflow
 
 ### 本轮目标

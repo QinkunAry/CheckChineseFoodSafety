@@ -116,7 +116,9 @@ FUTURE_AI_PLAN.md          独立的 AI 后续计划
 
 FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会话下载。若 FDA 拒绝某些云端 Runner 网络，可以通过仓库变量 `FOOD_SAFETY_FDA_DOWNLOAD_URL` 指定经批准、内容相同的镜像；下载内容仍必须通过 ZIP、Schema 和数据质量检查。
 
-`.github/workflows/deploy-pages.yml` 在 `main` 分支相关数据、源码或 workflow 变化后自动生成静态数据浏览器，并通过 GitHub Pages artifact 部署；也支持手动触发。部署前会安装项目、运行全量测试、生成 `site/`，并验证 `summary.json` 与 `records.json` 的记录数一致且没有缺失的 implemented source 文件。首次使用前，需要在 GitHub 仓库 Settings → Pages 中将 Build and deployment source 设置为 GitHub Actions。
+`.github/workflows/deploy-pages.yml` 在 `main` 分支相关数据、源码或 workflow 变化后自动生成静态数据浏览器，并通过 GitHub Pages artifact 部署；也支持手动触发。部署前会配置 Pages、安装项目、运行全量测试、生成 `site/`，并验证 `summary.json` 与 `records.json` 的记录数一致且没有缺失的 implemented source 文件。
+
+首次使用前，需要在 GitHub 仓库 Settings → Pages 中将 Build and deployment Source 设置为 GitHub Actions。若 `Configure GitHub Pages` 步骤报 `Get Pages site failed` / `HttpError: Not Found`，通常表示 Pages 尚未启用或 source 尚未设为 GitHub Actions；完成上述设置后重新运行 workflow 即可。项目不在 workflow 中用 PAT 自动启用 Pages，避免引入额外高权限 secret。
 
 `.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和固定召回详情，验证页面证据字段，并对实际发现的中国原产记录执行统一 Schema 检查。固定样本中没有中国记录会被报告，但不再误判为站点结构故障。它不会提交或发布 FSANZ 数据；通过覆盖率评估和再利用条款检查前，该来源保持 `prototype`。
 
