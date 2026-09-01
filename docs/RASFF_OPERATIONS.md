@@ -1,6 +1,6 @@
 # RASFF Release Operations / 发布运维手册
 
-Status: maintainer acceptance pending  
+Status: accepted for implemented source operations
 Applies to: `data/processed/rasff_cn.jsonl` and its metadata  
 Last reviewed: 2026-07-19
 

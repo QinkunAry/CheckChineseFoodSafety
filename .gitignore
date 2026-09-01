@@ -10,6 +10,7 @@ __pycache__/
 tests/tmp*/
 dist/
 build/
+site/
 data/raw/
 data/candidates/*.jsonl
 !data/candidates/.gitkeep

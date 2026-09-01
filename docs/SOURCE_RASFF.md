@@ -2,15 +2,14 @@
 
 ## Decision
 
-The European Commission Rapid Alert System for Food and Feed (RASFF) is a
-read-only `prototype` source. The live probe passed locally and on GitHub
-Actions on 2026-06-30. A complete inventory and minimal fingerprint baseline
-now provide incremental change detection without publishing a full API snapshot.
-The current explicitly reviewed release contains 18 active records, and the
-current accepted search baseline contains 1,231 China-origin food-query
-references as of 2026-07-19. The 18-record published-detail audit has passed on
-GitHub; maintainer acceptance of `RASFF_OPERATIONS.md` remains before upgrading
-the source to `implemented`.
+The European Commission Rapid Alert System for Food and Feed (RASFF) is an
+`implemented` source. The live probe passed locally and on GitHub Actions on
+2026-06-30, and the current 18-record explicitly reviewed release passed hosted
+published-detail audit on 2026-07-19. A complete inventory and minimal
+fingerprint baseline provide incremental change detection without publishing a
+full API snapshot. The current accepted search baseline contains 1,231
+China-origin food-query references as of 2026-07-19. `RASFF_OPERATIONS.md` is
+accepted as the production publication, withdrawal and rollback procedure.
 
 The probe and publication pipeline use the same official public JSON endpoints
 as RASFF Window. They do not scrape rendered HTML, require an account, bypass
@@ -91,7 +90,7 @@ distribution, JSON API distribution, and pre-2021 XLSX resource as
 
 Project decision:
 
-- RASFF remains a read-only `prototype`;
+- RASFF is an `implemented` source with an explicitly reviewed active release;
 - published normalized records include attribution to the European Commission /
   DG SANTE / RASFF and direct source links;
 - exact attribution wording and endpoint/reuse limits are recorded in release
@@ -171,15 +170,15 @@ python -m food_safety_watch inventory-rasff `
 `--accept-current` may replace the baseline only after a complete successful
 scan. A failed or `--max-pages` partial scan is refused.
 
-## Prototype to implemented gate
+## Implemented acceptance
 
 The expanded detail candidate review, CC BY 4.0 attribution review, reviewed
 initial processed release, metadata generation, publication count-drop and
 atomic-write gates, status-audit integration, correction rehearsal, natural
 increment rehearsal and explicit withdrawn-record removal rehearsal are now
-complete and have passed hosted audit on the current 18-record release. Before
-moving from `prototype` to `implemented`, the project still needs maintainer
-acceptance of `RASFF_OPERATIONS.md` as the production procedure.
+complete and have passed hosted audit on the current 18-record release.
+Maintainer acceptance of `RASFF_OPERATIONS.md` was recorded on 2026-07-19, so
+EU RASFF is accepted as an `implemented` source.
 
 ## Local candidate pipeline and initial review
 
@@ -189,9 +188,9 @@ For a bounded manual review, repeated `--reference` arguments select explicit
 current records. `--max-candidates` fails the batch before writing partial output
 when an unexpected number of records is selected.
 
-Candidate JSONL and reports are ignored local artifacts. They are not part of
-the scheduled workflow because publication rights and field semantics are still
-under review.
+Candidate JSONL and reports are ignored local artifacts. Discovery remains
+separate from publication: new or changed references must pass explicit human
+review and `publish-rasff-reviewed` before entering the committed release.
 
 The first, search-only review covered five recent explicit references and the
 first real post-baseline increment, `2026.5752`. All six passed explicit China
@@ -426,6 +425,6 @@ emits the approved wording beside every RASFF release. See
 [`RASFF_REUSE_REVIEW.md`](reviews/RASFF_REUSE_REVIEW.md) and
 [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md).
 
-RASFF must satisfy the shared
+RASFF satisfied the shared
 [`prototype` to `implemented` checklist](PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)
-before its status is upgraded from `prototype` to `implemented`.
+on 2026-07-19.

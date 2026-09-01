@@ -10,6 +10,7 @@
 [![Probe China SAMR source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-china-samr.yml)
 [![Probe EU RASFF source](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-rasff.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/probe-rasff.yml)
 [![Audit published EU RASFF records](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/audit-rasff-status.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/audit-rasff-status.yml)
+[![Deploy static data site](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/QinkunAry/CheckChineseFoodSafety/actions/workflows/deploy-pages.yml)
 
 一个以官方证据为核心的开源食品安全数据项目。它定期收集境外监管机构发布的进口拒绝、召回和安全警报，也研究中国境内官方抽检不合格信息；所有范围保留原始出处并转换为可区分监管语境的统一记录。
 
@@ -66,6 +67,17 @@ python -m unittest discover -s tests -v
 python -m food_safety_watch validate
 ```
 
+生成本地静态数据浏览器：
+
+```powershell
+python -m food_safety_watch build-site --output-dir site
+python -m http.server 8000 -d site
+```
+
+然后打开 <http://localhost:8000>。当前静态浏览器只读取 `implemented`
+来源的正式发布数据，支持按来源、风险标签、监管动作、年份和关键词筛选。
+`site/` 是生成产物，不提交入库；GitHub Pages workflow 会在 runner 上重新生成并部署。
+
 ## 数据边界
 
 - `import_refusal` 不等于召回，也不表示同类产品全部存在风险。
@@ -80,6 +92,7 @@ python -m food_safety_watch validate
 data/sources.json          数据源登记表
 data/state/                来源增量状态（非监管事实）
 data/candidates/           候选记录产物（不等于正式发布数据）
+site/                      由 build-site 生成的静态数据浏览器
 schemas/record.schema.json 统一记录契约
 src/food_safety_watch/     采集与标准化代码
 tests/                     单元测试
@@ -103,6 +116,8 @@ FUTURE_AI_PLAN.md          独立的 AI 后续计划
 
 FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会话下载。若 FDA 拒绝某些云端 Runner 网络，可以通过仓库变量 `FOOD_SAFETY_FDA_DOWNLOAD_URL` 指定经批准、内容相同的镜像；下载内容仍必须通过 ZIP、Schema 和数据质量检查。
 
+`.github/workflows/deploy-pages.yml` 在 `main` 分支相关数据、源码或 workflow 变化后自动生成静态数据浏览器，并通过 GitHub Pages artifact 部署；也支持手动触发。部署前会安装项目、运行全量测试、生成 `site/`，并验证 `summary.json` 与 `records.json` 的记录数一致且没有缺失的 implemented source 文件。首次使用前，需要在 GitHub 仓库 Settings → Pages 中将 Build and deployment source 设置为 GitHub Actions。
+
 `.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和固定召回详情，验证页面证据字段，并对实际发现的中国原产记录执行统一 Schema 检查。固定样本中没有中国记录会被报告，但不再误判为站点结构故障。它不会提交或发布 FSANZ 数据；通过覆盖率评估和再利用条款检查前，该来源保持 `prototype`。
 
 同一工作流还会把官方 sitemap 与 `data/state/fsanz_recall_urls.json` 中的 345 条基线比较，只报告新增和移除的详情 URL。该基线用于避免未来重复扫描全部历史页面，不代表 345 条记录都属于中国食品或都已进入发布数据集。
@@ -121,7 +136,7 @@ CFS 的官方版权声明要求获得食物环境卫生署事先书面授权后�
 
 可用 `probe-canada-origin` 做只读抽样诊断。2026-06-24 的真实 probe 显示：33,692 条全类别记录中有 5,243 条 CFIA 食品记录，open data 中 12 条 CFIA 食品记录提到 China/Chinese；抽样 32 个详情页后，仍没有发现明确中国原产地证据。
 
-欧盟 RASFF 当前为 `prototype`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页；2026-07-12 复核 12 个自然增量后，11 条非 FCM 食品记录已发布，1 条 `food contact materials` 被排除，baseline 更新为 1,226；2026-07-19 又复核 5 个自然增量并接受 baseline 1,231。Probe Action 仍只上传诊断报告，不自动发布监管记录。详见 `docs/SOURCE_RASFF.md`。
+欧盟 RASFF 已升级为 `implemented`。`probe-rasff` 已在 GitHub Actions 通过：它从 RASFF Window 官方目录动态取得国家和产品类型 ID，以 `originCountry=CN` 与 `notificationType=food` 双条件查询，并用印度人类食品作为非中国对照。`inventory-rasff` 完整扫描 13 页；2026-07-12 复核 12 个自然增量后，11 条非 FCM 食品记录已发布，1 条 `food contact materials` 被排除，baseline 更新为 1,226；2026-07-19 又复核 5 个自然增量并接受 baseline 1,231。Probe Action 仍只上传诊断报告，不自动发布监管记录。详见 `docs/SOURCE_RASFF.md`。
 
 本地 `candidate-rasff` 默认只选择 baseline 后新增或指纹变化的 reference，也可用 `--reference` 生成小规模显式复核批次。官方 detail endpoint 已解决 search `subject` 不是产品名的问题：`2026.5752` 的真实产品是 `Vermicelli`，候选还会保留 classification、risk、basis、status、distribution、measures 和结构化 hazard。`smoke-rasff-detail` 使用两条有效中国样本与一条印度对照验证 detail 漂移。另一个样本 `2026.5575` 已被官方标记为 withdrawn，因此正式发布必须依赖 detail-status 重查规则，而不能只看 search inventory。详见 `docs/reviews/RASFF_INITIAL_CANDIDATE_REVIEW.md`。
 
@@ -129,7 +144,7 @@ RASFF lifecycle 采用明确状态机：`ec_validated` 映射为 `active`，`ec_
 
 RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 3 条在 2026-07-01 发布；2026-07-10 已完成一次 `official_last_update` correction；2026-07-12 又发布 11 条自然增量并接受 1,226 条 inventory baseline；2026-07-14 因官方将 `2026.5888` 标记为 `ec_withdrawn`，已显式从 active release 移除，并同步更新 3 条仍 active 的 correction；2026-07-19 先处理 6 条仍 active 的官方 detail correction，随后发布 5 条新增 China-origin food reference 并接受 1,231 条 inventory baseline。`publish-rasff-reviewed` 要求人工批准列表与输入 JSONL 完全一致，执行 Schema、来源、detail 字段、生命周期、数量下降和最大批量门禁，并成对原子写入 JSONL 与含逐条 provenance、CC BY 4.0 署名及修改声明的 metadata；替换失败会回滚旧版本。
 
-`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；13 条 withdrawal/correction release 的 hosted audit 已恢复通过，18 条 reviewed release 的 hosted audit 也已通过。RASFF 距离 `implemented` 只剩维护者接受 `docs/RASFF_OPERATIONS.md`。
+`audit-rasff-status` 以正式 JSONL 为 baseline，逐条比较官方 detail 中的生命周期、last update、产品、hazard、classification、risk、measures 和 follow-up；一致时 `passed`，合法但已变化时返回 `action_required`，网络或证据失败时返回 `failed`。每周/手动 Action 不修改数据，失败时上传报告并创建或更新维护 Issue；13 条 withdrawal/correction release 的 hosted audit 已恢复通过，18 条 reviewed release 的 hosted audit 也已通过。`docs/RASFF_OPERATIONS.md` 已被维护者接受为 RASFF 生产发布、撤回和回滚流程。
 
 后续发布使用 `--merge-current`：未点名的既有记录保持不变，新增或更正必须逐条批准；官方确认撤回时使用 `--removal-only --remove-reference`，并受数量下降门禁保护。完整的人审、增量、撤回与 `git revert` 回滚流程见 `docs/RASFF_OPERATIONS.md`。
 
@@ -176,8 +191,11 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 完成欧盟 RASFF 扩大 detail 样本与 CC BY 4.0 署名评审
 - [x] 发布首批 3 条人工批准 RASFF 数据与逐条 provenance metadata
 - [x] 发布欧盟 RASFF 11 条真实增量并将完整 baseline 更新至 1,226
-- [ ] 发布静态数据页与筛选界面
-- [ ] 按可获取性接入加拿大、日本、韩国、台湾、新西兰和欧盟等来源
+- [x] 将欧盟 RASFF 升级为 implemented 正式数据源
+- [x] 生成本地静态数据页与筛选界面
+- [x] 增加 GitHub Pages 静态站点部署 workflow
+- [ ] 完成首次 hosted GitHub Pages 部署验收
+- [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
 

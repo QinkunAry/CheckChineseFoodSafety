@@ -17,6 +17,102 @@
 
 ---
 
+## 2026-08-31 · Round 66 · GitHub Pages deployment workflow
+
+### 本轮目标
+
+继续产品层工作：在本地静态数据浏览器 MVP 之后，增加 GitHub Pages 自动部署 workflow，让正式发布数据可以被构建成在线静态站点。
+
+### 已完成内容
+
+- 新增 `.github/workflows/deploy-pages.yml`；
+- workflow 在 `main` 相关数据、源码或部署配置变化时运行，也支持手动触发；
+- build job 会 checkout、安装 Python 项目、运行全量单元测试、执行 `build-site --output-dir site`；
+- build job 验证 `site/index.html`、`site/data/records.json` 与 `site/data/summary.json` 存在，且 summary 记录数与 records JSON 一致；
+- 使用 GitHub Pages 官方 artifact 部署链路：`configure-pages`、`upload-pages-artifact`、`deploy-pages`；
+- 将 `site/` 加入 `.gitignore`，把静态站点作为生成产物而不是 committed artifact；
+- README 增加 Pages workflow badge、部署说明和首次启用 Pages source 的提示。
+
+### 决策
+
+不提交生成后的 `site/` 目录。原因是当前 `records.json` 已接近 2.9MB，后续每次数据更新都会产生大体积 generated diff；由 GitHub Actions 从 committed `data/processed/` 重新生成并部署，更适合维护。
+
+### 验证结果
+
+本轮仍需最终运行全量测试、`build-site` 和 `git diff --check`。首次 hosted Pages 部署需要提交推送后，在 GitHub Actions 中验收。
+
+### 下一步
+
+推送后在 GitHub 仓库 Settings → Pages 中确认 Build and deployment source 为 GitHub Actions，然后运行 `Deploy static data site`。如果部署通过，下一轮记录 hosted URL，并把路线图中的 hosted Pages 验收项勾选。
+
+---
+
+## 2026-08-12 · Round 65 · Static data browser MVP
+
+### 本轮目标
+
+在 FDA、Taiwan TFDA、Japan MHLW 与 EU RASFF 进入 `implemented` 后，启动产品层第一步：把正式发布数据生成一个本地可浏览、可筛选的静态页面。
+
+### 已完成内容
+
+- 新增 `food_safety_watch.static_site`，从 `data/sources.json` 中筛选 `implemented` 来源；
+- 默认读取 4 个正式发布文件：FDA、Taiwan TFDA、Japan MHLW、EU RASFF；
+- 新增 CLI：`python -m food_safety_watch build-site --output-dir site`；
+- 生成 `site/index.html`、`site/data/records.json`、`site/data/summary.json` 和 `site/README.md`；
+- 静态页面支持关键词、来源、hazard tag、action type 和年份筛选；
+- README 增加本地静态站点生成与预览命令；
+- 路线图将“静态数据页与筛选界面”拆分为本地生成已完成、GitHub Pages 部署待完成。
+
+### 数据范围
+
+本轮生成的静态站点使用当前 committed processed 数据，共 3,100 条正式记录：
+
+- FDA import refusals：2,690 条；
+- Taiwan TFDA inspection failures：391 条；
+- EU RASFF notifications：18 条；
+- Japan MHLW-backed recall：1 条。
+
+日期范围为 2023-01-03 至 2026-07-17。页面只包含 `implemented` 来源，不包含 FSANZ、CFS、Korea、Canada、SAMR 或 New Zealand 的 prototype/candidate 数据。
+
+### 验证结果
+
+- `python -m unittest tests.test_static_site -v`：3 tests passed；
+- `python -m food_safety_watch build-site --output-dir site`：成功生成 3,100 条记录；
+- 后续需要运行全量测试与 `git diff --check` 后提交。
+
+### 下一步
+
+提交当前 RASFF implemented 状态与 static browser MVP。下一轮优先接 GitHub Pages / Pages Action，让 `site/` 能在线访问；随后再迭代 UI 的产品体验，例如高风险食品聚合、来源解释、风险标签说明和中文/英文显示切换。
+
+---
+
+## 2026-07-19 · Round 64 · EU RASFF upgraded to implemented
+
+### 本轮目标
+
+维护者明确表示“我接受 RASFF_OPERATIONS.md”。据此完成 EU RASFF 从 `prototype` 到 `implemented` 的最终状态升级。
+
+### 已完成内容
+
+- 将 `docs/RASFF_OPERATIONS.md` 状态改为 accepted for implemented source operations；
+- 将 `data/sources.json` 中 `eu_rasff` 从 `prototype` 改为 `implemented`；
+- 更新 `docs/SOURCE_RASFF.md` 的 Decision、reuse review 与 implemented gate 说明；
+- 更新 README，将 RASFF 描述改为 implemented，并把 RASFF implemented 路线图项勾选；
+- 更新 `docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md`，标记 EU RASFF 为 `implemented`。
+
+### 验收依据
+
+- 官方 public JSON probe、完整 inventory、detail smoke、候选复核、正式发布、metadata attribution、发布后 detail-status audit、active correction、自然增量、withdrawn removal、baseline acceptance 和 GitHub hosted audit 均已完成；
+- 当前 release 为 18 条 explicitly reviewed active RASFF records；
+- 当前 accepted inventory baseline 为 1,231 条 China-origin food-query references；
+- 维护者已接受 RASFF 发布、撤回与回滚 runbook。
+
+### 下一步
+
+RASFF 进入维护模式。后续重点转向产品层：静态数据页/筛选界面、统一数据浏览体验，以及未实现来源中最有价值的下一批生产化目标。
+
+---
+
 ## 2026-07-19 · Round 63 · RASFF 18-record hosted audit accepted
 
 ### 本轮目标

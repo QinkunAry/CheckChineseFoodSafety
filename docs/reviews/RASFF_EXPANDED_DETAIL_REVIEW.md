@@ -88,10 +88,10 @@ three passed detail, Schema and active lifecycle gates. After review, the
 inventory baseline was advanced to 1,214. This marks discovery review only; it
 does not publish RASFF records.
 
-## Remaining production gates
+## Production gate completion
 
-- create a fail-closed small initial release and metadata file;
-- wire `audit-rasff-status` to the real processed JSONL and failure Issue;
-- define atomic update, count-drop, rollback and correction behavior;
-- include the approved CC BY 4.0 attribution/change notice beside every release;
-- obtain final maintainer acceptance before changing RASFF to `implemented`.
+These review-time gates were later completed before RASFF moved to
+`implemented`: a fail-closed reviewed release and metadata file, real
+published-record status audit with failure Issue handling, atomic update,
+count-drop, rollback and correction behavior, CC BY 4.0 attribution beside each
+release, and final maintainer acceptance of `RASFF_OPERATIONS.md`.

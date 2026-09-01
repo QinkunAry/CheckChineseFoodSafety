@@ -44,6 +44,7 @@ from .rasff_candidates import candidate_rasff
 from .rasff_detail_smoke import build_detail_smoke_report
 from .rasff_status_audit import audit_rasff_records
 from .rasff_update import publish_rasff_reviewed
+from .static_site import build_static_site
 from .taiwan_candidates import candidate_taiwan_tfda
 from .taiwan_inventory import inventory_taiwan_tfda, write_record_state
 from .taiwan_probe import build_taiwan_probe_report
@@ -662,6 +663,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--report", type=Path, default=Path("reports/rasff_status_audit.json")
     )
     rasff_status_audit.add_argument("--max-records", type=int, default=100)
+
+    site = subparsers.add_parser(
+        "build-site",
+        help="Build a static browser for records from implemented sources",
+    )
+    site.add_argument("--output-dir", type=Path, default=Path("site"))
+    site.add_argument("--sources", type=Path, default=Path("data/sources.json"))
     return parser
 
 
@@ -1199,5 +1207,17 @@ def main(argv: list[str] | None = None) -> int:
             f"report={args.report}"
         )
         return 0 if report["status"] == "passed" else 1
+
+    if args.command == "build-site":
+        summary = build_static_site(
+            output_dir=args.output_dir,
+            sources_path=args.sources,
+        )
+        print(
+            f"Built static site at {args.output_dir}: "
+            f"{summary['record_count']} records from "
+            f"{len(summary['implemented_sources'])} implemented sources"
+        )
+        return 0
 
     return 2

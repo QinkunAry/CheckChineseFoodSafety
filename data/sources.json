@@ -98,8 +98,8 @@
     "metadata_url": "https://data.europa.eu/api/hub/repo/datasets/restored_rasff",
     "search_api_url": "https://webgate.ec.europa.eu/rasff-window/backend/public/notification/search/consolidated/en/",
     "access_method": "official_public_json_post_probe",
-    "status": "prototype",
-    "notes": "Search, full inventory, detail smoke, reviewed release publication, correction and removal paths are implemented. The accepted inventory baseline is 1,231 and the current active release contains 18 records with per-record provenance and CC BY 4.0 metadata. Natural increments, active correction batches and an ec_withdrawn removal have passed local and hosted audit. Maintainer acceptance of RASFF_OPERATIONS.md remains before implemented status."
+    "status": "implemented",
+    "notes": "Search, full inventory, detail smoke, reviewed release publication, correction and removal paths are implemented. The accepted inventory baseline is 1,231 and the current active release contains 18 records with per-record provenance and CC BY 4.0 metadata. Natural increments, active correction batches and an ec_withdrawn removal have passed local and hosted audit. RASFF_OPERATIONS.md is accepted as the production runbook."
   },
   {
     "id": "au_fsanz_recalls",
