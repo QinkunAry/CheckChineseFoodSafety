@@ -196,7 +196,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 将欧盟 RASFF 升级为 implemented 正式数据源
 - [x] 生成本地静态数据页与筛选界面
 - [x] 增加 GitHub Pages 静态站点部署 workflow
-- [ ] 完成首次 hosted GitHub Pages 部署验收
+- [x] 完成首次 hosted GitHub Pages 部署验收
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App

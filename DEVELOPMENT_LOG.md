@@ -17,6 +17,33 @@
 
 ---
 
+## 2026-09-02 · Round 69 · Hosted GitHub Pages deployment accepted
+
+### 本轮目标
+
+记录 `Deploy static data site` workflow 首次 hosted GitHub Pages 部署通过。
+
+### 验收结果
+
+维护者已确认 workflow 通过。此前的阻塞点已经闭环：
+
+- 仓库已改为 public，使 GitHub Pages 可用于该开源项目；
+- Settings → Pages 已切换为 GitHub Actions source；
+- `configure-pages` first-run 404 已消失；
+- Pages artifact upload 与 deploy action 已升级到 Node.js 24 兼容版本；
+- 静态数据浏览器可由 GitHub Actions 自动构建和部署。
+
+### 已完成内容
+
+- README 路线图中“完成首次 hosted GitHub Pages 部署验收”改为完成；
+- 将 GitHub Pages 从待验收能力转为已验收产品入口。
+
+### 下一步
+
+进入产品层下一轮：优先做线上页面验收清单与公开入口说明，然后再决定继续优化静态浏览器体验，或转向未 implemented 来源的生产化。
+
+---
+
 ## 2026-09-02 · Round 68 · GitHub Pages Node 24 action upgrade
 
 ### 本轮目标
