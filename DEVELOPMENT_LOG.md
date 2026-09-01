@@ -17,6 +17,28 @@
 
 ---
 
+## 2026-09-02 · Round 68 · GitHub Pages Node 24 action upgrade
+
+### 本轮目标
+
+处理 `Deploy static data site` workflow 已可运行后剩余的 Node.js 20 deprecation warnings。
+
+### 诊断
+
+Pages 404 已由仓库改为 public 并在 Settings → Pages 中启用 GitHub Actions source 解决。新的 annotations 是 warning，不是 failure：`actions/upload-pages-artifact@v4` 内部仍触发 Node.js 20 相关提示，`actions/deploy-pages@v4` 也提示即将迁移到 Node.js 24。
+
+### 已完成内容
+
+- 将 `actions/upload-pages-artifact` 从 `v4` 升级到 `v5`；
+- 将 `actions/deploy-pages` 从 `v4` 升级到 `v5`；
+- 保持 build/test/site verification 流程不变，只更新 Pages 官方 action runtime。
+
+### 下一步
+
+提交并推送后重新运行 `Deploy static data site`。若 workflow 通过且不再出现 Node.js 20 annotations，即可进行首次 hosted Pages 访问验收，并把 README 路线图中的 hosted Pages 部署验收改为完成。
+
+---
+
 ## 2026-09-01 · Round 67 · GitHub Pages first-run 404 fix
 
 ### 本轮目标

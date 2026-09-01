@@ -55,7 +55,7 @@ jobs:
           python -c "import json,pathlib; summary=json.loads(pathlib.Path('site/data/summary.json').read_text(encoding='utf-8')); records=json.loads(pathlib.Path('site/data/records.json').read_text(encoding='utf-8')); assert summary['record_count']==len(records); assert summary['record_count']>=3000; assert not summary['missing_files']; print(f\"Verified static site with {summary['record_count']} records\")"
 
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -68,4 +68,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
