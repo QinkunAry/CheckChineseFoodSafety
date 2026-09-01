@@ -17,6 +17,29 @@
 
 ---
 
+## 2026-09-02 · Round 70 · Public site entry and acceptance checklist
+
+### 本轮目标
+
+把首次通过的 hosted GitHub Pages 部署沉淀为公开产品入口和可重复验收流程。
+
+### 已完成内容
+
+- README 顶部新增在线数据浏览器入口：`https://qinkunary.github.io/CheckChineseFoodSafety/`；
+- README 增加 hosted Pages 验收文档链接；
+- 新增 `docs/PAGES_ACCEPTANCE.md`，覆盖部署前检查、页面可访问性、数据完整性、筛选体验、官方证据、授权署名、失败处理和人工验收标准；
+- README 项目结构和路线图同步记录该验收清单。
+
+### 决策
+
+Hosted Pages 是当前项目的第一个公开产品入口；后续页面体验优化必须继续服从 evidence-first 边界，不能把进口拒绝、召回、边境不合格或 RASFF notification 解释成超出官方证据范围的食品安全结论。
+
+### 下一步
+
+提交文档后，可以按 `docs/PAGES_ACCEPTANCE.md` 对线上页面做一次人工抽样验收。若验收通过，下一轮建议进入 UI 产品体验改进：来源解释、风险标签说明、中英显示切换或高风险食品聚合。
+
+---
+
 ## 2026-09-02 · Round 69 · Hosted GitHub Pages deployment accepted
 
 ### 本轮目标

@@ -16,10 +16,13 @@
 
 GitHub 仓库：[QinkunAry/CheckChineseFoodSafety](https://github.com/QinkunAry/CheckChineseFoodSafety)
 
+在线数据浏览器：[qinkunary.github.io/CheckChineseFoodSafety](https://qinkunary.github.io/CheckChineseFoodSafety/)
+
 > 本项目提供监管信息聚合，不进行医学诊断、实验室检测或“某食品一定安全/有毒”的判断。
 
 完整产品方向见 [`PRODUCT_GOALS.md`](PRODUCT_GOALS.md)，每轮开发过程见 [`DEVELOPMENT_LOG.md`](DEVELOPMENT_LOG.md)。
 各监管数据来源的授权和署名见 [`docs/DATA_ATTRIBUTION.md`](docs/DATA_ATTRIBUTION.md)。
+Hosted GitHub Pages 验收标准见 [`docs/PAGES_ACCEPTANCE.md`](docs/PAGES_ACCEPTANCE.md)。
 
 新增来源从 `prototype` 升级为 `implemented` 前，必须通过
 [`docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md`](docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md)。
@@ -98,6 +101,7 @@ src/food_safety_watch/     采集与标准化代码
 tests/                     单元测试
 docs/ARCHITECTURE.md       架构和路线图
 docs/DATA_ATTRIBUTION.md   监管数据授权与署名
+docs/PAGES_ACCEPTANCE.md   Hosted GitHub Pages 线上验收清单
 docs/PROTOTYPE_TO_IMPLEMENTED_CHECKLIST.md 来源发布前门禁
 PRODUCT_GOALS.md           最终产品目标与里程碑
 DEVELOPMENT_LOG.md         每轮开发记录
@@ -119,6 +123,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 `.github/workflows/deploy-pages.yml` 在 `main` 分支相关数据、源码或 workflow 变化后自动生成静态数据浏览器，并通过 GitHub Pages artifact 部署；也支持手动触发。部署前会配置 Pages、安装项目、运行全量测试、生成 `site/`，并验证 `summary.json` 与 `records.json` 的记录数一致且没有缺失的 implemented source 文件。
 
 首次使用前，需要在 GitHub 仓库 Settings → Pages 中将 Build and deployment Source 设置为 GitHub Actions。若 `Configure GitHub Pages` 步骤报 `Get Pages site failed` / `HttpError: Not Found`，通常表示 Pages 尚未启用或 source 尚未设为 GitHub Actions；完成上述设置后重新运行 workflow 即可。项目不在 workflow 中用 PAT 自动启用 Pages，避免引入额外高权限 secret。
+
+线上页面发布后，使用 [`docs/PAGES_ACCEPTANCE.md`](docs/PAGES_ACCEPTANCE.md) 做人工验收：确认 production URL 可访问、数据 JSON 可加载、记录数量一致、筛选器可用、官方出处可追溯，并且页面文案没有把监管记录解释成超出证据范围的安全结论。
 
 `.github/workflows/smoke-fsanz.yml` 每周只读检查 FSANZ 官方 sitemap 和固定召回详情，验证页面证据字段，并对实际发现的中国原产记录执行统一 Schema 检查。固定样本中没有中国记录会被报告，但不再误判为站点结构故障。它不会提交或发布 FSANZ 数据；通过覆盖率评估和再利用条款检查前，该来源保持 `prototype`。
 
@@ -197,6 +203,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 生成本地静态数据页与筛选界面
 - [x] 增加 GitHub Pages 静态站点部署 workflow
 - [x] 完成首次 hosted GitHub Pages 部署验收
+- [x] 增加 hosted GitHub Pages 线上验收清单与公开入口说明
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
