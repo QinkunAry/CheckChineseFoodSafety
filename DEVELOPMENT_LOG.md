@@ -17,6 +17,31 @@
 
 ---
 
+## 2026-09-02 · Round 71 · Static browser evidence guide cards
+
+### 本轮目标
+
+继续制作产品层页面，让 hosted GitHub Pages 不只是数据列表，也能帮助普通用户理解来源、风险标签和监管动作边界。
+
+### 已完成内容
+
+- 静态浏览器新增“阅读边界”提示，明确记录代表具体监管事件，不等于某类食品整体安全或不安全；
+- 新增来源说明卡片，解释 FDA、Taiwan TFDA、Japan MHLW-backed 和 EU RASFF 的监管语境；
+- 新增风险标签说明卡片，解释 chemical、microbiological、labeling、adulteration 等标签含义；
+- 新增措施类型说明卡片，解释 import refusal、inspection failure、RASFF notification 和 recall 的差异；
+- 增加静态页面回归测试，防止公开说明组件被意外移除；
+- README 路线图记录该产品体验改进。
+
+### 决策
+
+这轮继续保持无前端框架、无构建依赖的纯静态页面。产品层先解决“用户能不能正确读懂数据”，再考虑更复杂的可视化、中文/英文切换或 AI 查询。
+
+### 下一步
+
+提交并部署后，在线上页面检查说明卡片是否显示正常。下一轮可以继续做中英界面切换，或做“高风险食品聚合”摘要模块。
+
+---
+
 ## 2026-09-02 · Round 70 · Public site entry and acceptance checklist
 
 ### 本轮目标

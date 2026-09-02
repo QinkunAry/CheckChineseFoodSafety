@@ -122,6 +122,11 @@ class StaticSiteTests(unittest.TestCase):
         self.assertTrue((output / "index.html").exists())
         self.assertTrue((output / "data" / "records.json").exists())
         self.assertTrue((output / "data" / "summary.json").exists())
+        html = (output / "index.html").read_text(encoding="utf-8")
+        self.assertIn("阅读边界", html)
+        self.assertIn("风险标签怎么理解", html)
+        self.assertIn("措施类型怎么理解", html)
+        self.assertIn("sourceHelp", html)
         records = json.loads((output / "data" / "records.json").read_text(encoding="utf-8"))
         self.assertEqual(records[0]["source_label"], "AA · Authority A")
 

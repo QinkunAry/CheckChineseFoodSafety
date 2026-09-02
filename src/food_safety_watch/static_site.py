@@ -251,7 +251,7 @@ def _html() -> str:
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
-    .stat, .filters, .record {
+    .stat, .filters, .record, .notice, .guide-card {
       background: rgba(255, 250, 240, 0.86);
       border: 1px solid var(--line);
       border-radius: 1.2rem;
@@ -260,6 +260,41 @@ def _html() -> str:
     .stat { padding: 1rem; }
     .stat strong { display: block; font-size: 1.6rem; }
     .stat span { color: var(--muted); font-size: 0.9rem; }
+    .notice {
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      border-left: 0.35rem solid var(--accent-2);
+      line-height: 1.7;
+    }
+    .notice strong { color: #065f46; }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .guide-card {
+      padding: 1rem;
+    }
+    .guide-card h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1rem;
+    }
+    .guide-card dl {
+      display: grid;
+      gap: 0.65rem;
+      margin: 0;
+    }
+    .guide-card dt {
+      font-weight: 700;
+      color: #334155;
+    }
+    .guide-card dd {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
     .filters {
       position: sticky;
       top: 0;
@@ -346,6 +381,26 @@ def _html() -> str:
   </header>
   <main>
     <section class="stats" id="stats"></section>
+    <section class="notice">
+      <strong>阅读边界：</strong>
+      这里展示的是监管机构已经公开的进口拒绝、边境不合格、召回或 RASFF 通报记录。
+      它们代表具体批次、企业、申报或监管事件，不等于“某一种食品全部不安全”。
+      判断时请优先打开每条记录的 official source 查看原文。
+    </section>
+    <section class="guide-grid" aria-label="数据说明">
+      <article class="guide-card">
+        <h2>来源怎么理解？</h2>
+        <dl id="source-guide"></dl>
+      </article>
+      <article class="guide-card">
+        <h2>风险标签怎么理解？</h2>
+        <dl id="hazard-guide"></dl>
+      </article>
+      <article class="guide-card">
+        <h2>措施类型怎么理解？</h2>
+        <dl id="action-guide"></dl>
+      </article>
+    </section>
     <section class="filters" aria-label="筛选">
       <input id="q" type="search" placeholder="搜索产品、原因、企业、记录号…" autocomplete="off">
       <select id="source"></select>
@@ -369,6 +424,9 @@ def _html() -> str:
       hazard: document.querySelector("#hazard"),
       action: document.querySelector("#action"),
       year: document.querySelector("#year"),
+      sourceGuide: document.querySelector("#source-guide"),
+      hazardGuide: document.querySelector("#hazard-guide"),
+      actionGuide: document.querySelector("#action-guide"),
       meta: document.querySelector("#meta"),
       records: document.querySelector("#records"),
     };
@@ -386,6 +444,26 @@ def _html() -> str:
       microbiological: "Microbiological",
       adulteration: "Adulteration",
       other_or_unclassified: "Other / unclassified",
+    };
+    const sourceHelp = {
+      us_fda_import_refusals: "美国 FDA 进口拒绝记录；表示具体进口申报被拒，不等于召回。",
+      tw_tfda: "台湾 TFDA 边境查验不符合记录；包含产地、产品、原因和处置。",
+      jp_caa_recalls: "日本 CAA/MHLW 召回体系中，经 MHLW detail 支撑的中国来源记录。",
+      eu_rasff: "欧盟 RASFF 食品通报；本项目只发布人工复核过的中国来源 food 记录。",
+    };
+    const hazardHelp = {
+      chemical: "农残、兽残、污染物、添加物或其他化学性风险。",
+      microbiological: "细菌、霉菌、病毒或卫生微生物指标相关风险。",
+      labeling: "标签、过敏原、保质期、成分或申报信息不一致。",
+      adulteration: "掺假、替代、非法成分或与产品真实性相关的问题。",
+      other_or_unclassified: "官方原因尚不能稳定归入上述类别，需读原文判断。",
+      unknown: "记录没有可发布的稳定风险标签。",
+    };
+    const actionHelp = {
+      import_refusal: "进口申报或货物被拒绝进入市场。",
+      inspection_failure: "边境、抽检或官方检查中不符合要求。",
+      rasff_notification: "欧盟成员或系统发布的 RASFF 食品安全通报。",
+      recall: "监管或企业发起的召回、回收、退款或下架行动。",
     };
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -411,6 +489,19 @@ def _html() -> str:
       option(els.year, "", "全部年份");
       unique(state.records.map(r => r.event_date.slice(0, 4))).reverse().forEach(v => option(els.year, v, v));
       [els.q, els.source, els.hazard, els.action, els.year].forEach(el => el.addEventListener("input", render));
+    }
+    function renderGuideList(target, values, help) {
+      target.innerHTML = values.map(value => `
+        <div>
+          <dt>${escapeHtml(label[value] || value)}</dt>
+          <dd>${escapeHtml(help[value] || "保留官方字段，点击记录 source 查看原文。")}</dd>
+        </div>
+      `).join("");
+    }
+    function renderGuides() {
+      renderGuideList(els.sourceGuide, unique(state.records.map(r => r.source_id)), sourceHelp);
+      renderGuideList(els.hazardGuide, unique(state.records.flatMap(r => r.hazard_tags)), hazardHelp);
+      renderGuideList(els.actionGuide, unique(state.records.map(r => r.action_type)), actionHelp);
     }
     function renderStats() {
       const items = [
@@ -477,6 +568,7 @@ def _html() -> str:
       state.records = records;
       state.summary = summary;
       setupFilters();
+      renderGuides();
       renderStats();
       render();
     }

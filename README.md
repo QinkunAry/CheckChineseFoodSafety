@@ -204,6 +204,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 增加 GitHub Pages 静态站点部署 workflow
 - [x] 完成首次 hosted GitHub Pages 部署验收
 - [x] 增加 hosted GitHub Pages 线上验收清单与公开入口说明
+- [x] 增加静态浏览器来源解释、风险标签说明和阅读边界提示
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
