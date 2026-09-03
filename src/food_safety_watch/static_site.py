@@ -407,6 +407,16 @@ def _html() -> str:
       cursor: pointer;
       font-weight: 700;
     }
+    .copy-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--accent);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.6rem;
+    }
     .detail-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
@@ -580,11 +590,14 @@ def _html() -> str:
         },
         sourceLinkHelp: {
           us_fda_import_refusals: "FDA IRR 没有稳定逐条详情页。请在官方页面按 China、月份/年份检索，或下载 CSV 后用官方记录号、日期、企业或产品复核。",
-          tw_tfda: "TFDA 正式数据来自官方开放资料；人类页面是检索入口。请用产品、日期、厂商或处置内容复核。",
+          tw_tfda: "TFDA 正式数据来自官方开放资料；链接页面是检索入口。请用产品、日期、厂商或处置内容复核。",
           jp_caa_recalls: "MHLW 详情链接有时会因会话或入口限制无法直达。若打不开，请从官方入口进入并搜索 RCL 编号。",
           eu_rasff: "RASFF 通常提供逐条 public notification 页面；若浏览器拦截或会话过期，请用记录号在 RASFF Window 中搜索。",
         },
         lookupLabel: "备用检索入口",
+        copyKeywordsLabel: "复制复核关键词",
+        copiedKeywordsLabel: "已复制",
+        copyFailedLabel: "复制失败，请手动选择记录字段",
         detailFields: {
           sourceLabel: "来源机构",
           authorityRegion: "监管地区",
@@ -673,11 +686,14 @@ def _html() -> str:
         },
         sourceLinkHelp: {
           us_fda_import_refusals: "FDA IRR does not provide stable per-record public detail URLs. Use the official page to search by China and month/year, or download CSV files and verify by record ID, date, firm, or product.",
-          tw_tfda: "TFDA publication is based on the official open dataset; the human page is a lookup entry. Verify with product, date, firm, or disposition fields.",
+          tw_tfda: "TFDA publication is based on the official open dataset; the linked page is a lookup entry. Verify with product, date, firm, or disposition fields.",
           jp_caa_recalls: "MHLW detail links may fail when opened directly because of session or entry-route constraints. If this happens, open the official entry page and search the RCL ID.",
           eu_rasff: "RASFF usually provides public per-notification pages. If a browser or session blocks the link, search the RASFF Window with the record reference.",
         },
         lookupLabel: "Fallback lookup entry",
+        copyKeywordsLabel: "Copy verification keywords",
+        copiedKeywordsLabel: "Copied",
+        copyFailedLabel: "Copy failed; select record fields manually",
         detailFields: {
           sourceLabel: "Source authority",
           authorityRegion: "Authority region",
@@ -773,6 +789,12 @@ def _html() -> str:
         renderGuides();
         renderStats();
         render();
+      });
+      els.records.addEventListener("click", event => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest("[data-copy-keywords]");
+        if (!button) return;
+        copyVerificationKeywords(button);
       });
     }
     function populateFilters() {
@@ -885,10 +907,35 @@ def _html() -> str:
         </details>
       `;
     }
+    function verificationKeywords(record) {
+      return [
+        record.source_record_id,
+        record.event_date,
+        record.product_name,
+        record.producer_name,
+        record.producer_location,
+        record.origin_country,
+      ].filter(Boolean).join(" | ");
+    }
+    async function copyVerificationKeywords(button) {
+      const copy = text();
+      const original = copy.copyKeywordsLabel;
+      try {
+        await navigator.clipboard.writeText(button.dataset.copyKeywords || "");
+        button.textContent = copy.copiedKeywordsLabel;
+      } catch {
+        button.textContent = copy.copyFailedLabel;
+      } finally {
+        window.setTimeout(() => {
+          button.textContent = text().copyKeywordsLabel || original;
+        }, 1600);
+      }
+    }
     function recordSourceLinks(record, copy) {
       const kind = record.source_link_kind || "detail";
       const label = copy.sourceLinkLabels[kind] || copy.officialSource;
       const help = copy.sourceLinkHelp[record.source_id] || "";
+      const keywords = verificationKeywords(record);
       const primary = `
         <a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>
       `;
@@ -896,7 +943,7 @@ def _html() -> str:
         ? ` · <a href="${escapeHtml(record.source_lookup_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.lookupLabel)}</a>`
         : "";
       return `
-        <p class="meta">${primary}${fallback}</p>
+        <p class="meta">${primary}${fallback} · <button class="copy-button" type="button" data-copy-keywords="${escapeHtml(keywords)}">${escapeHtml(copy.copyKeywordsLabel)}</button></p>
         ${help ? `<p class="meta">${escapeHtml(help)}</p>` : ""}
       `;
     }

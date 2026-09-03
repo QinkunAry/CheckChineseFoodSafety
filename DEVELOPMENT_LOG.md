@@ -17,6 +17,32 @@
 
 ---
 
+## 2026-09-03 · Round 76 · Verification keyword copy helper
+
+### 本轮目标
+
+继续修正 source link 体验：改掉 TFDA 说明中的生硬表述，并为没有稳定逐条详情页的官方检索入口增加复核关键词复制能力。
+
+### 已完成内容
+
+- 将 TFDA 中文说明从“人类页面是检索入口”改为“链接页面是检索入口”；
+- 将对应英文说明改为 “the linked page is a lookup entry”；
+- 每条记录新增“复制复核关键词 / Copy verification keywords”按钮；
+- 复制内容包含官方记录号、事件日期、产品名、生产者/企业、生产者地点和原产地字段；
+- 复制成功后按钮短暂显示“已复制 / Copied”；
+- 增加静态页面回归测试，确认检索入口文案和复制功能存在；
+- README 路线图记录该产品体验改进。
+
+### 决策
+
+复制关键词用于辅助用户在 FDA IRR、TFDA、MHLW 或 RASFF 等官方入口中复核记录；它不创建新的事实字段，也不替代官方来源页面。
+
+### 下一步
+
+提交并部署后，在线上页面抽查 FDA 和 TFDA 记录：点击复制按钮后，将关键词粘贴到官方检索页或 CSV 搜索中确认可辅助定位。
+
+---
+
 ## 2026-09-03 · Round 75 · Source link semantics and lookup fallback
 
 ### 本轮目标

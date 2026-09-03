@@ -210,6 +210,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 增加当前筛选下的高频食品类别 × 风险标签摘要
 - [x] 增加静态浏览器记录详情展开
 - [x] 区分官方详情链接、检索入口和可能需要会话的 source link
+- [x] 增加记录级复核关键词复制按钮
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
