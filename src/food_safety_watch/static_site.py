@@ -265,7 +265,7 @@ def _html() -> str:
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
-    .stat, .filters, .record, .notice, .guide-card {
+    .stat, .filters, .record, .notice, .guide-card, .risk-card {
       background: rgba(255, 250, 240, 0.86);
       border: 1px solid var(--line);
       border-radius: 1.2rem;
@@ -308,6 +308,39 @@ def _html() -> str:
       color: var(--muted);
       font-size: 0.9rem;
       line-height: 1.55;
+    }
+    .risk-card {
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .risk-card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.05rem;
+    }
+    .risk-card p {
+      margin: 0 0 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+      gap: 0.75rem;
+    }
+    .risk-item {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: #fffdf8;
+      padding: 0.85rem;
+    }
+    .risk-item strong {
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .risk-item span {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
     }
     .filters {
       position: sticky;
@@ -420,6 +453,13 @@ def _html() -> str:
         <dl id="action-guide"></dl>
       </article>
     </section>
+    <section class="risk-card" aria-label="高频风险摘要">
+      <h2 id="risk-summary-title">当前筛选下的高频组合</h2>
+      <p id="risk-summary-note">
+        这个摘要只统计已发布记录中出现次数较多的“食品类别 × 风险标签”，用于提示检索方向，不代表风险概率或消费建议。
+      </p>
+      <div class="risk-grid" id="risk-summary"></div>
+    </section>
     <section class="filters" aria-label="筛选">
       <input id="q" type="search" placeholder="搜索产品、原因、企业、记录号…" autocomplete="off">
       <select id="source"></select>
@@ -453,6 +493,9 @@ def _html() -> str:
       sourceGuide: document.querySelector("#source-guide"),
       hazardGuide: document.querySelector("#hazard-guide"),
       actionGuide: document.querySelector("#action-guide"),
+      riskSummaryTitle: document.querySelector("#risk-summary-title"),
+      riskSummaryNote: document.querySelector("#risk-summary-note"),
+      riskSummary: document.querySelector("#risk-summary"),
       meta: document.querySelector("#meta"),
       records: document.querySelector("#records"),
       footerNote: document.querySelector("#footer-note"),
@@ -467,6 +510,8 @@ def _html() -> str:
         sourceGuideTitle: "来源怎么理解？",
         hazardGuideTitle: "风险标签怎么理解？",
         actionGuideTitle: "措施类型怎么理解？",
+        riskSummaryTitle: "当前筛选下的高频组合",
+        riskSummaryNote: "这个摘要只统计已发布记录中出现次数较多的“食品类别 × 风险标签”，用于提示检索方向，不代表风险概率或消费建议。",
         searchPlaceholder: "搜索产品、原因、企业、记录号…",
         allSources: "全部来源",
         allHazards: "全部风险",
@@ -474,6 +519,9 @@ def _html() -> str:
         allYears: "全部年份",
         loading: "正在加载数据…",
         empty: "没有匹配记录。换个关键词试试。",
+        noRiskSummary: "当前筛选下没有可统计的风险组合。",
+        riskSummaryItem: (category, hazard, count) => `${category} · ${hazard} · ${count.toLocaleString()} 条`,
+        riskSummarySourceCount: count => `涉及 ${count.toLocaleString()} 个来源`,
         more: count => `还有 ${count} 条匹配记录；请继续筛选。`,
         showing: (shown, total) => `显示 ${shown.toLocaleString()} / ${total.toLocaleString()} 条记录`,
         officialSource: "官方来源 / Official source",
@@ -531,6 +579,8 @@ def _html() -> str:
         sourceGuideTitle: "How to read sources",
         hazardGuideTitle: "How to read risk tags",
         actionGuideTitle: "How to read action types",
+        riskSummaryTitle: "Frequent combinations in current filters",
+        riskSummaryNote: "This summary counts frequent “food category × risk tag” combinations in published records. It helps navigation; it is not a probability estimate or consumer advice.",
         searchPlaceholder: "Search product, reason, firm, record ID…",
         allSources: "All sources",
         allHazards: "All risks",
@@ -538,6 +588,9 @@ def _html() -> str:
         allYears: "All years",
         loading: "Loading data…",
         empty: "No matching records. Try another keyword.",
+        noRiskSummary: "No risk combinations are available for the current filters.",
+        riskSummaryItem: (category, hazard, count) => `${category} · ${hazard} · ${count.toLocaleString()} records`,
+        riskSummarySourceCount: count => `${count.toLocaleString()} source${count === 1 ? "" : "s"}`,
         more: count => `${count} more matching records; narrow your filters to continue.`,
         showing: (shown, total) => `Showing ${shown.toLocaleString()} / ${total.toLocaleString()} records`,
         officialSource: "Official source",
@@ -641,6 +694,8 @@ def _html() -> str:
       els.sourceGuideTitle.textContent = copy.sourceGuideTitle;
       els.hazardGuideTitle.textContent = copy.hazardGuideTitle;
       els.actionGuideTitle.textContent = copy.actionGuideTitle;
+      els.riskSummaryTitle.textContent = copy.riskSummaryTitle;
+      els.riskSummaryNote.textContent = copy.riskSummaryNote;
       els.q.placeholder = copy.searchPlaceholder;
       els.footerNote.textContent = copy.footer;
       populateFilters();
@@ -672,6 +727,37 @@ def _html() -> str:
         `<article class="stat"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(name)}</span></article>`
       ).join("");
     }
+    function topRiskCombos(rows) {
+      const combos = new Map();
+      rows.forEach(record => {
+        const category = record.product_category || "unknown";
+        const hazards = record.hazard_tags.length ? record.hazard_tags : ["unknown"];
+        hazards.forEach(hazard => {
+          const key = `${category}\u0000${hazard}`;
+          const current = combos.get(key) || { category, hazard, count: 0, sources: new Set() };
+          current.count += 1;
+          current.sources.add(record.source_id);
+          combos.set(key, current);
+        });
+      });
+      return [...combos.values()]
+        .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category) || a.hazard.localeCompare(b.hazard))
+        .slice(0, 6);
+    }
+    function renderRiskSummary(rows) {
+      const copy = text();
+      const combos = topRiskCombos(rows);
+      if (!combos.length) {
+        els.riskSummary.innerHTML = `<div class="risk-item"><span>${escapeHtml(copy.noRiskSummary)}</span></div>`;
+        return;
+      }
+      els.riskSummary.innerHTML = combos.map(combo => `
+        <article class="risk-item">
+          <strong>${escapeHtml(copy.riskSummaryItem(combo.category, copy.label[combo.hazard] || combo.hazard, combo.count))}</strong>
+          <span>${escapeHtml(copy.riskSummarySourceCount(combo.sources.size))}</span>
+        </article>
+      `).join("");
+    }
     function filtered() {
       const q = els.q.value.trim().toLowerCase();
       return state.records.filter(record => {
@@ -691,6 +777,7 @@ def _html() -> str:
     function render() {
       const copy = text();
       const rows = filtered();
+      renderRiskSummary(rows);
       els.meta.textContent = copy.showing(rows.length, state.records.length);
       if (!rows.length) {
         els.records.innerHTML = `<div class="record empty">${escapeHtml(copy.empty)}</div>`;

@@ -206,6 +206,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 增加 hosted GitHub Pages 线上验收清单与公开入口说明
 - [x] 增加静态浏览器来源解释、风险标签说明和阅读边界提示
 - [x] 增加静态浏览器中英界面切换
+- [x] 增加当前筛选下的高频食品类别 × 风险标签摘要
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
