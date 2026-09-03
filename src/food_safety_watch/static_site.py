@@ -379,6 +379,38 @@ def _html() -> str:
       font-size: 1.05rem;
       line-height: 1.35;
     }
+    .record details {
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--line);
+      padding-top: 0.75rem;
+    }
+    .record summary {
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+      gap: 0.65rem;
+      margin-top: 0.75rem;
+    }
+    .detail-field {
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      background: #fffdf8;
+      padding: 0.65rem;
+    }
+    .detail-field span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 0.2rem;
+    }
+    .detail-field strong {
+      overflow-wrap: anywhere;
+      font-size: 0.9rem;
+    }
     .record a { color: var(--accent); text-decoration-thickness: 0.08em; }
     .chips {
       display: flex;
@@ -522,6 +554,17 @@ def _html() -> str:
         noRiskSummary: "当前筛选下没有可统计的风险组合。",
         riskSummaryItem: (category, hazard, count) => `${category} · ${hazard} · ${count.toLocaleString()} 条`,
         riskSummarySourceCount: count => `涉及 ${count.toLocaleString()} 个来源`,
+        detailsLabel: "查看详情",
+        detailFields: {
+          sourceLabel: "来源机构",
+          authorityRegion: "监管地区",
+          originCountry: "原产地字段",
+          recordStatus: "记录状态",
+          productCategory: "食品类别",
+          producerName: "生产者/企业",
+          producerLocation: "生产者地点",
+          sourceRecordId: "官方记录号",
+        },
         more: count => `还有 ${count} 条匹配记录；请继续筛选。`,
         showing: (shown, total) => `显示 ${shown.toLocaleString()} / ${total.toLocaleString()} 条记录`,
         officialSource: "官方来源 / Official source",
@@ -591,6 +634,17 @@ def _html() -> str:
         noRiskSummary: "No risk combinations are available for the current filters.",
         riskSummaryItem: (category, hazard, count) => `${category} · ${hazard} · ${count.toLocaleString()} records`,
         riskSummarySourceCount: count => `${count.toLocaleString()} source${count === 1 ? "" : "s"}`,
+        detailsLabel: "Details",
+        detailFields: {
+          sourceLabel: "Source authority",
+          authorityRegion: "Authority region",
+          originCountry: "Origin field",
+          recordStatus: "Record status",
+          productCategory: "Food category",
+          producerName: "Producer / firm",
+          producerLocation: "Producer location",
+          sourceRecordId: "Official record ID",
+        },
         more: count => `${count} more matching records; narrow your filters to continue.`,
         showing: (shown, total) => `Showing ${shown.toLocaleString()} / ${total.toLocaleString()} records`,
         officialSource: "Official source",
@@ -758,6 +812,35 @@ def _html() -> str:
         </article>
       `).join("");
     }
+    function detailField(name, value) {
+      return `
+        <div class="detail-field">
+          <span>${escapeHtml(name)}</span>
+          <strong>${escapeHtml(value || "—")}</strong>
+        </div>
+      `;
+    }
+    function recordDetails(record, copy) {
+      const fields = copy.detailFields;
+      const items = [
+        [fields.sourceLabel, record.source_label],
+        [fields.authorityRegion, record.authority_region],
+        [fields.originCountry, record.origin_country],
+        [fields.recordStatus, record.record_status],
+        [fields.productCategory, record.product_category],
+        [fields.producerName, record.producer_name],
+        [fields.producerLocation, record.producer_location],
+        [fields.sourceRecordId, record.source_record_id],
+      ];
+      return `
+        <details>
+          <summary>${escapeHtml(copy.detailsLabel)}</summary>
+          <div class="detail-grid">
+            ${items.map(([name, value]) => detailField(name, value)).join("")}
+          </div>
+        </details>
+      `;
+    }
     function filtered() {
       const q = els.q.value.trim().toLowerCase();
       return state.records.filter(record => {
@@ -799,6 +882,7 @@ def _html() -> str:
             ${record.producer_location ? " · " + escapeHtml(record.producer_location) : ""}
           </div>
           <p class="reason">${escapeHtml(record.reason_summary)}</p>
+          ${recordDetails(record, copy)}
           <p class="meta"><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.officialSource)}</a></p>
         </article>
       `).join("");
