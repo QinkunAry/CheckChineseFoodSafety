@@ -87,6 +87,7 @@ python -m http.server 8000 -d site
 - `origin_country` 在 FDA 数据中来自申报制造商所在国家/地区，不能自动推断品牌国籍或全部原料产地。
 - 风险标签是便于检索的项目分类，监管机构原始原因文本始终优先。
 - 中文翻译在进入事实字段前应经过人工或可追踪的审核流程。
+- 不同监管系统的 source link 能力不同：有些是逐条详情页，有些只能指向官方检索页、数据集或需要入口会话的页面。
 - `prototype` 来源只能生成 smoke、inventory 和 candidate artifact；只有通过发布前 checklist 后，才允许写入 `data/processed/`。
 
 ## 项目结构
@@ -208,6 +209,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 增加静态浏览器中英界面切换
 - [x] 增加当前筛选下的高频食品类别 × 风险标签摘要
 - [x] 增加静态浏览器记录详情展开
+- [x] 区分官方详情链接、检索入口和可能需要会话的 source link
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App

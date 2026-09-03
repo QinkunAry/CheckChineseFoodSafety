@@ -133,12 +133,17 @@ class StaticSiteTests(unittest.TestCase):
         self.assertIn("recordDetails", html)
         self.assertIn("官方记录号", html)
         self.assertIn("Official record ID", html)
+        self.assertIn("source_link_kind", html)
+        self.assertIn("官方检索/数据页", html)
+        self.assertIn("official lookup/data page", html)
         self.assertIn("阅读边界", html)
         self.assertIn("风险标签怎么理解", html)
         self.assertIn("措施类型怎么理解", html)
         self.assertIn("sourceHelp", html)
         records = json.loads((output / "data" / "records.json").read_text(encoding="utf-8"))
         self.assertEqual(records[0]["source_label"], "AA · Authority A")
+        self.assertEqual(records[0]["source_link_kind"], "detail")
+        self.assertEqual(records[0]["source_lookup_url"], "https://example.test/record-1")
 
     def test_source_id_mismatch_fails_closed(self) -> None:
         root = self._tmp()

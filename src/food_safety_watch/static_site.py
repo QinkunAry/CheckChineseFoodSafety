@@ -46,14 +46,30 @@ def _source_label(source: dict[str, Any]) -> str:
     return f"{region} · {authority}" if region and authority else authority or region
 
 
+def _source_link_kind(source_id: str) -> str:
+    if source_id in {"us_fda_import_refusals", "tw_tfda"}:
+        return "lookup"
+    if source_id == "jp_caa_recalls":
+        return "session_detail"
+    return "detail"
+
+
+def _source_lookup_url(source_id: str, source_url: str) -> str:
+    if source_id == "jp_caa_recalls":
+        return "https://i2fas.mhlw.go.jp/faspub/_link.do"
+    return source_url
+
+
 def _public_record(record: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
     reasons = [str(reason) for reason in record.get("reasons", []) if str(reason).strip()]
     hazard_tags = sorted(
         {str(tag) for tag in record.get("hazard_tags", []) if str(tag).strip()}
     )
+    source_id = str(record["source_id"])
+    source_url = str(record["source_url"])
     return {
         "id": str(record["id"]),
-        "source_id": str(record["source_id"]),
+        "source_id": source_id,
         "source_label": _source_label(source),
         "source_record_id": str(record["source_record_id"]),
         "authority_region": str(record["authority_region"]),
@@ -67,7 +83,9 @@ def _public_record(record: dict[str, Any], source: dict[str, Any]) -> dict[str, 
         "producer_location": str(record.get("producer_location", "")),
         "hazard_tags": hazard_tags,
         "reason_summary": _shorten(" / ".join(reasons)),
-        "source_url": str(record["source_url"]),
+        "source_url": source_url,
+        "source_link_kind": _source_link_kind(source_id),
+        "source_lookup_url": _source_lookup_url(source_id, source_url),
     }
 
 
@@ -555,6 +573,18 @@ def _html() -> str:
         riskSummaryItem: (category, hazard, count) => `${category} · ${hazard} · ${count.toLocaleString()} 条`,
         riskSummarySourceCount: count => `涉及 ${count.toLocaleString()} 个来源`,
         detailsLabel: "查看详情",
+        sourceLinkLabels: {
+          detail: "打开官方详情",
+          lookup: "打开官方检索/数据页",
+          session_detail: "尝试打开官方详情",
+        },
+        sourceLinkHelp: {
+          us_fda_import_refusals: "FDA IRR 没有稳定逐条详情页。请在官方页面按 China、月份/年份检索，或下载 CSV 后用官方记录号、日期、企业或产品复核。",
+          tw_tfda: "TFDA 正式数据来自官方开放资料；人类页面是检索入口。请用产品、日期、厂商或处置内容复核。",
+          jp_caa_recalls: "MHLW 详情链接有时会因会话或入口限制无法直达。若打不开，请从官方入口进入并搜索 RCL 编号。",
+          eu_rasff: "RASFF 通常提供逐条 public notification 页面；若浏览器拦截或会话过期，请用记录号在 RASFF Window 中搜索。",
+        },
+        lookupLabel: "备用检索入口",
         detailFields: {
           sourceLabel: "来源机构",
           authorityRegion: "监管地区",
@@ -569,6 +599,7 @@ def _html() -> str:
         showing: (shown, total) => `显示 ${shown.toLocaleString()} / ${total.toLocaleString()} 条记录`,
         officialSource: "官方来源 / Official source",
         footer: "数据来自各监管机构公开来源；本项目做了筛选、标准化与来源链接整理。请点击每条记录的 official source 查看监管机构原文。",
+        footerSourceLinks: "注意：不同监管系统的公开链接能力不同。RASFF 通常有逐条详情页；FDA IRR 和 TFDA 主要提供检索/数据集入口；MHLW 详情直链可能需要从官方入口进入后按 RCL 编号检索。",
         loadError: "数据加载失败。请确认你正在通过静态服务器打开 site/ 目录。",
         statLabels: {
           publishedRecords: "正式发布记录",
@@ -635,6 +666,18 @@ def _html() -> str:
         riskSummaryItem: (category, hazard, count) => `${category} · ${hazard} · ${count.toLocaleString()} records`,
         riskSummarySourceCount: count => `${count.toLocaleString()} source${count === 1 ? "" : "s"}`,
         detailsLabel: "Details",
+        sourceLinkLabels: {
+          detail: "Open official detail",
+          lookup: "Open official lookup/data page",
+          session_detail: "Try official detail",
+        },
+        sourceLinkHelp: {
+          us_fda_import_refusals: "FDA IRR does not provide stable per-record public detail URLs. Use the official page to search by China and month/year, or download CSV files and verify by record ID, date, firm, or product.",
+          tw_tfda: "TFDA publication is based on the official open dataset; the human page is a lookup entry. Verify with product, date, firm, or disposition fields.",
+          jp_caa_recalls: "MHLW detail links may fail when opened directly because of session or entry-route constraints. If this happens, open the official entry page and search the RCL ID.",
+          eu_rasff: "RASFF usually provides public per-notification pages. If a browser or session blocks the link, search the RASFF Window with the record reference.",
+        },
+        lookupLabel: "Fallback lookup entry",
         detailFields: {
           sourceLabel: "Source authority",
           authorityRegion: "Authority region",
@@ -649,6 +692,7 @@ def _html() -> str:
         showing: (shown, total) => `Showing ${shown.toLocaleString()} / ${total.toLocaleString()} records`,
         officialSource: "Official source",
         footer: "Data comes from public regulator sources. This project filters, normalizes, and links the records. Open each official source to read the regulator text.",
+        footerSourceLinks: "Note: regulator systems differ. RASFF usually has per-record detail pages; FDA IRR and TFDA mainly provide lookup or dataset entry points; MHLW detail links may require entering through the official portal and searching by RCL ID.",
         loadError: "Failed to load data. Make sure you are serving the site/ directory with a static file server.",
         statLabels: {
           publishedRecords: "published records",
@@ -751,7 +795,7 @@ def _html() -> str:
       els.riskSummaryTitle.textContent = copy.riskSummaryTitle;
       els.riskSummaryNote.textContent = copy.riskSummaryNote;
       els.q.placeholder = copy.searchPlaceholder;
-      els.footerNote.textContent = copy.footer;
+      els.footerNote.textContent = `${copy.footer} ${copy.footerSourceLinks}`;
       populateFilters();
     }
     function renderGuideList(target, values, help) {
@@ -841,6 +885,21 @@ def _html() -> str:
         </details>
       `;
     }
+    function recordSourceLinks(record, copy) {
+      const kind = record.source_link_kind || "detail";
+      const label = copy.sourceLinkLabels[kind] || copy.officialSource;
+      const help = copy.sourceLinkHelp[record.source_id] || "";
+      const primary = `
+        <a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>
+      `;
+      const fallback = record.source_lookup_url && record.source_lookup_url !== record.source_url
+        ? ` · <a href="${escapeHtml(record.source_lookup_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.lookupLabel)}</a>`
+        : "";
+      return `
+        <p class="meta">${primary}${fallback}</p>
+        ${help ? `<p class="meta">${escapeHtml(help)}</p>` : ""}
+      `;
+    }
     function filtered() {
       const q = els.q.value.trim().toLowerCase();
       return state.records.filter(record => {
@@ -883,7 +942,7 @@ def _html() -> str:
           </div>
           <p class="reason">${escapeHtml(record.reason_summary)}</p>
           ${recordDetails(record, copy)}
-          <p class="meta"><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.officialSource)}</a></p>
+          ${recordSourceLinks(record, copy)}
         </article>
       `).join("");
       if (rows.length > 250) {

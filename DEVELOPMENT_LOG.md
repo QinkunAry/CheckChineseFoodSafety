@@ -17,6 +17,40 @@
 
 ---
 
+## 2026-09-03 · Round 75 · Source link semantics and lookup fallback
+
+### 本轮目标
+
+修复线上记录点击 source link 后体验不清楚的问题：部分监管系统没有稳定逐条详情页，或详情直链可能需要入口会话，不能把所有链接都简单标成 official source。
+
+### 发现
+
+- FDA IRR 正式数据来自可下载 CSV，公开网页主要是按国家/地区、产品、月份和年份检索的入口；当前 2,783 条 FDA 记录共享同一个官方入口 URL；
+- Taiwan TFDA 正式数据来自官方开放资料，人工页面也是检索入口；当前 399 条记录共享同一个官方查询 URL；
+- Japan MHLW `_link.do?...p=RCL...` 是生产审计使用的官方 detail pattern，但浏览器直开时可能因会话或入口路径显示错误页；
+- RASFF 当前 18 条记录使用逐条 public notification URL，通常更接近真正的 per-record detail。
+
+### 已完成内容
+
+- 静态 payload 新增 `source_link_kind` 和 `source_lookup_url`；
+- 前端按来源显示“打开官方详情”“打开官方检索/数据页”或“尝试打开官方详情”；
+- 对 FDA、TFDA、Japan MHLW 和 RASFF 分别给出复核说明；
+- Japan MHLW 详情旁增加备用官方入口链接；
+- footer 增加不同监管系统链接能力差异说明；
+- README 数据边界和路线图同步更新；
+- Pages 验收清单增加 source link 类型复核要求；
+- 增加静态页面回归测试，确认 link 类型和说明文案存在。
+
+### 决策
+
+项目继续保留官方 URL 作为证据链，但 UI 必须诚实说明链接语义：有的链接是逐条详情，有的是官方检索入口，有的可能需要用户从官方入口进入后按记录号复核。
+
+### 下一步
+
+提交并部署后，在线上页面抽查 FDA、TFDA、Japan 和 RASFF 记录：确认链接标签、备用入口和复核说明符合实际。后续可考虑为 FDA/TFDA 增加“一键复制复核关键词”。
+
+---
+
 ## 2026-09-03 · Round 74 · Static browser record details disclosure
 
 ### 本轮目标
