@@ -231,6 +231,20 @@ def _html() -> str:
       padding: 3rem min(6vw, 5rem) 2rem;
       border-bottom: 1px solid var(--line);
     }
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 1.5rem;
+    }
+    .lang-toggle {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      padding: 0.55rem 0.85rem;
+    }
     h1 {
       margin: 0;
       font-size: clamp(2rem, 4vw, 4.5rem);
@@ -373,8 +387,11 @@ def _html() -> str:
 </head>
 <body>
   <header>
+    <div class="topbar">
+      <button class="lang-toggle" id="lang-toggle" type="button">English</button>
+    </div>
     <h1>Check Chinese Food Safety</h1>
-    <p class="subtitle">
+    <p class="subtitle" id="subtitle">
       一个 evidence-first 的食品安全浏览器：只展示已经进入 implemented 来源、
       并通过发布门禁的官方记录。它不是健康建议，也不替代监管机构原文。
     </p>
@@ -382,22 +399,24 @@ def _html() -> str:
   <main>
     <section class="stats" id="stats"></section>
     <section class="notice">
-      <strong>阅读边界：</strong>
-      这里展示的是监管机构已经公开的进口拒绝、边境不合格、召回或 RASFF 通报记录。
-      它们代表具体批次、企业、申报或监管事件，不等于“某一种食品全部不安全”。
-      判断时请优先打开每条记录的 official source 查看原文。
+      <strong id="notice-title">阅读边界：</strong>
+      <span id="notice-text">
+        这里展示的是监管机构已经公开的进口拒绝、边境不合格、召回或 RASFF 通报记录。
+        它们代表具体批次、企业、申报或监管事件，不等于“某一种食品全部不安全”。
+        判断时请优先打开每条记录的 official source 查看原文。
+      </span>
     </section>
     <section class="guide-grid" aria-label="数据说明">
       <article class="guide-card">
-        <h2>来源怎么理解？</h2>
+        <h2 id="source-guide-title">来源怎么理解？</h2>
         <dl id="source-guide"></dl>
       </article>
       <article class="guide-card">
-        <h2>风险标签怎么理解？</h2>
+        <h2 id="hazard-guide-title">风险标签怎么理解？</h2>
         <dl id="hazard-guide"></dl>
       </article>
       <article class="guide-card">
-        <h2>措施类型怎么理解？</h2>
+        <h2 id="action-guide-title">措施类型怎么理解？</h2>
         <dl id="action-guide"></dl>
       </article>
     </section>
@@ -410,7 +429,7 @@ def _html() -> str:
     </section>
     <p class="meta" id="meta">正在加载数据…</p>
     <section class="records" id="records"></section>
-    <footer>
+    <footer id="footer-note">
       数据来自各监管机构公开来源；本项目做了筛选、标准化与来源链接整理。
       请点击每条记录的 official source 查看监管机构原文。
     </footer>
@@ -419,6 +438,13 @@ def _html() -> str:
     const state = { records: [], summary: {}, filters: {} };
     const els = {
       stats: document.querySelector("#stats"),
+      langToggle: document.querySelector("#lang-toggle"),
+      subtitle: document.querySelector("#subtitle"),
+      noticeTitle: document.querySelector("#notice-title"),
+      noticeText: document.querySelector("#notice-text"),
+      sourceGuideTitle: document.querySelector("#source-guide-title"),
+      hazardGuideTitle: document.querySelector("#hazard-guide-title"),
+      actionGuideTitle: document.querySelector("#action-guide-title"),
       q: document.querySelector("#q"),
       source: document.querySelector("#source"),
       hazard: document.querySelector("#hazard"),
@@ -429,42 +455,142 @@ def _html() -> str:
       actionGuide: document.querySelector("#action-guide"),
       meta: document.querySelector("#meta"),
       records: document.querySelector("#records"),
+      footerNote: document.querySelector("#footer-note"),
     };
-    const label = {
-      us_fda_import_refusals: "US FDA",
-      tw_tfda: "Taiwan TFDA",
-      jp_caa_recalls: "Japan MHLW",
-      eu_rasff: "EU RASFF",
-      import_refusal: "Import refusal",
-      inspection_failure: "Inspection failure",
-      rasff_notification: "RASFF notification",
-      recall: "Recall",
-      chemical: "Chemical",
-      labeling: "Labeling",
-      microbiological: "Microbiological",
-      adulteration: "Adulteration",
-      other_or_unclassified: "Other / unclassified",
+    const translations = {
+      zh: {
+        htmlLang: "zh-Hans",
+        toggle: "English",
+        subtitle: "一个 evidence-first 的食品安全浏览器：只展示已经进入 implemented 来源、并通过发布门禁的官方记录。它不是健康建议，也不替代监管机构原文。",
+        noticeTitle: "阅读边界：",
+        noticeText: "这里展示的是监管机构已经公开的进口拒绝、边境不合格、召回或 RASFF 通报记录。它们代表具体批次、企业、申报或监管事件，不等于“某一种食品全部不安全”。判断时请优先打开每条记录的 official source 查看原文。",
+        sourceGuideTitle: "来源怎么理解？",
+        hazardGuideTitle: "风险标签怎么理解？",
+        actionGuideTitle: "措施类型怎么理解？",
+        searchPlaceholder: "搜索产品、原因、企业、记录号…",
+        allSources: "全部来源",
+        allHazards: "全部风险",
+        allActions: "全部措施类型",
+        allYears: "全部年份",
+        loading: "正在加载数据…",
+        empty: "没有匹配记录。换个关键词试试。",
+        more: count => `还有 ${count} 条匹配记录；请继续筛选。`,
+        showing: (shown, total) => `显示 ${shown.toLocaleString()} / ${total.toLocaleString()} 条记录`,
+        officialSource: "官方来源 / Official source",
+        footer: "数据来自各监管机构公开来源；本项目做了筛选、标准化与来源链接整理。请点击每条记录的 official source 查看监管机构原文。",
+        loadError: "数据加载失败。请确认你正在通过静态服务器打开 site/ 目录。",
+        statLabels: {
+          publishedRecords: "正式发布记录",
+          implementedSources: "implemented 来源",
+          eventDateRange: "事件日期范围",
+          generatedAt: "生成时间",
+        },
+        label: {
+          us_fda_import_refusals: "美国 FDA",
+          tw_tfda: "台湾 TFDA",
+          jp_caa_recalls: "日本 MHLW",
+          eu_rasff: "欧盟 RASFF",
+          import_refusal: "进口拒绝",
+          inspection_failure: "查验不合格",
+          rasff_notification: "RASFF 通报",
+          recall: "召回",
+          chemical: "化学风险",
+          labeling: "标签/申报",
+          microbiological: "微生物风险",
+          adulteration: "掺假/真实性",
+          other_or_unclassified: "其他/未分类",
+        },
+        sourceHelp: {
+          us_fda_import_refusals: "美国 FDA 进口拒绝记录；表示具体进口申报被拒，不等于召回。",
+          tw_tfda: "台湾 TFDA 边境查验不符合记录；包含产地、产品、原因和处置。",
+          jp_caa_recalls: "日本 CAA/MHLW 召回体系中，经 MHLW detail 支撑的中国来源记录。",
+          eu_rasff: "欧盟 RASFF 食品通报；本项目只发布人工复核过的中国来源 food 记录。",
+        },
+        hazardHelp: {
+          chemical: "农残、兽残、污染物、添加物或其他化学性风险。",
+          microbiological: "细菌、霉菌、病毒或卫生微生物指标相关风险。",
+          labeling: "标签、过敏原、保质期、成分或申报信息不一致。",
+          adulteration: "掺假、替代、非法成分或与产品真实性相关的问题。",
+          other_or_unclassified: "官方原因尚不能稳定归入上述类别，需读原文判断。",
+          unknown: "记录没有可发布的稳定风险标签。",
+        },
+        actionHelp: {
+          import_refusal: "进口申报或货物被拒绝进入市场。",
+          inspection_failure: "边境、抽检或官方检查中不符合要求。",
+          rasff_notification: "欧盟成员或系统发布的 RASFF 食品安全通报。",
+          recall: "监管或企业发起的召回、回收、退款或下架行动。",
+        },
+        fallbackHelp: "保留官方字段，点击记录 source 查看原文。",
+      },
+      en: {
+        htmlLang: "en",
+        toggle: "中文",
+        subtitle: "An evidence-first food safety browser. It only shows official records from implemented sources that passed publication gates. It is not health advice and does not replace regulator source text.",
+        noticeTitle: "Reading boundary: ",
+        noticeText: "These are public import refusal, border inspection failure, recall, or RASFF notification records from regulators. They represent specific lots, firms, declarations, or regulatory events; they do not mean an entire food category is unsafe. Open the official source before drawing conclusions.",
+        sourceGuideTitle: "How to read sources",
+        hazardGuideTitle: "How to read risk tags",
+        actionGuideTitle: "How to read action types",
+        searchPlaceholder: "Search product, reason, firm, record ID…",
+        allSources: "All sources",
+        allHazards: "All risks",
+        allActions: "All action types",
+        allYears: "All years",
+        loading: "Loading data…",
+        empty: "No matching records. Try another keyword.",
+        more: count => `${count} more matching records; narrow your filters to continue.`,
+        showing: (shown, total) => `Showing ${shown.toLocaleString()} / ${total.toLocaleString()} records`,
+        officialSource: "Official source",
+        footer: "Data comes from public regulator sources. This project filters, normalizes, and links the records. Open each official source to read the regulator text.",
+        loadError: "Failed to load data. Make sure you are serving the site/ directory with a static file server.",
+        statLabels: {
+          publishedRecords: "published records",
+          implementedSources: "implemented sources",
+          eventDateRange: "event date range",
+          generatedAt: "generated at",
+        },
+        label: {
+          us_fda_import_refusals: "US FDA",
+          tw_tfda: "Taiwan TFDA",
+          jp_caa_recalls: "Japan MHLW",
+          eu_rasff: "EU RASFF",
+          import_refusal: "Import refusal",
+          inspection_failure: "Inspection failure",
+          rasff_notification: "RASFF notification",
+          recall: "Recall",
+          chemical: "Chemical",
+          labeling: "Labeling",
+          microbiological: "Microbiological",
+          adulteration: "Adulteration",
+          other_or_unclassified: "Other / unclassified",
+        },
+        sourceHelp: {
+          us_fda_import_refusals: "US FDA import refusal records; a refused import declaration is not the same thing as a recall.",
+          tw_tfda: "Taiwan TFDA border inspection failures, with origin, product, reason, and disposition fields.",
+          jp_caa_recalls: "Japan CAA/MHLW recall records; this site publishes only China-origin records backed by MHLW details.",
+          eu_rasff: "EU RASFF food notifications; this project publishes only manually reviewed China-origin food records.",
+        },
+        hazardHelp: {
+          chemical: "Pesticides, veterinary drugs, contaminants, additives, or other chemical risks.",
+          microbiological: "Bacteria, mold, viruses, or hygiene microbiology indicators.",
+          labeling: "Labeling, allergen, expiration date, ingredient, or declaration inconsistencies.",
+          adulteration: "Adulteration, substitution, illegal ingredients, or product authenticity issues.",
+          other_or_unclassified: "The official reason cannot yet be mapped reliably to the main categories; read the source text.",
+          unknown: "No stable publishable risk tag is available for this record.",
+        },
+        actionHelp: {
+          import_refusal: "An import shipment or declaration was refused entry.",
+          inspection_failure: "A border, sampling, or official inspection did not meet requirements.",
+          rasff_notification: "A food safety notification published through the EU RASFF system.",
+          recall: "A regulator or firm initiated recall, refund, withdrawal, or removal action.",
+        },
+        fallbackHelp: "Official fields are preserved. Open the record source for context.",
+      },
     };
-    const sourceHelp = {
-      us_fda_import_refusals: "美国 FDA 进口拒绝记录；表示具体进口申报被拒，不等于召回。",
-      tw_tfda: "台湾 TFDA 边境查验不符合记录；包含产地、产品、原因和处置。",
-      jp_caa_recalls: "日本 CAA/MHLW 召回体系中，经 MHLW detail 支撑的中国来源记录。",
-      eu_rasff: "欧盟 RASFF 食品通报；本项目只发布人工复核过的中国来源 food 记录。",
-    };
-    const hazardHelp = {
-      chemical: "农残、兽残、污染物、添加物或其他化学性风险。",
-      microbiological: "细菌、霉菌、病毒或卫生微生物指标相关风险。",
-      labeling: "标签、过敏原、保质期、成分或申报信息不一致。",
-      adulteration: "掺假、替代、非法成分或与产品真实性相关的问题。",
-      other_or_unclassified: "官方原因尚不能稳定归入上述类别，需读原文判断。",
-      unknown: "记录没有可发布的稳定风险标签。",
-    };
-    const actionHelp = {
-      import_refusal: "进口申报或货物被拒绝进入市场。",
-      inspection_failure: "边境、抽检或官方检查中不符合要求。",
-      rasff_notification: "欧盟成员或系统发布的 RASFF 食品安全通报。",
-      recall: "监管或企业发起的召回、回收、退款或下架行动。",
-    };
+    let language = localStorage.getItem("foodSafetyWatchLanguage") === "en" ? "en" : "zh";
+    function text() {
+      return translations[language];
+    }
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, ch => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -479,36 +605,68 @@ def _html() -> str:
     function unique(values) {
       return [...new Set(values.filter(Boolean))].sort();
     }
+    function resetSelect(select, defaultText, values, labels) {
+      const selected = select.value;
+      select.textContent = "";
+      option(select, "", defaultText);
+      values.forEach(v => option(select, v, labels[v] || v));
+      select.value = values.includes(selected) ? selected : "";
+    }
     function setupFilters() {
-      option(els.source, "", "全部来源");
-      unique(state.records.map(r => r.source_id)).forEach(v => option(els.source, v, label[v] || v));
-      option(els.hazard, "", "全部风险");
-      unique(state.records.flatMap(r => r.hazard_tags)).forEach(v => option(els.hazard, v, label[v] || v));
-      option(els.action, "", "全部措施类型");
-      unique(state.records.map(r => r.action_type)).forEach(v => option(els.action, v, label[v] || v));
-      option(els.year, "", "全部年份");
-      unique(state.records.map(r => r.event_date.slice(0, 4))).reverse().forEach(v => option(els.year, v, v));
+      populateFilters();
       [els.q, els.source, els.hazard, els.action, els.year].forEach(el => el.addEventListener("input", render));
+      els.langToggle.addEventListener("click", () => {
+        language = language === "zh" ? "en" : "zh";
+        localStorage.setItem("foodSafetyWatchLanguage", language);
+        applyTranslations();
+        renderGuides();
+        renderStats();
+        render();
+      });
+    }
+    function populateFilters() {
+      const copy = text();
+      resetSelect(els.source, copy.allSources, unique(state.records.map(r => r.source_id)), copy.label);
+      resetSelect(els.hazard, copy.allHazards, unique(state.records.flatMap(r => r.hazard_tags)), copy.label);
+      resetSelect(els.action, copy.allActions, unique(state.records.map(r => r.action_type)), copy.label);
+      resetSelect(els.year, copy.allYears, unique(state.records.map(r => r.event_date.slice(0, 4))).reverse(), {});
+    }
+    function applyTranslations() {
+      const copy = text();
+      document.documentElement.lang = copy.htmlLang;
+      els.langToggle.textContent = copy.toggle;
+      els.subtitle.textContent = copy.subtitle;
+      els.noticeTitle.textContent = copy.noticeTitle;
+      els.noticeText.textContent = copy.noticeText;
+      els.sourceGuideTitle.textContent = copy.sourceGuideTitle;
+      els.hazardGuideTitle.textContent = copy.hazardGuideTitle;
+      els.actionGuideTitle.textContent = copy.actionGuideTitle;
+      els.q.placeholder = copy.searchPlaceholder;
+      els.footerNote.textContent = copy.footer;
+      populateFilters();
     }
     function renderGuideList(target, values, help) {
+      const copy = text();
       target.innerHTML = values.map(value => `
         <div>
-          <dt>${escapeHtml(label[value] || value)}</dt>
-          <dd>${escapeHtml(help[value] || "保留官方字段，点击记录 source 查看原文。")}</dd>
+          <dt>${escapeHtml(copy.label[value] || value)}</dt>
+          <dd>${escapeHtml(help[value] || copy.fallbackHelp)}</dd>
         </div>
       `).join("");
     }
     function renderGuides() {
-      renderGuideList(els.sourceGuide, unique(state.records.map(r => r.source_id)), sourceHelp);
-      renderGuideList(els.hazardGuide, unique(state.records.flatMap(r => r.hazard_tags)), hazardHelp);
-      renderGuideList(els.actionGuide, unique(state.records.map(r => r.action_type)), actionHelp);
+      const copy = text();
+      renderGuideList(els.sourceGuide, unique(state.records.map(r => r.source_id)), copy.sourceHelp);
+      renderGuideList(els.hazardGuide, unique(state.records.flatMap(r => r.hazard_tags)), copy.hazardHelp);
+      renderGuideList(els.actionGuide, unique(state.records.map(r => r.action_type)), copy.actionHelp);
     }
     function renderStats() {
+      const copy = text();
       const items = [
-        [state.summary.record_count, "published records"],
-        [Object.keys(state.summary.by_source || {}).length, "implemented sources"],
-        [state.summary.date_min + " → " + state.summary.date_max, "event date range"],
-        [state.summary.generated_at, "generated at"],
+        [state.summary.record_count, copy.statLabels.publishedRecords],
+        [Object.keys(state.summary.by_source || {}).length, copy.statLabels.implementedSources],
+        [state.summary.date_min + " → " + state.summary.date_max, copy.statLabels.eventDateRange],
+        [state.summary.generated_at, copy.statLabels.generatedAt],
       ];
       els.stats.innerHTML = items.map(([value, name]) =>
         `<article class="stat"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(name)}</span></article>`
@@ -531,10 +689,11 @@ def _html() -> str:
       });
     }
     function render() {
+      const copy = text();
       const rows = filtered();
-      els.meta.textContent = `显示 ${rows.length.toLocaleString()} / ${state.records.length.toLocaleString()} 条记录`;
+      els.meta.textContent = copy.showing(rows.length, state.records.length);
       if (!rows.length) {
-        els.records.innerHTML = '<div class="record empty">没有匹配记录。换个关键词试试。</div>';
+        els.records.innerHTML = `<div class="record empty">${escapeHtml(copy.empty)}</div>`;
         return;
       }
       els.records.innerHTML = rows.slice(0, 250).map(record => `
@@ -542,10 +701,10 @@ def _html() -> str:
           <h2>${escapeHtml(record.product_name || "(unknown product)")}</h2>
           <div class="chips">
             <span class="chip">${escapeHtml(record.event_date)}</span>
-            <span class="chip">${escapeHtml(label[record.source_id] || record.source_id)}</span>
-            <span class="chip">${escapeHtml(label[record.action_type] || record.action_type)}</span>
+            <span class="chip">${escapeHtml(copy.label[record.source_id] || record.source_id)}</span>
+            <span class="chip">${escapeHtml(copy.label[record.action_type] || record.action_type)}</span>
             <span class="chip">${escapeHtml(record.product_category)}</span>
-            ${record.hazard_tags.map(tag => `<span class="chip">${escapeHtml(label[tag] || tag)}</span>`).join("")}
+            ${record.hazard_tags.map(tag => `<span class="chip">${escapeHtml(copy.label[tag] || tag)}</span>`).join("")}
           </div>
           <div class="meta">
             ${escapeHtml(record.source_record_id)}
@@ -553,11 +712,11 @@ def _html() -> str:
             ${record.producer_location ? " · " + escapeHtml(record.producer_location) : ""}
           </div>
           <p class="reason">${escapeHtml(record.reason_summary)}</p>
-          <p class="meta"><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">Official source</a></p>
+          <p class="meta"><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.officialSource)}</a></p>
         </article>
       `).join("");
       if (rows.length > 250) {
-        els.records.insertAdjacentHTML("beforeend", `<div class="record empty">还有 ${rows.length - 250} 条匹配记录；请继续筛选。</div>`);
+        els.records.insertAdjacentHTML("beforeend", `<div class="record empty">${escapeHtml(copy.more(rows.length - 250))}</div>`);
       }
     }
     async function main() {
@@ -568,12 +727,13 @@ def _html() -> str:
       state.records = records;
       state.summary = summary;
       setupFilters();
+      applyTranslations();
       renderGuides();
       renderStats();
       render();
     }
     main().catch(error => {
-      els.meta.textContent = "数据加载失败。请确认你正在通过静态服务器打开 site/ 目录。";
+      els.meta.textContent = text().loadError;
       els.records.innerHTML = `<pre class="record">${escapeHtml(error.stack || error)}</pre>`;
     });
   </script>
