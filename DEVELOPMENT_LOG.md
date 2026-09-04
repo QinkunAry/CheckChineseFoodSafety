@@ -17,6 +17,31 @@
 
 ---
 
+## 2026-09-03 · Round 77 · Static browser trust footer links
+
+### 本轮目标
+
+继续制作 hosted 静态浏览器产品体验：在公开页面底部增加可信导航入口，让用户能从页面直接追到仓库、数据署名、验收标准和反馈入口。
+
+### 已完成内容
+
+- Footer 新增项目链接导航；
+- 链接指向 GitHub 仓库、`docs/DATA_ATTRIBUTION.md`、`docs/PAGES_ACCEPTANCE.md`、`PRODUCT_GOALS.md` 和 Issues；
+- 中英文界面均覆盖 footer 链接标签；
+- 链接使用 GitHub 绝对 URL，避免 GitHub Pages artifact 中没有 docs 文件导致相对链接 404；
+- 增加静态页面回归测试，确认可信导航入口存在；
+- README 路线图记录该产品体验改进。
+
+### 决策
+
+公开页面不复制全部文档内容，只提供清晰入口。这样既保持静态页轻量，也让 attribution、acceptance 和产品边界继续以仓库文档为准。
+
+### 下一步
+
+提交并部署后，在线上页面检查 footer 链接是否能打开仓库、署名文档、验收清单、产品目标和 Issues。下一轮可以做记录级“复制链接/复制 ID”，或继续优化移动端布局。
+
+---
+
 ## 2026-09-03 · Round 76 · Verification keyword copy helper
 
 ### 本轮目标

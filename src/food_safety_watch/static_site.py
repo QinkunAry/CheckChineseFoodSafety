@@ -473,6 +473,23 @@ def _html() -> str:
       font-size: 0.9rem;
       line-height: 1.6;
     }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-top: 0.85rem;
+    }
+    .footer-links a {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--accent);
+      padding: 0.25rem 0.65rem;
+      text-decoration: none;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
     @media (max-width: 900px) {
       .filters { grid-template-columns: 1fr; position: static; }
     }
@@ -529,9 +546,12 @@ def _html() -> str:
     </section>
     <p class="meta" id="meta">正在加载数据…</p>
     <section class="records" id="records"></section>
-    <footer id="footer-note">
-      数据来自各监管机构公开来源；本项目做了筛选、标准化与来源链接整理。
-      请点击每条记录的 official source 查看监管机构原文。
+    <footer>
+      <p id="footer-note">
+        数据来自各监管机构公开来源；本项目做了筛选、标准化与来源链接整理。
+        请点击每条记录的 official source 查看监管机构原文。
+      </p>
+      <nav class="footer-links" id="footer-links" aria-label="项目信息"></nav>
     </footer>
   </main>
   <script>
@@ -559,6 +579,14 @@ def _html() -> str:
       meta: document.querySelector("#meta"),
       records: document.querySelector("#records"),
       footerNote: document.querySelector("#footer-note"),
+      footerLinks: document.querySelector("#footer-links"),
+    };
+    const projectLinks = {
+      repository: "https://github.com/QinkunAry/CheckChineseFoodSafety",
+      attribution: "https://github.com/QinkunAry/CheckChineseFoodSafety/blob/main/docs/DATA_ATTRIBUTION.md",
+      acceptance: "https://github.com/QinkunAry/CheckChineseFoodSafety/blob/main/docs/PAGES_ACCEPTANCE.md",
+      productGoals: "https://github.com/QinkunAry/CheckChineseFoodSafety/blob/main/PRODUCT_GOALS.md",
+      issues: "https://github.com/QinkunAry/CheckChineseFoodSafety/issues",
     };
     const translations = {
       zh: {
@@ -613,6 +641,14 @@ def _html() -> str:
         officialSource: "官方来源 / Official source",
         footer: "数据来自各监管机构公开来源；本项目做了筛选、标准化与来源链接整理。请点击每条记录的 official source 查看监管机构原文。",
         footerSourceLinks: "注意：不同监管系统的公开链接能力不同。RASFF 通常有逐条详情页；FDA IRR 和 TFDA 主要提供检索/数据集入口；MHLW 详情直链可能需要从官方入口进入后按 RCL 编号检索。",
+        footerLinkLabels: {
+          repository: "GitHub 仓库",
+          attribution: "数据署名与授权",
+          acceptance: "页面验收清单",
+          productGoals: "产品目标",
+          issues: "反馈 Issue",
+        },
+        footerLinksLabel: "项目信息",
         loadError: "数据加载失败。请确认你正在通过静态服务器打开 site/ 目录。",
         statLabels: {
           publishedRecords: "正式发布记录",
@@ -709,6 +745,14 @@ def _html() -> str:
         officialSource: "Official source",
         footer: "Data comes from public regulator sources. This project filters, normalizes, and links the records. Open each official source to read the regulator text.",
         footerSourceLinks: "Note: regulator systems differ. RASFF usually has per-record detail pages; FDA IRR and TFDA mainly provide lookup or dataset entry points; MHLW detail links may require entering through the official portal and searching by RCL ID.",
+        footerLinkLabels: {
+          repository: "GitHub repository",
+          attribution: "Data attribution",
+          acceptance: "Pages acceptance checklist",
+          productGoals: "Product goals",
+          issues: "Report an issue",
+        },
+        footerLinksLabel: "Project information",
         loadError: "Failed to load data. Make sure you are serving the site/ directory with a static file server.",
         statLabels: {
           publishedRecords: "published records",
@@ -818,6 +862,10 @@ def _html() -> str:
       els.riskSummaryNote.textContent = copy.riskSummaryNote;
       els.q.placeholder = copy.searchPlaceholder;
       els.footerNote.textContent = `${copy.footer} ${copy.footerSourceLinks}`;
+      els.footerLinks.setAttribute("aria-label", copy.footerLinksLabel);
+      els.footerLinks.innerHTML = Object.entries(copy.footerLinkLabels).map(([key, value]) => `
+        <a href="${escapeHtml(projectLinks[key])}" target="_blank" rel="noopener noreferrer">${escapeHtml(value)}</a>
+      `).join("");
       populateFilters();
     }
     function renderGuideList(target, values, help) {
