@@ -60,6 +60,18 @@ def _source_lookup_url(source_id: str, source_url: str) -> str:
     return source_url
 
 
+def _non_published_source(source: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(source["id"]),
+        "status": str(source.get("status") or "unknown"),
+        "source_label": _source_label(source),
+        "authority_region": str(source.get("authority_region", "")),
+        "action_type": str(source.get("action_type", "")),
+        "homepage": str(source.get("homepage", "")),
+        "notes": _shorten(str(source.get("notes", "")), limit=220),
+    }
+
+
 def _public_record(record: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
     reasons = [str(reason) for reason in record.get("reasons", []) if str(reason).strip()]
     hazard_tags = sorted(
@@ -163,6 +175,14 @@ def build_site_payload(
         or datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "record_count": len(records),
         "implemented_sources": sorted(implemented_ids),
+        "non_published_sources": sorted(
+            [
+                _non_published_source(source)
+                for source in by_id.values()
+                if source.get("status") != "implemented"
+            ],
+            key=lambda source: (source["status"], source["id"]),
+        ),
         "missing_files": missing_files,
         "date_min": min(dates) if dates else None,
         "date_max": max(dates) if dates else None,
@@ -283,7 +303,7 @@ def _html() -> str:
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
-    .stat, .filters, .record, .notice, .guide-card, .risk-card {
+    .stat, .filters, .record, .notice, .guide-card, .risk-card, .source-status-card {
       background: rgba(255, 250, 240, 0.86);
       border: 1px solid var(--line);
       border-radius: 1.2rem;
@@ -360,6 +380,43 @@ def _html() -> str:
       font-size: 0.88rem;
       line-height: 1.45;
     }
+    .source-status-card {
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .source-status-card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.05rem;
+    }
+    .source-status-card p {
+      margin: 0 0 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .source-status-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: 0.75rem;
+    }
+    .source-status-item {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: #fffdf8;
+      padding: 0.85rem;
+    }
+    .source-status-item strong {
+      display: block;
+      margin-bottom: 0.45rem;
+    }
+    .source-status-item p {
+      margin: 0.65rem 0 0;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .source-status-item a {
+      color: var(--accent);
+      font-size: 0.88rem;
+    }
     .filters {
       position: sticky;
       top: 0;
@@ -413,9 +470,15 @@ def _html() -> str:
       background: #fffdf8;
       color: var(--accent);
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font: inherit;
       font-size: 0.85rem;
+      min-height: 1.85rem;
       padding: 0.25rem 0.6rem;
+      text-align: center;
+      touch-action: manipulation;
     }
     .detail-grid {
       display: grid;
@@ -440,6 +503,18 @@ def _html() -> str:
       font-size: 0.9rem;
     }
     .record a { color: var(--accent); text-decoration-thickness: 0.08em; }
+    .record-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem 0.55rem;
+      line-height: 1.7;
+    }
+    .record-actions a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.85rem;
+    }
     .chips {
       display: flex;
       flex-wrap: wrap;
@@ -493,6 +568,86 @@ def _html() -> str:
     @media (max-width: 900px) {
       .filters { grid-template-columns: 1fr; position: static; }
     }
+    @media (max-width: 640px) {
+      header {
+        padding: 1.25rem 1rem 1.3rem;
+      }
+      .topbar {
+        margin-bottom: 1rem;
+      }
+      .lang-toggle {
+        min-height: 2.5rem;
+      }
+      h1 {
+        font-size: clamp(2rem, 13vw, 3.1rem);
+        letter-spacing: -0.045em;
+      }
+      .subtitle {
+        font-size: 0.98rem;
+        line-height: 1.6;
+      }
+      main {
+        padding: 1rem 0.75rem 2.5rem;
+      }
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+      }
+      .stat {
+        padding: 0.8rem;
+      }
+      .stat strong {
+        font-size: 1.25rem;
+        overflow-wrap: anywhere;
+      }
+      .notice,
+      .guide-card,
+      .risk-card,
+      .source-status-card,
+      .filters,
+      .record {
+        border-radius: 1rem;
+        padding: 0.85rem;
+      }
+      .guide-grid,
+      .risk-grid,
+      .source-status-list,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+      .filters {
+        gap: 0.55rem;
+      }
+      input,
+      select {
+        font-size: 16px;
+        padding: 0.7rem 0.75rem;
+      }
+      .record h2 {
+        font-size: 1rem;
+      }
+      .chip {
+        white-space: normal;
+      }
+      .record-actions a,
+      .copy-button,
+      .footer-links a {
+        width: 100%;
+        justify-content: center;
+        min-height: 2.5rem;
+        text-align: center;
+      }
+      .footer-links {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 420px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -537,6 +692,13 @@ def _html() -> str:
       </p>
       <div class="risk-grid" id="risk-summary"></div>
     </section>
+    <section class="source-status-card" aria-label="未发布来源状态">
+      <h2 id="source-status-title">正在研究的来源</h2>
+      <p id="source-status-note">
+        这些来源已有 probe、candidate 或 prototype 工作，但尚未通过 implemented 发布门槛，所以不会混入正式记录。
+      </p>
+      <div class="source-status-list" id="source-status-list"></div>
+    </section>
     <section class="filters" aria-label="筛选">
       <input id="q" type="search" placeholder="搜索产品、原因、企业、记录号…" autocomplete="off">
       <select id="source"></select>
@@ -576,6 +738,9 @@ def _html() -> str:
       riskSummaryTitle: document.querySelector("#risk-summary-title"),
       riskSummaryNote: document.querySelector("#risk-summary-note"),
       riskSummary: document.querySelector("#risk-summary"),
+      sourceStatusTitle: document.querySelector("#source-status-title"),
+      sourceStatusNote: document.querySelector("#source-status-note"),
+      sourceStatusList: document.querySelector("#source-status-list"),
       meta: document.querySelector("#meta"),
       records: document.querySelector("#records"),
       footerNote: document.querySelector("#footer-note"),
@@ -600,6 +765,23 @@ def _html() -> str:
         actionGuideTitle: "措施类型怎么理解？",
         riskSummaryTitle: "当前筛选下的高频组合",
         riskSummaryNote: "这个摘要只统计已发布记录中出现次数较多的“食品类别 × 风险标签”，用于提示检索方向，不代表风险概率或消费建议。",
+        sourceStatusTitle: "正在研究的来源",
+        sourceStatusNote: "这些来源已有 probe、candidate 或 prototype 工作，但尚未通过 implemented 发布门槛，所以不会混入正式记录。",
+        sourceStatusEmpty: "暂无未发布来源。",
+        sourceHomepageLabel: "官方入口",
+        statusLabels: {
+          candidate: "candidate / 候选",
+          prototype: "prototype / 原型",
+          unknown: "unknown / 未知",
+        },
+        sourceStatusHelp: {
+          ca_recalls_safety_alerts: "加拿大来源已有候选研究，但还需要稳定原产地字段、样本复核和再利用条款确认后才会发布。",
+          nz_mpi_recalls: "新西兰来源仍在研究公开结构、字段覆盖率和可复核证据链。",
+          kr_food_safety_korea: "韩国 Food Safety Korea 已有 probe 工作；在中国来源样本、失败处理和发布门禁稳定前保持候选状态。",
+          cn_samr_sampling: "中国大陆 SAMR 属于国内市场抽检，不是原产地数据集；需明确版权与事实边界后才考虑发布。",
+          au_fsanz_recalls: "澳新 FSANZ 已完成 smoke / inventory 原型验证；仍需版权复用、覆盖率和人工验收。",
+          hk_cfs_alerts: "香港 CFS 已完成原型验证；仍需复用条款、字段覆盖率和发布流程验收。",
+        },
         searchPlaceholder: "搜索产品、原因、企业、记录号…",
         allSources: "全部来源",
         allHazards: "全部风险",
@@ -625,6 +807,10 @@ def _html() -> str:
         lookupLabel: "备用检索入口",
         copyKeywordsLabel: "复制复核关键词",
         copiedKeywordsLabel: "已复制",
+        copyRecordIdLabel: "复制记录 ID",
+        copiedRecordIdLabel: "已复制 ID",
+        copyRecordLinkLabel: "复制记录链接",
+        copiedRecordLinkLabel: "已复制链接",
         copyFailedLabel: "复制失败，请手动选择记录字段",
         detailFields: {
           sourceLabel: "来源机构",
@@ -661,10 +847,17 @@ def _html() -> str:
           tw_tfda: "台湾 TFDA",
           jp_caa_recalls: "日本 MHLW",
           eu_rasff: "欧盟 RASFF",
+          au_fsanz_recalls: "澳新 FSANZ",
+          ca_recalls_safety_alerts: "加拿大 CFIA / Health Canada",
+          cn_samr_sampling: "中国大陆 SAMR",
+          hk_cfs_alerts: "香港 CFS",
+          kr_food_safety_korea: "韩国 Food Safety Korea",
+          nz_mpi_recalls: "新西兰 MPI",
           import_refusal: "进口拒绝",
           inspection_failure: "查验不合格",
           rasff_notification: "RASFF 通报",
           recall: "召回",
+          allergen: "过敏原",
           chemical: "化学风险",
           labeling: "标签/申报",
           microbiological: "微生物风险",
@@ -704,6 +897,23 @@ def _html() -> str:
         actionGuideTitle: "How to read action types",
         riskSummaryTitle: "Frequent combinations in current filters",
         riskSummaryNote: "This summary counts frequent “food category × risk tag” combinations in published records. It helps navigation; it is not a probability estimate or consumer advice.",
+        sourceStatusTitle: "Sources in progress",
+        sourceStatusNote: "These sources have probe, candidate, or prototype work, but they have not passed the implemented publication gates, so their data is not mixed into published records.",
+        sourceStatusEmpty: "No unpublished sources.",
+        sourceHomepageLabel: "Official entry",
+        statusLabels: {
+          candidate: "candidate",
+          prototype: "prototype",
+          unknown: "unknown",
+        },
+        sourceStatusHelp: {
+          ca_recalls_safety_alerts: "Canada has candidate research, but stable origin fields, sample review, and reuse terms still need acceptance before publication.",
+          nz_mpi_recalls: "New Zealand is still under review for public structure, field coverage, and auditable evidence links.",
+          kr_food_safety_korea: "Food Safety Korea has probe work; it remains candidate until China-origin samples, failure handling, and publication gates are stable.",
+          cn_samr_sampling: "China SAMR is a domestic market inspection source, not an origin dataset; copyright and evidence boundaries must be clear before publication.",
+          au_fsanz_recalls: "FSANZ has smoke and inventory prototype checks; reuse terms, coverage, and manual acceptance are still pending.",
+          hk_cfs_alerts: "Hong Kong CFS has prototype checks; reuse terms, field coverage, and publication workflow acceptance are still pending.",
+        },
         searchPlaceholder: "Search product, reason, firm, record ID…",
         allSources: "All sources",
         allHazards: "All risks",
@@ -729,6 +939,10 @@ def _html() -> str:
         lookupLabel: "Fallback lookup entry",
         copyKeywordsLabel: "Copy verification keywords",
         copiedKeywordsLabel: "Copied",
+        copyRecordIdLabel: "Copy record ID",
+        copiedRecordIdLabel: "Record ID copied",
+        copyRecordLinkLabel: "Copy record link",
+        copiedRecordLinkLabel: "Record link copied",
         copyFailedLabel: "Copy failed; select record fields manually",
         detailFields: {
           sourceLabel: "Source authority",
@@ -765,10 +979,17 @@ def _html() -> str:
           tw_tfda: "Taiwan TFDA",
           jp_caa_recalls: "Japan MHLW",
           eu_rasff: "EU RASFF",
+          au_fsanz_recalls: "AU/NZ FSANZ",
+          ca_recalls_safety_alerts: "Canada CFIA / Health Canada",
+          cn_samr_sampling: "China SAMR",
+          hk_cfs_alerts: "Hong Kong CFS",
+          kr_food_safety_korea: "Food Safety Korea",
+          nz_mpi_recalls: "New Zealand MPI",
           import_refusal: "Import refusal",
           inspection_failure: "Inspection failure",
           rasff_notification: "RASFF notification",
           recall: "Recall",
+          allergen: "Allergen",
           chemical: "Chemical",
           labeling: "Labeling",
           microbiological: "Microbiological",
@@ -832,13 +1053,25 @@ def _html() -> str:
         applyTranslations();
         renderGuides();
         renderStats();
+        renderSourceStatus();
         render();
       });
       els.records.addEventListener("click", event => {
         if (!(event.target instanceof Element)) return;
-        const button = event.target.closest("[data-copy-keywords]");
-        if (!button) return;
-        copyVerificationKeywords(button);
+        const keywordButton = event.target.closest("[data-copy-keywords]");
+        if (keywordButton) {
+          copyText(keywordButton, keywordButton.dataset.copyKeywords || "", text().copiedKeywordsLabel, text().copyKeywordsLabel);
+          return;
+        }
+        const idButton = event.target.closest("[data-copy-record-id]");
+        if (idButton) {
+          copyText(idButton, idButton.dataset.copyRecordId || "", text().copiedRecordIdLabel, text().copyRecordIdLabel);
+          return;
+        }
+        const linkButton = event.target.closest("[data-copy-record-link]");
+        if (linkButton) {
+          copyText(linkButton, linkButton.dataset.copyRecordLink || "", text().copiedRecordLinkLabel, text().copyRecordLinkLabel);
+        }
       });
     }
     function populateFilters() {
@@ -860,6 +1093,8 @@ def _html() -> str:
       els.actionGuideTitle.textContent = copy.actionGuideTitle;
       els.riskSummaryTitle.textContent = copy.riskSummaryTitle;
       els.riskSummaryNote.textContent = copy.riskSummaryNote;
+      els.sourceStatusTitle.textContent = copy.sourceStatusTitle;
+      els.sourceStatusNote.textContent = copy.sourceStatusNote;
       els.q.placeholder = copy.searchPlaceholder;
       els.footerNote.textContent = `${copy.footer} ${copy.footerSourceLinks}`;
       els.footerLinks.setAttribute("aria-label", copy.footerLinksLabel);
@@ -926,6 +1161,30 @@ def _html() -> str:
         </article>
       `).join("");
     }
+    function renderSourceStatus() {
+      const copy = text();
+      const sources = state.summary.non_published_sources || [];
+      if (!sources.length) {
+        els.sourceStatusList.innerHTML = `<div class="source-status-item"><p>${escapeHtml(copy.sourceStatusEmpty)}</p></div>`;
+        return;
+      }
+      els.sourceStatusList.innerHTML = sources.map(source => {
+        const label = copy.label[source.id] || source.source_label || source.id;
+        const status = copy.statusLabels[source.status] || source.status || copy.statusLabels.unknown;
+        const help = copy.sourceStatusHelp[source.id] || source.notes || copy.fallbackHelp;
+        const homepage = source.homepage
+          ? `<p><a href="${escapeHtml(source.homepage)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.sourceHomepageLabel)}</a></p>`
+          : "";
+        return `
+          <article class="source-status-item">
+            <strong>${escapeHtml(label)}</strong>
+            <span class="chip">${escapeHtml(status)}</span>
+            <p>${escapeHtml(help)}</p>
+            ${homepage}
+          </article>
+        `;
+      }).join("");
+    }
     function detailField(name, value) {
       return `
         <div class="detail-field">
@@ -965,19 +1224,26 @@ def _html() -> str:
         record.origin_country,
       ].filter(Boolean).join(" | ");
     }
-    async function copyVerificationKeywords(button) {
+    async function copyText(button, value, successLabel, resetLabel) {
       const copy = text();
-      const original = copy.copyKeywordsLabel;
+      const original = resetLabel;
       try {
-        await navigator.clipboard.writeText(button.dataset.copyKeywords || "");
-        button.textContent = copy.copiedKeywordsLabel;
+        await navigator.clipboard.writeText(value);
+        button.textContent = successLabel;
       } catch {
         button.textContent = copy.copyFailedLabel;
       } finally {
         window.setTimeout(() => {
-          button.textContent = text().copyKeywordsLabel || original;
+          button.textContent = original;
         }, 1600);
       }
+    }
+    function recordAnchor(record) {
+      return `record-${record.id}`;
+    }
+    function recordUrl(record) {
+      const base = `${window.location.origin}${window.location.pathname}`;
+      return `${base}#${recordAnchor(record)}`;
     }
     function recordSourceLinks(record, copy) {
       const kind = record.source_link_kind || "detail";
@@ -988,12 +1254,24 @@ def _html() -> str:
         <a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>
       `;
       const fallback = record.source_lookup_url && record.source_lookup_url !== record.source_url
-        ? ` · <a href="${escapeHtml(record.source_lookup_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.lookupLabel)}</a>`
+        ? `<a href="${escapeHtml(record.source_lookup_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(copy.lookupLabel)}</a>`
         : "";
       return `
-        <p class="meta">${primary}${fallback} · <button class="copy-button" type="button" data-copy-keywords="${escapeHtml(keywords)}">${escapeHtml(copy.copyKeywordsLabel)}</button></p>
+        <p class="meta record-actions">${primary}${fallback}<button class="copy-button" type="button" data-copy-keywords="${escapeHtml(keywords)}">${escapeHtml(copy.copyKeywordsLabel)}</button><button class="copy-button" type="button" data-copy-record-id="${escapeHtml(record.id)}">${escapeHtml(copy.copyRecordIdLabel)}</button><button class="copy-button" type="button" data-copy-record-link="${escapeHtml(recordUrl(record))}">${escapeHtml(copy.copyRecordLinkLabel)}</button></p>
         ${help ? `<p class="meta">${escapeHtml(help)}</p>` : ""}
       `;
+    }
+    function applyHashFilter() {
+      if (!window.location.hash.startsWith("#record-")) return;
+      const id = decodeURIComponent(window.location.hash.slice("#record-".length));
+      if (state.records.some(record => record.id === id)) {
+        els.q.value = id;
+      }
+    }
+    function scrollToHash() {
+      if (!window.location.hash) return;
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      if (target) target.scrollIntoView({ block: "start" });
     }
     function filtered() {
       const q = els.q.value.trim().toLowerCase();
@@ -1004,6 +1282,7 @@ def _html() -> str:
         if (els.year.value && !record.event_date.startsWith(els.year.value)) return false;
         if (!q) return true;
         const haystack = [
+          record.id,
           record.product_name, record.product_category, record.producer_name,
           record.producer_location, record.reason_summary, record.source_record_id,
           record.source_id, record.authority_region
@@ -1021,7 +1300,7 @@ def _html() -> str:
         return;
       }
       els.records.innerHTML = rows.slice(0, 250).map(record => `
-        <article class="record">
+        <article class="record" id="${escapeHtml(recordAnchor(record))}">
           <h2>${escapeHtml(record.product_name || "(unknown product)")}</h2>
           <div class="chips">
             <span class="chip">${escapeHtml(record.event_date)}</span>
@@ -1053,9 +1332,12 @@ def _html() -> str:
       state.summary = summary;
       setupFilters();
       applyTranslations();
+      applyHashFilter();
       renderGuides();
       renderStats();
+      renderSourceStatus();
       render();
+      scrollToHash();
     }
     main().catch(error => {
       els.meta.textContent = text().loadError;

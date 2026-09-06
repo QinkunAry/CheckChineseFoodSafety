@@ -212,6 +212,9 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 区分官方详情链接、检索入口和可能需要会话的 source link
 - [x] 增加记录级复核关键词复制按钮
 - [x] 增加静态页面 Repository / Attribution / Acceptance / Issue 公开入口
+- [x] 在静态浏览器显示 candidate / prototype 来源状态
+- [x] 增加记录级复制 ID 和复制分享链接按钮
+- [x] 优化静态浏览器移动端布局和风险标签大小写显示
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App
