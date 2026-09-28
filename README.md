@@ -123,6 +123,8 @@ FDA 下载器会先访问官方页面动态发现当前 ZIP，并使用同一会
 
 `.github/workflows/deploy-pages.yml` 在 `main` 分支相关数据、源码或 workflow 变化后自动生成静态数据浏览器，并通过 GitHub Pages artifact 部署；也支持手动触发。部署前会配置 Pages、安装项目、运行全量测试、生成 `site/`，并验证 `summary.json` 与 `records.json` 的记录数一致且没有缺失的 implemented source 文件。
 
+FDA 和 Taiwan TFDA 的定时更新由 GitHub Actions bot 提交到 `main`。这类 `GITHUB_TOKEN` 产生的提交不会再触发普通 `push` workflow；因此 Pages 部署 workflow 还监听 `Update FDA data` 和 `Update Taiwan TFDA data` 的成功 `workflow_run`，在数据更新后重新部署公开页面。
+
 首次使用前，需要在 GitHub 仓库 Settings → Pages 中将 Build and deployment Source 设置为 GitHub Actions。若 `Configure GitHub Pages` 步骤报 `Get Pages site failed` / `HttpError: Not Found`，通常表示 Pages 尚未启用或 source 尚未设为 GitHub Actions；完成上述设置后重新运行 workflow 即可。项目不在 workflow 中用 PAT 自动启用 Pages，避免引入额外高权限 secret。
 
 线上页面发布后，使用 [`docs/PAGES_ACCEPTANCE.md`](docs/PAGES_ACCEPTANCE.md) 做人工验收：确认 production URL 可访问、数据 JSON 可加载、记录数量一致、筛选器可用、官方出处可追溯，并且页面文案没有把监管记录解释成超出证据范围的安全结论。
@@ -215,6 +217,7 @@ RASFF explicitly reviewed release 当前包含 18 条 active reference。首批 
 - [x] 在静态浏览器显示 candidate / prototype 来源状态
 - [x] 增加记录级复制 ID 和复制分享链接按钮
 - [x] 优化静态浏览器移动端布局和风险标签大小写显示
+- [x] 修复数据更新后 GitHub Pages 不自动重新部署的问题
 - [ ] 按可获取性接入加拿大、韩国、新西兰等剩余来源
 - [ ] 在事实层稳定后提供 API / Agent skill
 - [ ] 评估 iOS App

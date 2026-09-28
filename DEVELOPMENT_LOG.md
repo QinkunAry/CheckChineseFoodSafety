@@ -17,6 +17,47 @@
 
 ---
 
+## 2026-09-28 · Round 80 · Scheduled update deployment diagnostics
+
+### 本轮目标
+
+排查公开页面数据看起来停留在 8 月、以及 GitHub Actions 中 Japan CAA / Hong Kong CFS / EU RASFF 出现红色运行的问题。
+
+### 发现
+
+- 本地分支一开始落后远端 `main` 7 个自动数据更新提交；
+- 远端 `main` 已包含自动更新数据：FDA 最新事件日期为 2026-08-26，Taiwan TFDA 最新事件日期为 2026-09-22；
+- 线上 GitHub Pages 的 `summary.json` 仍生成于 2026-09-06，`date_max` 仍为 2026-08-25，说明数据已更新但 Pages artifact 没有随 bot commit 重新部署；
+- 根因是 FDA / Taiwan TFDA 更新 workflow 使用 `GITHUB_TOKEN` 提交数据，这类提交不会再触发普通 `push` workflow；
+- Hong Kong CFS smoke 在本地复跑通过，2026-09-23 的失败更像短暂网络或官方站波动；
+- Japan CAA smoke 失败是因为旧固定样本 `00000035456` 和 `00000035460` 的 CAA 详情页已经变空或不再提供 title/product；
+- EU RASFF audit 复跑为 `action_required`：18 条已发布记录中 5 条官方详情字段发生变化，需要后续按 RASFF fail-closed 刷新流程处理。
+
+### 已完成内容
+
+- 将本地 `main` 快进到远端最新数据提交；
+- `deploy-pages.yml` 新增 `workflow_run` 触发：`Update FDA data` 和 `Update Taiwan TFDA data` 成功完成后自动重新部署 GitHub Pages；
+- Pages workflow checkout 明确使用 `main`，确保 workflow_run 部署最新主分支数据；
+- 更新 Japan CAA smoke 固定样本：保留稳定中国样本 `00000035471`，加入当前可解析对照样本 `00000035881`；
+- Japan CAA smoke / candidate 门槛从 2 条中国样本调整为 1 条稳定中国样本和 1 条 MHLW-backed 记录，避免把官方历史详情归档误判为系统故障；
+- README 记录 bot commit 不触发普通 push workflow 的部署原因和修复方式。
+
+### 验证方式与结果
+
+- 读取线上 Pages `summary.json`，确认旧 artifact 生成时间为 2026-09-06；
+- 读取远端 `origin/main` 数据，确认 Taiwan TFDA 已更新到 2026-09-22、FDA 已更新到 2026-08-26；
+- 本地复跑 `smoke-cfs`：通过，46 个 index alerts，2 条中国记录；
+- 本地复跑旧 `smoke-japan-caa`：失败，只有 1 条中国证据页和 1 个 MHLW reference；
+- 本地验证新 Japan CAA smoke 样本：通过，360 个 listed food recalls，2 个测试页，1 条中国证据页，2 个 MHLW references；
+- 本地验证新 Japan CAA candidate 样本：通过，2 个 URL，1 条中国记录；
+- 本地复跑 `audit-rasff-status`：`action_required`，5 条已发布 RASFF 记录有官方字段变化。
+
+### 下一步
+
+提交并推送后，等待 `Deploy static data site` 由本次 workflow 变更或后续数据更新触发；部署完成后检查线上 `summary.json` 的 `date_max` 是否更新到 2026-09-22。下一轮应处理 RASFF 5 条 `action_required` 记录，走显式复核和刷新发布流程。
+
+---
+
 ## 2026-09-06 · Round 79 · Static browser mobile layout polish
 
 ### 本轮目标
