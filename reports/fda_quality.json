@@ -1,12 +1,12 @@
 {
-  "baseline_count": 2993,
+  "baseline_count": 3059,
   "blocking_errors": [],
-  "count_change_percent": 2.21,
+  "count_change_percent": 0.0,
   "duplicate_id_count": 0,
   "duplicate_id_samples": [],
   "event_date_max": "2026-10-23",
   "event_date_min": "2024-01-02",
-  "generated_at": "2026-11-10T00:44:24.941942+00:00",
+  "generated_at": "2026-11-17T00:52:38.034253+00:00",
   "hazard_tags": {
     "adulteration": 1115,
     "allergen": 133,
